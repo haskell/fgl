@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- |An efficient implementation of 'Data.Graph.Inductive.Graph.Graph'
 -- using big-endian patricia tree (i.e. "Data.IntMap").
 --
@@ -25,12 +27,13 @@ import           Data.IntMap (IntMap)
 import qualified Data.IntMap as IM
 import           Data.List
 import           Data.Maybe
+import           Control.Arrow(second)
 
 
-data Gr a b = Gr (GraphRep a b)
+newtype Gr a b = Gr (GraphRep a b)
 
 type GraphRep a b = IntMap (Context' a b)
-type Context' a b = (IntMap b, a, IntMap b)
+type Context' a b = (IntMap [b], a, IntMap [b])
 
 type UGr = Gr () ()
 
@@ -56,7 +59,8 @@ instance Graph Gr where
                     ix = fst . fst . fromJust
 
     labEdges (Gr g) = do (node, (_, _, s)) <- IM.toList g
-                         (next, label)     <- IM.toList s
+                         (next, labels)    <- IM.toList s
+                         label             <- labels
                          return (node, next, label)
 
 
@@ -103,8 +107,8 @@ fastInsEdge (v, w, l) (Gr g) = g2 `seq` Gr g2
       g1 = IM.adjust addSucc' v g
       g2 = IM.adjust addPred' w g1
 
-      addSucc' (ps, l', ss) = (ps, l', IM.insert w l ss)
-      addPred' (ps, l', ss) = (IM.insert v l ps, l', ss)
+      addSucc' (ps, l', ss) = (ps, l', IM.insertWith (++) w [l] ss)
+      addPred' (ps, l', ss) = (IM.insertWith (++) v [l] ps, l', ss)
 
 
 {-# RULES
@@ -134,15 +138,17 @@ fastEMap :: forall a b c. (b -> c) -> Gr a b -> Gr a c
 fastEMap f (Gr g) = Gr (IM.map f' g)
     where
       f' :: Context' a b -> Context' a c
-      f' (ps, a, ss) = (IM.map f ps, a, IM.map f ss)
+      f' (ps, a, ss) = (IM.map (map f) ps, a, IM.map (map f) ss)
 
 
-toAdj :: IntMap b -> Adj b
-toAdj = map swap . IM.toList
+toAdj :: IntMap [b] -> Adj b
+toAdj = concatMap expand . IM.toList
+  where
+    expand (n,ls) = map (flip (,) n) ls
 
 
-fromAdj :: Adj b -> IntMap b
-fromAdj = IM.fromList . map swap
+fromAdj :: Adj b -> IntMap [b]
+fromAdj = IM.fromListWith (++) . map (second return . swap)
 
 
 toContext :: Node -> Context' a b -> Context a b
@@ -164,7 +170,7 @@ addSucc g _ []              = g
 addSucc g v ((l, p) : rest) = addSucc g' v rest
     where
       g' = IM.adjust f p g
-      f (ps, l', ss) = (ps, l', IM.insert v l ss)
+      f (ps, l', ss) = (ps, l', IM.insertWith (++) v [l] ss)
 
 
 addPred :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
@@ -172,7 +178,7 @@ addPred g _ []              = g
 addPred g v ((l, s) : rest) = addPred g' v rest
     where
       g' = IM.adjust f s g
-      f (ps, l', ss) = (IM.insert v l ps, l', ss)
+      f (ps, l', ss) = (IM.insertWith (++) v [l] ps, l', ss)
 
 
 clearSucc :: GraphRep a b -> Node -> [Node] -> GraphRep a b
