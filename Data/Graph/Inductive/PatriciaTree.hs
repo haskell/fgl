@@ -107,8 +107,8 @@ fastInsEdge (v, w, l) (Gr g) = g2 `seq` Gr g2
       g1 = IM.adjust addSucc' v g
       g2 = IM.adjust addPred' w g1
 
-      addSucc' (ps, l', ss) = (ps, l', IM.insertWith (++) w [l] ss)
-      addPred' (ps, l', ss) = (IM.insertWith (++) v [l] ps, l', ss)
+      addSucc' (ps, l', ss) = (ps, l', IM.insertWith addLists w [l] ss)
+      addPred' (ps, l', ss) = (IM.insertWith addLists v [l] ps, l', ss)
 
 
 {-# RULES
@@ -148,7 +148,7 @@ toAdj = concatMap expand . IM.toList
 
 
 fromAdj :: Adj b -> IntMap [b]
-fromAdj = IM.fromListWith (++) . map (second return . swap)
+fromAdj = IM.fromListWith addLists . map (second return . swap)
 
 
 toContext :: Node -> Context' a b -> Context a b
@@ -165,12 +165,21 @@ swap :: (a, b) -> (b, a)
 swap (a, b) = (b, a)
 
 
+-- A version of @++@ where order isn't important, so @xs ++ [x]@
+-- becomes @x:xs@.  Used when we have to have a function of type @[a]
+-- -> [a] -> [a]@ but one of the lists is just going to be a single
+-- element (and it isn't possible to tell which).
+addLists :: [a] -> [a] -> [a]
+addLists [a] as  = a : as
+addLists as  [a] = a : as
+addLists xs  ys  = xs ++ ys
+
 addSucc :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
 addSucc g _ []              = g
 addSucc g v ((l, p) : rest) = addSucc g' v rest
     where
       g' = IM.adjust f p g
-      f (ps, l', ss) = (ps, l', IM.insertWith (++) v [l] ss)
+      f (ps, l', ss) = (ps, l', IM.insertWith addLists v [l] ss)
 
 
 addPred :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
@@ -178,7 +187,7 @@ addPred g _ []              = g
 addPred g v ((l, s) : rest) = addPred g' v rest
     where
       g' = IM.adjust f s g
-      f (ps, l', ss) = (IM.insertWith (++) v [l] ps, l', ss)
+      f (ps, l', ss) = (IM.insertWith addLists v [l] ps, l', ss)
 
 
 clearSucc :: GraphRep a b -> Node -> [Node] -> GraphRep a b
