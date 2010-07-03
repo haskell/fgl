@@ -1,0 +1,115 @@
+------------------------------------------------------------------------------
+FGL - Functional Graph Library, Version: January 2004
+------------------------------------------------------------------------------
+
+
+CONTENTS
+  A. CONTENTS
+  B. TESTING
+  C. CREDITS
+  D. CONTACT
+
+
+------------------------------------------------------------------------------
+
+A. CONTENTS
+
+In addition to the files doc/README, doc/COPYRIGHT, doc/CHANGES, Makefile,
+package.conf.in, and prologue.txt this distribution consists of the following
+28 Haskell files.
+
+(A) These files define inductive graphs and basic operations:
+
+  Data/Graph/Inductive.hs                     - Main module
+  Data/Graph/Inductive/Graph.hs               - Static and dynamic graph classes,
+                                                derived types & operations
+  Data/Graph/Inductive/Tree.hs                - Dynamic graph implementation
+  Data/Graph/Inductive/Basic.hs               - Basic graph operations (gmap,
+                                                grev, ...)
+  Data/Graph/Inductive/NodeMap.hs             - Automatic generation of Nodes
+                                                from labels.
+  Data/Graph/Inductive/Graphviz.hs            - Graphviz output.
+  Data/Graph/Inductive/Monad/Monad.hs         - Monadic (static) graph class
+                                                based on balanced search trees
+  Data/Graph/Inductive/Monad/IOArray.hs       - Static graph implementation based
+                                                on IO Arrays
+
+
+(B) Example graphs:
+
+  Data/Graph/Inductive/Example.hs             - Example graphs
+ 
+
+(C) Implementation of graph algorithms:
+
+  Data/Graph/Inductive/Query.hs               - Main query module
+  Data/Graph/Inductive/Query/DFS.hs           - Depth-first search and
+                                                derived operations (topsort,
+                                                scc, ...)
+  Data/Graph/Inductive/Query/BFS.hs           - Breadth-first search and
+                                                "edge" shortest paths
+  Data/Graph/Inductive/Query/SP.hs            - Shortest paths (Dijkstra's
+                                                algorithm)
+  Data/Graph/Inductive/Query/GVD.hs           - Graph voronoi diagram
+  Data/Graph/Inductive/Query/MST.hs           - Minimum spanning tree (Prim's
+                                                algorithm)
+  Data/Graph/Inductive/Query/Indep.hs         - Independent node sets
+  Data/Graph/Inductive/Query/MaxFlow.hs       - Edmonds/Karp maximum flow
+                                                algorithm
+  Data/Graph/Inductive/Query/MaxFlow2.hs      - Alternative implementations
+                                                of the Edmonds/Karp algorithm
+  Data/Graph/Inductive/Query/ArtPoint.hs      - Articulation points
+  Data/Graph/Inductive/Query/BCC.hs           - Biconnected components
+  Data/Graph/Inductive/Query/Dominators.hs    - Dominators
+  Data/Graph/Inductive/Query/TransClos.hs     - Transitive closure
+  Data/Graph/Inductive/Query/Monad.hs         - Graph transformer monad and
+                                                monadic graph algorithms
+ 
+
+(D) Some auxiliary modules:
+
+  Data/Graph/Inductive/Inductive/RootPath.hs  - Inward-directed trees
+  Data/Graph/Inductive/Inductive/Heap.hs      - Pairing heaps 
+  Data/Graph/Inductive/Inductive/Queue.hs     - Amortized O(1) queue
+                                                implementation 
+  Data/Graph/Inductive/Inductive/FiniteMap.hs - Binary-search-tree
+                                                implementation of maps
+  Data/Graph/Inductive/Inductive/Thread.hs    - Auxiliary module used in Graph
+                                                (subject to future change)
+  
+
+------------------------------------------------------------------------------
+
+B. TESTING
+
+B.1 GHC
+
+    1. Run the test program: "ghci test/test.hs"
+
+
+B.2 Hugs
+
+    1. Start Hugs: "hugs -98 +o"
+     
+    2. Load the FGL: ":l Data.Graph.Inductive.Example"
+
+    3. Play with it, e.g., enter: "sp 1 3 clr528"
+
+
+------------------------------------------------------------------------------
+
+C. CREDITS
+
+I am grateful to many people who have helped me with bug reports, questions,
+comments, and implementations to improve the FGL. In particular, I would like
+to thank Martin Boehme, Luis Zeron, and Hal Daume for their contributions.
+Moreover, I would like to thank Abe Egnor and Isaac Jones at Aetion
+Technologies who refactored the modules into the new hierarchical name space
+and who have added two modules (see also the file CHANGES).
+
+
+------------------------------------------------------------------------------
+
+D. BUG REPORTS, QUESTIONS, SUGGESTIONS, ...
+
+Please email comments, bug reports, etc. to erwig@cs.orst.edu

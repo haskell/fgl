@@ -1,0 +1,42 @@
+name:		fgl
+version:	5.4.2.2
+license:	BSD3
+license-file:	LICENSE
+author:	        Martin Erwig
+maintainer:	Martin Erwig
+homepage:	http://web.engr.oregonstate.edu/~erwig/fgl/haskell
+category:	Data Structures
+synopsis:	Martin Erwig's Functional Graph Library
+exposed-modules:
+	Data.Graph.Inductive.Internal.FiniteMap,
+	Data.Graph.Inductive.Internal.Heap,
+	Data.Graph.Inductive.Internal.Queue,
+	Data.Graph.Inductive.Internal.RootPath,
+	Data.Graph.Inductive.Internal.Thread,
+	Data.Graph.Inductive.Basic,
+	Data.Graph.Inductive.Example,
+	Data.Graph.Inductive.Graph,
+	Data.Graph.Inductive.Graphviz,
+	Data.Graph.Inductive.Monad,
+	Data.Graph.Inductive.NodeMap,
+    Data.Graph.Inductive.PatriciaTree,
+	Data.Graph.Inductive.Query,
+	Data.Graph.Inductive.Tree,
+	Data.Graph.Inductive.Monad.IOArray,
+	Data.Graph.Inductive.Query.ArtPoint,
+	Data.Graph.Inductive.Query.BCC,
+	Data.Graph.Inductive.Query.BFS,
+	Data.Graph.Inductive.Query.DFS,
+	Data.Graph.Inductive.Query.Dominators,
+	Data.Graph.Inductive.Query.GVD,
+	Data.Graph.Inductive.Query.Indep,
+	Data.Graph.Inductive.Query.MST,
+	Data.Graph.Inductive.Query.MaxFlow,
+	Data.Graph.Inductive.Query.MaxFlow2,
+	Data.Graph.Inductive.Query.Monad,
+	Data.Graph.Inductive.Query.SP,
+	Data.Graph.Inductive.Query.TransClos,
+	Data.Graph.Inductive
+build-depends:	base, mtl, containers, array
+extensions: MultiParamTypeClasses, OverlappingInstances, FlexibleInstances, ScopedTypeVariables
+build-type: Simple
