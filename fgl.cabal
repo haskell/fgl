@@ -5,8 +5,9 @@ license-file:	LICENSE
 author:	        Martin Erwig, Ivan Lazar Miljenovic
 maintainer:	Ivan.Miljenovic@gmail.com, tomberek@gmail.com
 homepage:	http://web.engr.oregonstate.edu/~erwig/fgl/haskell
-category:	Data Structures
+category:	Data Structures, Graphs
 synopsis:	Martin Erwig's Functional Graph Library
+cabal-version: >= 1.6
 exposed-modules:
 	Data.Graph.Inductive.Internal.FiniteMap,
 	Data.Graph.Inductive.Internal.Heap,
@@ -40,3 +41,7 @@ exposed-modules:
 build-depends:	base < 5, mtl, containers, array
 extensions: MultiParamTypeClasses, OverlappingInstances, FlexibleInstances, ScopedTypeVariables
 build-type: Simple
+
+Source-Repository head
+    Type:         darcs
+    Location:     http://code.haskell.org/FGL/fgl-5
