@@ -8,8 +8,10 @@ module Data.Graph.Inductive.Query.DFS(
     xdfsWith,xdfWith,xdffWith,
     -- * Undirected DFS
     udfs,udfs',udff,udff',
+    udffWith,udffWith',
     -- * Reverse DFS
     rdff,rdff',rdfs,rdfs',
+    rdffWith,rdffWith',
     -- * Applications of DFS\/DFF
     topsort,topsort',scc,reachable,
     -- * Applications of UDFS\/UDFF
@@ -73,7 +75,7 @@ import Data.Graph.Inductive.Basic
           must be provided explicitly
 
 
-  Defined are only the following 18 most important function versions:
+  Defined are only the following 22 most frabjuous function versions:
 
     xdfsWith
      dfsWith,dfsWith',dfs,dfs'
@@ -81,8 +83,8 @@ import Data.Graph.Inductive.Basic
      rdfs,rdfs'
     xdffWith
      dffWith,dffWith',dff,dff'
-     udff,udff'
-     rdff,rdff'
+     udffWith,udffWith',udff,udff'
+     rdffWith,rdffWith',rdff,rdff'
     
   Others can be added quite easily if needed.
   
@@ -173,20 +175,32 @@ dff' = dffWith' node'
 
 -- undirected dff
 --
+udffWith :: Graph gr => CFun a b c -> [Node] -> gr a b -> [Tree c]
+udffWith = xdffWith neighbors'
+
+udffWith' :: Graph gr => CFun a b c -> gr a b -> [Tree c]
+udffWith' f = fixNodes (udffWith f)
+
 udff :: Graph gr => [Node] -> gr a b -> [Tree Node]
-udff = xdffWith neighbors' node'
+udff = udffWith node'
 
 udff' :: Graph gr => gr a b -> [Tree Node]
-udff' = fixNodes udff
+udff' = udffWith' node'
 
 
 -- reverse dff, ie, following predecessors
 --
+rdffWith :: Graph gr => CFun a b c -> [Node] -> gr a b -> [Tree c]
+rdffWith = xdffWith pre'
+
+rdffWith' :: Graph gr => CFun a b c -> gr a b -> [Tree c]
+rdffWith' f = fixNodes (rdffWith f)
+
 rdff :: Graph gr => [Node] -> gr a b -> [Tree Node]
-rdff = xdffWith pre' node'
+rdff = rdffWith node'
 
 rdff' :: Graph gr => gr a b -> [Tree Node]
-rdff' = fixNodes rdff
+rdff' = rdffWith' node'
 
 
 ----------------------------------------------------------------------
