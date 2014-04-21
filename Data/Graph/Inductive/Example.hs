@@ -19,8 +19,7 @@ module Data.Graph.Inductive.Example(
     clr479', clr489', clr486', clr508', clr528', kin248', vor'
 )where
 
-
-import Data.Graph.Inductive
+import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Tree
 import Data.Graph.Inductive.Monad
 import Data.Graph.Inductive.Monad.IOArray
