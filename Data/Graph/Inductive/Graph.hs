@@ -49,6 +49,9 @@ module Data.Graph.Inductive.Graph (
     node',lab',labNode',neighbors',
     suc',pre',lpre',lsuc',
     out',inn',outdeg',indeg',deg',
+    -- * Pretty-printing
+    prettify,
+    prettyPrint
 ) where
 
 
@@ -456,3 +459,23 @@ context1l' (p,v,_,s) = p++filter ((==v).snd) s
 
 context4l' :: Context a b -> Adj b 
 context4l' (p,v,_,s) = s++filter ((==v).snd) p
+
+----------------------------------------------------------------------
+-- PRETTY PRINTING
+----------------------------------------------------------------------
+
+-- ufold :: Graph gr => (Context a b -> c -> c) -> c -> gr a b -> c
+
+-- | Pretty-print the graph.  Note that this loses a lot of
+--   information, such as edge inverses, etc.
+prettify :: (DynGraph gr, Show a, Show b) => gr a b -> String
+prettify g = ufold showsContext id g ""
+  where
+    showsContext (_,n,l,s) sg = shows n . (':':) . shows l
+                                . showString "->" . shows s
+                                . ('\n':) . sg
+
+-- | Pretty-print the graph to stdout.
+prettyPrint :: (DynGraph gr, Show a, Show b) => gr a b -> IO ()
+prettyPrint = putStr . prettify
+
