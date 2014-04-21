@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 -- (c) 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Monadic Graphs
 module Data.Graph.Inductive.Monad(

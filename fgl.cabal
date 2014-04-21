@@ -46,5 +46,4 @@ library {
         Data.Graph.Inductive.Query.TransClos,
         Data.Graph.Inductive
     build-depends:    base < 5, mtl, containers, array
-    extensions: MultiParamTypeClasses, OverlappingInstances, FlexibleInstances, ScopedTypeVariables
 }
