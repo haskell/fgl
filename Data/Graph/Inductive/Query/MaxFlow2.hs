@@ -6,7 +6,7 @@ module Data.Graph.Inductive.Query.MaxFlow2(
 
 --   ekSimple, ekFused, ekList) where
 
-import Data.List
+
 import Data.Maybe
 
 import Data.Graph.Inductive.Graph
