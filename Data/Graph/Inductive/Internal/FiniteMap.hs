@@ -19,7 +19,7 @@ module Data.Graph.Inductive.Internal.FiniteMap(
 
 import Data.Maybe (isJust)              
 
-data Ord a => FiniteMap a b =
+data FiniteMap a b =
     Empty | Node Int (FiniteMap a b) (a,b) (FiniteMap a b)
     deriving (Eq)
 
