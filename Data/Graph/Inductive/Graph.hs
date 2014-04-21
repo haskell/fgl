@@ -1,5 +1,5 @@
 -- (c) 1999-2005 by Martin Erwig [see file COPYRIGHT]
--- | Static and Dynamic Inductive Graphs  
+-- | Static and Dynamic Inductive Graphs
 module Data.Graph.Inductive.Graph (
     -- * General Type Defintions
     -- ** Node and Edge Types
@@ -12,8 +12,8 @@ module Data.Graph.Inductive.Graph (
     -- | We define two graph classes:
     --
     --   Graph: static, decomposable graphs.
-    --		Static means that a graph itself cannot be changed
-    --             
+    --    Static means that a graph itself cannot be changed
+    --
     --   DynGraph: dynamic, extensible graphs.
     --             Dynamic graphs inherit all operations from static graphs
     --             but also offer operations to extend and change graphs.
@@ -21,15 +21,15 @@ module Data.Graph.Inductive.Graph (
     -- Each class contains in addition to its essential operations those
     -- derived operations that might be overwritten by a more efficient
     -- implementation in an instance definition.
-    -- 
+    --
     -- Note that labNodes is essentially needed because the default definition
     -- for matchAny is based on it: we need some node from the graph to define
-    -- matchAny in terms of match. Alternatively, we could have made matchAny 
-    -- essential and have labNodes defined in terms of ufold and matchAny. 
-    -- However, in general, labNodes seems to be (at least) as easy to define 
-    -- as matchAny. We have chosen labNodes instead of the function nodes since 
+    -- matchAny in terms of match. Alternatively, we could have made matchAny
+    -- essential and have labNodes defined in terms of ufold and matchAny.
+    -- However, in general, labNodes seems to be (at least) as easy to define
+    -- as matchAny. We have chosen labNodes instead of the function nodes since
     -- nodes can be easily derived from labNodes, but not vice versa.
-    Graph(..), 
+    Graph(..),
     DynGraph(..),
     -- * Operations
     -- ** Graph Folds and Maps
@@ -101,13 +101,13 @@ mkUGraph   :: DynGraph gr => [Node] -> [Edge] -> gr () ()
 -- graph inspection
 context    :: Graph gr => gr a b -> Node -> Context a b
 lab        :: Graph gr => gr a b -> Node -> Maybe a
-neighbors  :: Graph gr => gr a b -> Node -> [Node] 
+neighbors  :: Graph gr => gr a b -> Node -> [Node]
 suc        :: Graph gr => gr a b -> Node -> [Node]
-pre        :: Graph gr => gr a b -> Node -> [Node] 
+pre        :: Graph gr => gr a b -> Node -> [Node]
 lsuc       :: Graph gr => gr a b -> Node -> [(Node,b)]
-lpre       :: Graph gr => gr a b -> Node -> [(Node,b)] 
-out        :: Graph gr => gr a b -> Node -> [LEdge b] 
-inn        :: Graph gr => gr a b -> Node -> [LEdge b] 
+lpre       :: Graph gr => gr a b -> Node -> [(Node,b)]
+out        :: Graph gr => gr a b -> Node -> [LEdge b]
+inn        :: Graph gr => gr a b -> Node -> [LEdge b]
 outdeg     :: Graph gr => gr a b -> Node -> Int
 indeg      :: Graph gr => gr a b -> Node -> Int
 deg        :: Graph gr => gr a b -> Node -> Int
@@ -116,13 +116,13 @@ deg        :: Graph gr => gr a b -> Node -> Int
 node'      :: Context a b -> Node
 lab'       :: Context a b -> a
 labNode'   :: Context a b -> LNode a
-neighbors' :: Context a b -> [Node] 
+neighbors' :: Context a b -> [Node]
 suc'       :: Context a b -> [Node]
-pre'       :: Context a b -> [Node] 
-lpre'      :: Context a b -> [(Node,b)] 
+pre'       :: Context a b -> [Node]
+lpre'      :: Context a b -> [(Node,b)]
 lsuc'      :: Context a b -> [(Node,b)]
-out'       :: Context a b -> [LEdge b] 
-inn'       :: Context a b -> [LEdge b] 
+out'       :: Context a b -> [LEdge b]
+inn'       :: Context a b -> [LEdge b]
 outdeg'    :: Context a b -> Int
 indeg'     :: Context a b -> Int
 deg'       :: Context a b -> Int
@@ -130,21 +130,21 @@ deg'       :: Context a b -> Int
 -}
 
 -- | Unlabeled node
-type  Node   = Int		
+type  Node   = Int
 -- | Labeled node
-type LNode a = (Node,a)		
+type LNode a = (Node,a)
 -- | Quasi-unlabeled node
-type UNode   = LNode ()		
+type UNode   = LNode ()
 
 -- | Unlabeled edge
-type  Edge   = (Node,Node)	
+type  Edge   = (Node,Node)
 -- | Labeled edge
-type LEdge b = (Node,Node,b)	
+type LEdge b = (Node,Node,b)
 -- | Quasi-unlabeled edge
-type UEdge   = LEdge ()		
+type UEdge   = LEdge ()
 
 -- | Unlabeled path
-type Path    = [Node]		
+type Path    = [Node]
 -- | Labeled path
 newtype LPath a = LP [LNode a]
 
@@ -152,7 +152,7 @@ instance Show a => Show (LPath a) where
   show (LP xs) = show xs
 
 -- | Quasi-unlabeled path
-type UPath   = [UNode]		
+type UPath   = [UNode]
 
 -- | Labeled links to or from a 'Node'.
 type Adj b        = [(b,Node)]
@@ -197,8 +197,8 @@ class Graph gr where
   -- default implementation of derived operations
   matchAny g = case labNodes g of
                  []      -> error "Match Exception, Empty Graph"
-                 (v,_):_ -> (c,g') where (Just c,g') = match v g 
-  noNodes = length . labNodes 
+                 (v,_):_ -> (c,g') where (Just c,g') = match v g
+  noNodes = length . labNodes
   nodeRange g = (minimum vs,maximum vs) where vs = map fst (labNodes g)
   labEdges = ufold (\(_,v,_,s)->((map (\(l,w)->(v,w,l)) s)++)) []
 
@@ -211,7 +211,7 @@ class Graph gr => DynGraph gr where
 -- | Fold a function over the graph.
 ufold :: Graph gr => ((Context a b) -> c -> c) -> c -> gr a b -> c
 ufold f u g | isEmpty g = u
-            | otherwise = f c (ufold f u g') 
+            | otherwise = f c (ufold f u g')
             where (c,g') = matchAny g
 
 -- | Map a function over the graph.
@@ -279,7 +279,7 @@ insEdges es g = foldr insEdge g es
 -- | Remove multiple 'Node's from the 'Graph'.
 delNodes :: Graph gr => [Node] -> gr a b -> gr a b
 delNodes []     g = g
-delNodes (v:vs) g = delNodes vs (snd (match v g))  
+delNodes (v:vs) g = delNodes vs (snd (match v g))
 
 -- | Remove multiple 'Edge's from the 'Graph'.
 delEdges :: DynGraph gr => [Edge]    -> gr a b -> gr a b
@@ -294,23 +294,23 @@ buildGr = foldr (&) empty
 
 -- | Build a quasi-unlabeled 'Graph'.
 mkUGraph :: Graph gr => [Node] -> [Edge] -> gr () ()
-mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es) 
+mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
    where labUEdges = map (\(v,w)->(v,w,()))
          labUNodes = map (\v->(v,()))
- 
+
 -- | Find the context for the given 'Node'.  Causes an error if the 'Node' is
 -- not present in the 'Graph'.
 context :: Graph gr => gr a b -> Node -> Context a b
 context g v = case match v g of
                 (Nothing,_) -> error ("Match Exception, Node: "++show v)
-                (Just c,_)  -> c 
+                (Just c,_)  -> c
 
 -- | Find the label for a 'Node'.
 lab :: Graph gr => gr a b -> Node -> Maybe a
-lab g v = fst (match v g) >>= return.lab' 
+lab g v = fst (match v g) >>= return.lab'
 
 -- | Find the neighbors for a 'Node'.
-neighbors :: Graph gr => gr a b -> Node -> [Node] 
+neighbors :: Graph gr => gr a b -> Node -> [Node]
 neighbors = (\(p,_,_,s) -> map snd (p++s)) .: context
 
 -- | Find all 'Node's that have a link from the given 'Node'.
@@ -318,7 +318,7 @@ suc :: Graph gr => gr a b -> Node -> [Node]
 suc = map snd .: context4l
 
 -- | Find all 'Node's that link to to the given 'Node'.
-pre :: Graph gr => gr a b -> Node -> [Node] 
+pre :: Graph gr => gr a b -> Node -> [Node]
 pre = map snd .: context1l
 
 -- | Find all 'Node's that are linked from the given 'Node' and the label of
@@ -327,15 +327,15 @@ lsuc :: Graph gr => gr a b -> Node -> [(Node,b)]
 lsuc = map flip2 .: context4l
 
 -- | Find all 'Node's that link to the given 'Node' and the label of each link.
-lpre :: Graph gr => gr a b -> Node -> [(Node,b)] 
+lpre :: Graph gr => gr a b -> Node -> [(Node,b)]
 lpre = map flip2 .: context1l
 
 -- | Find all outward-bound 'LEdge's for the given 'Node'.
-out :: Graph gr => gr a b -> Node -> [LEdge b] 
+out :: Graph gr => gr a b -> Node -> [LEdge b]
 out g v = map (\(l,w)->(v,w,l)) (context4l g v)
 
 -- | Find all inward-bound 'LEdge's for the given 'Node'.
-inn :: Graph gr => gr a b -> Node -> [LEdge b] 
+inn :: Graph gr => gr a b -> Node -> [LEdge b]
 inn g v = map (\(l,w)->(w,v,l)) (context1l g v)
 
 -- | The outward-bound degree of the 'Node'.
@@ -363,7 +363,7 @@ labNode' :: Context a b -> LNode a
 labNode' (_,v,l,_) = (v,l)
 
 -- | All 'Node's linked to or from in a 'Context'.
-neighbors' :: Context a b -> [Node] 
+neighbors' :: Context a b -> [Node]
 neighbors' (p,_,_,s) = map snd p++map snd s
 
 -- | All 'Node's linked to in a 'Context'.
@@ -371,7 +371,7 @@ suc' :: Context a b -> [Node]
 suc' = map snd . context4l'
 
 -- | All 'Node's linked from in a 'Context'.
-pre' :: Context a b -> [Node] 
+pre' :: Context a b -> [Node]
 pre' = map snd . context1l'
 
 -- | All 'Node's linked from in a 'Context', and the label of the links.
@@ -379,15 +379,15 @@ lsuc' :: Context a b -> [(Node,b)]
 lsuc' = map flip2 . context4l'
 
 -- | All 'Node's linked from in a 'Context', and the label of the links.
-lpre' :: Context a b -> [(Node,b)] 
+lpre' :: Context a b -> [(Node,b)]
 lpre' = map flip2 . context1l'
 
 -- | All outward-directed 'LEdge's in a 'Context'.
-out' :: Context a b -> [LEdge b] 
+out' :: Context a b -> [LEdge b]
 out' c@(_,v,_,_) = map (\(l,w)->(v,w,l)) (context4l' c)
 
 -- | All inward-directed 'LEdge's in a 'Context'.
-inn' :: Context a b -> [LEdge b] 
+inn' :: Context a b -> [LEdge b]
 inn' c@(_,v,_,_) = map (\(l,w)->(w,v,l)) (context1l' c)
 
 -- | The outward degree of a 'Context'.
@@ -433,9 +433,9 @@ equal g g' = slabNodes g == slabNodes g' && slabEdges g == slabEdges g'
 ----------------------------------------------------------------------
 
 
--- auxiliary functions used in the implementation of the 
+-- auxiliary functions used in the implementation of the
 -- derived class members
--- 
+--
 (.:) :: (c -> d) -> (a -> b -> c) -> (a -> b -> d)
 -- f .: g = \x y->f (g x y)
 -- f .: g = (f .) . g
@@ -454,10 +454,10 @@ context1l = context1l' .: context
 context4l :: Graph gr => gr a b -> Node -> Adj b
 context4l = context4l' .: context
 
-context1l' :: Context a b -> Adj b 
+context1l' :: Context a b -> Adj b
 context1l' (p,v,_,s) = p++filter ((==v).snd) s
 
-context4l' :: Context a b -> Adj b 
+context4l' :: Context a b -> Adj b
 context4l' (p,v,_,s) = s++filter ((==v).snd) p
 
 ----------------------------------------------------------------------
