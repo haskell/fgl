@@ -22,12 +22,12 @@ module Data.Graph.Inductive.PatriciaTree
     )
     where
 
+import           Control.Arrow              (second)
 import           Data.Graph.Inductive.Graph
-import           Data.IntMap (IntMap)
-import qualified Data.IntMap as IM
+import           Data.IntMap                (IntMap)
+import qualified Data.IntMap                as IM
 import           Data.List
 import           Data.Maybe
-import           Control.Arrow(second)
 
 
 newtype Gr a b = Gr (GraphRep a b)

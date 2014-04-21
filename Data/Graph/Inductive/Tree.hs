@@ -3,13 +3,11 @@
 
 module Data.Graph.Inductive.Tree (Gr,UGr) where
 
-import Data.List        (foldl')
-
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Internal.FiniteMap
 
+import Data.List  (foldl')
 import Data.Maybe (fromJust)
-
 
 ----------------------------------------------------------------------
 -- GRAPH REPRESENTATION
@@ -22,7 +20,6 @@ type GraphRep a b = FiniteMap Node (Context' a b)
 type Context' a b = (Adj b,a,Adj b)
 
 type UGr = Gr () ()
-
 
 ----------------------------------------------------------------------
 -- CLASS INSTANCES
