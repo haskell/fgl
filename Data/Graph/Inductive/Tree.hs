@@ -32,7 +32,7 @@ type UGr = Gr () ()
 --
 showsGraph :: (Show a,Show b) => GraphRep a b -> ShowS
 showsGraph Empty = id
-showsGraph (Node _ l (v,(_,l',s)) r) = showsGraph l . ('\n':) . 
+showsGraph (Node _ l (v,(_,l',s)) r) = showsGraph l . ('\n':) .
      shows v . (':':) . shows l' . ("->"++) . shows s . showsGraph r
                 
 instance (Show a,Show b) => Show (Gr a b) where
@@ -40,7 +40,7 @@ instance (Show a,Show b) => Show (Gr a b) where
 
 
 -- Graph
--- 
+--
 instance Graph Gr where
   empty           = Gr emptyFM
   isEmpty (Gr g)  = case g of {Empty -> True; _ -> False}
@@ -60,8 +60,8 @@ instance Graph Gr where
   labEdges  (Gr g) = concatMap (\(v,(_,_,s))->map (\(l,w)->(v,w,l)) s) (fmToList g)
 
 
-matchGr v (Gr g) = 
-      case splitFM g v of 
+matchGr v (Gr g) =
+      case splitFM g v of
            Nothing -> (Nothing,Gr g)
            Just (g',(_,(p,l,s))) -> (Just (p',v,l,s),Gr g2)
                 where s'   = filter ((/=v).snd) s
@@ -71,7 +71,7 @@ matchGr v (Gr g) =
 
 
 -- DynGraph
--- 
+--
 instance DynGraph Gr where
   (p,v,l,s) & (Gr g) | elemFM g v = error ("Node Exception, Node: "++show v)
                      | otherwise  = Gr g3

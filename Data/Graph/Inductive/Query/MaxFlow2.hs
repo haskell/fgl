@@ -74,7 +74,7 @@ exampleNetwork2=mkGraph [ (1,()), (2,()), (3,()), (4,()), (5,()), (6,()) ]
 -- EXTRACT fglEdmondsFused.txt
 -- Compute an augmenting path
 augPathFused :: Network -> Node -> Node -> Maybe DirPath
-augPathFused g s t = listToMaybe $ map reverse $ 
+augPathFused g s t = listToMaybe $ map reverse $
     filter (\((u,_):_) -> u==t) tree
     where tree = bftForEK s g
 
@@ -100,10 +100,10 @@ bfForEK q g
                     | ((c, f), sucNode) <- sucAdj, c>f]
     where (p@((v,_):_), q1)=queueGet q
 
--- Extract augmenting path from network; return path as a sequence of 
--- edges with direction of traversal, and new network with augmenting 
+-- Extract augmenting path from network; return path as a sequence of
+-- edges with direction of traversal, and new network with augmenting
 -- path removed.
-extractPathFused :: Network -> DirPath 
+extractPathFused :: Network -> DirPath
     -> ([DirEdge (Double,Double)], Network)
 extractPathFused g []  = ([], g)
 extractPathFused g [(_,_)] = ([], g)
@@ -118,7 +118,7 @@ extractPathFused g ((u,_):rest@((v,Backward):_)) =
 
 -- ekFusedStep :: EKStepFunc
 ekFusedStep g s t = case maybePath of
-        Just _	  -> 
+        Just _	  ->
             Just ((insEdges (integrateDelta es delta) newg), delta)
         Nothing   -> Nothing
     where maybePath     = augPathFused g s t
@@ -134,9 +134,9 @@ ekFused = ekWith ekFusedStep
 
 -- EXTRACT fglEdmondsSimple.txt
 residualGraph :: Network -> Gr () Double
-residualGraph g = 
-    mkGraph (labNodes g) 
-        ([(u, v, c-f) | (u, v, (c,f)) <- labEdges g, c>f ] ++ 
+residualGraph g =
+    mkGraph (labNodes g)
+        ([(u, v, c-f) | (u, v, (c,f)) <- labEdges g, c>f ] ++
          [(v, u, f) | (u,v,(_,f)) <- labEdges g, f>0])
 
 augPath :: Network -> Node -> Node -> Maybe Path
@@ -144,7 +144,7 @@ augPath g s t = listToMaybe $ map reverse $ filter (\(u:_) -> u==t) tree
     where tree = bft s (residualGraph g)
 
 -- Extract augmenting path from network; return path as a sequence of
--- edges with direction of traversal, and new network with augmenting 
+-- edges with direction of traversal, and new network with augmenting
 -- path removed.
 extractPath :: Network -> Path -> ([DirEdge (Double,Double)], Network)
 extractPath g []  = ([], g)
@@ -155,7 +155,7 @@ extractPath g (u:v:ws) =
             where (tailedges, newerg) = extractPath newg (v:ws)
         Nothing          ->
             case revExtract of
-                Just (l, newg) -> 
+                Just (l, newg) ->
                     ((v, u, l, Backward):tailedges, newerg)
                     where (tailedges, newerg) = extractPath newg (v:ws)
 		Nothing	       -> error "extractPath: revExtract == Nothing"
@@ -170,16 +170,16 @@ extractEdge g u v p =
         Just (el, _) -> Just (el, (p', node, l, rest) & newg)
         Nothing      -> Nothing
     where (Just (p', node, l, s), newg) = match u g
-          (adj, rest)=extractAdj s 
+          (adj, rest)=extractAdj s
               (\(l', dest) -> (dest==v) && (p l'))
 
--- Extract an item from an adjacency list that satisfies a given 
+-- Extract an item from an adjacency list that satisfies a given
 -- predicate. Return the item and the rest of the adjacency list
 extractAdj :: Adj b -> ((b,Node)->Bool) -> (Maybe (b,Node), Adj b)
 extractAdj []         _ = (Nothing, [])
 extractAdj (adj:adjs) p
     | p adj     = (Just adj, adjs)
-    | otherwise = (theone, adj:rest) 
+    | otherwise = (theone, adj:rest)
         where (theone, rest)=extractAdj adjs p
 
 getPathDeltas :: [DirEdge (Double,Double)] -> [Double]
@@ -188,20 +188,20 @@ getPathDeltas (e:es) = case e of
     (_, _, (c,f), Forward)  -> (c-f) : (getPathDeltas es)
     (_, _, (_,f), Backward) -> f : (getPathDeltas es)
 
-integrateDelta :: [DirEdge (Double,Double)] -> Double 
+integrateDelta :: [DirEdge (Double,Double)] -> Double
     -> [LEdge (Double, Double)]
 integrateDelta []	  _ = []
 integrateDelta (e:es) delta = case e of
-    (u, v, (c, f), Forward) -> 
+    (u, v, (c, f), Forward) ->
         (u, v, (c, f+delta)) : (integrateDelta es delta)
-    (u, v, (c, f), Backward) -> 
+    (u, v, (c, f), Backward) ->
         (u, v, (c, f-delta)) : (integrateDelta es delta)
 
 type EKStepFunc = Network -> Node -> Node -> Maybe (Network, Double)
 
 ekSimpleStep :: EKStepFunc
 ekSimpleStep g s t = case maybePath of
-        Just _ -> 
+        Just _ ->
             Just ((insEdges (integrateDelta es delta) newg), delta)
         Nothing   -> Nothing
     where maybePath  = augPath g s t
@@ -232,11 +232,11 @@ setContains m i = case (lookupFM m i) of
     Nothing -> False
     Just () -> True
 
-extractPathList :: [LEdge (Double, Double)] -> FiniteMap (Node,Node) () 
+extractPathList :: [LEdge (Double, Double)] -> FiniteMap (Node,Node) ()
     -> ([DirEdge (Double, Double)], [LEdge (Double, Double)])
 extractPathList []                 _ = ([], [])
 extractPathList (edge@(u,v,l@(c,f)):es) set
-    | (c>f) && (setContains set (u,v)) = 
+    | (c>f) && (setContains set (u,v)) =
         let (pathrest, notrest)=extractPathList es (delFromFM set (u,v))
             in ((u,v,l,Forward):pathrest, notrest)
     | (f>0) && (setContains set (v,u)) =
@@ -252,7 +252,7 @@ ekStepList g s t = case maybePath of
         Nothing -> Nothing
     where newEdges      = (integrateDelta es delta) ++ otheredges
           maybePath     = augPathFused g s t
-          (es, otheredges) = extractPathList (labEdges g) 
+          (es, otheredges) = extractPathList (labEdges g)
               (setFromList (zip justPath (tail justPath)))
           delta         = minimum $ getPathDeltas es
           justPath      = pathFromDirPath (fromJust maybePath)

@@ -21,6 +21,7 @@ module Data.Graph.Inductive.Example(
 
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Tree
+
 import Data.Graph.Inductive.Monad
 import Data.Graph.Inductive.Monad.IOArray
 
@@ -38,7 +39,7 @@ labUEdges = map (\(i,j) -> (i,j,()))
 
 -- | empty (unlabeled) edge list
 noEdges :: [UEdge]
-noEdges = [] 
+noEdges = []
 
 
 a,b,c,e,loop,ab,abb,dag3   :: Gr Char ()
@@ -51,7 +52,7 @@ a    = ([],1,'a',[]) & empty                  -- just a node
 b    = mkGraph (zip [1..2] "ab") noEdges      -- just two nodes
 c    = mkGraph (zip [1..3] "abc") noEdges     -- just three nodes
 e    = ([((),1)],2,'b',[]) & a                -- just one edge a-->b
-e3   = mkGraph (genUNodes 2) 
+e3   = mkGraph (genUNodes 2)
        [(1,2,"a"),(1,2,"b"),(1,2,"a")]        -- three edges (two labels) a-->b
 loop = ([],1,'a',[((),1)]) & empty            -- loop on single node
 ab   = ([((),1)],2,'b',[((),1)]) & a          -- cycle of two nodes:  a<-->b
@@ -66,7 +67,7 @@ dag3 = mkGraph (zip [1..3] "abc") (labUEdges [(1,3)])
 dag4 = mkGraph (genLNodes 1 4) (labUEdges [(1,2),(1,4),(2,3),(2,4),(4,3)])
 
 d1   = mkGraph (genLNodes 1 2) [(1,2,1)]
-d3   = mkGraph (genLNodes 1 3) [(1,2,1),(1,3,4),(2,3,2)] 
+d3   = mkGraph (genLNodes 1 3) [(1,2,1),(1,3,4),(2,3,2)]
 
 g3 = ([("left",2),("up",3)],1,'a',[("right",2)]) & (
                         ([],2,'b',[("down",3)])  & (
@@ -85,10 +86,10 @@ a'    = mkGraphM [(1,'a')] noEdges              -- just a node
 b'    = mkGraphM (zip [1..2] "ab") noEdges      -- just two nodes
 c'    = mkGraphM (zip [1..3] "abc") noEdges     -- just three nodes
 e'    = mkGraphM (zip [1..2] "ab") [(1,2,())]   -- just one edge a-->b
-e3'   = mkGraphM (genUNodes 2) 
+e3'   = mkGraphM (genUNodes 2)
           [(1,2,"a"),(1,2,"b"),(1,2,"a")]       -- three edges (two labels) a-->b
 loop' = mkGraphM [(1,'a')] [(1,1,())]           -- loop on single node
-ab'   = mkGraphM (zip [1..2] "ab") 
+ab'   = mkGraphM (zip [1..2] "ab")
           [(1,2,()),(2,1,())]                   -- cycle of two nodes:  a<-->b
 abb'  = mkGraphM (zip [1..2] "ab") (labUEdges [(2,2)]) -- a and loop on b
 
@@ -96,7 +97,7 @@ dag3' = mkGraphM (zip [1..3] "abc") (labUEdges [(1,3)])
 dag4' = mkGraphM (genLNodes 1 4) (labUEdges [(1,2),(1,4),(2,3),(2,4),(4,3)])
 
 d1'   = mkGraphM (genLNodes 1 2) [(1,2,1)]
-d3'   = mkGraphM (genLNodes 1 3) [(1,2,1),(1,3,4),(2,3,2)] 
+d3'   = mkGraphM (genLNodes 1 3) [(1,2,1),(1,3,4),(2,3,2)]
 
 ucycle :: Graph gr => Int -> gr () ()
 ucycle n = mkUGraph vs (map (\v->(v,v `mod` n+1)) vs)
@@ -120,7 +121,7 @@ clr595,gr1       :: Gr Int Int
 kin248           :: Gr Int ()
 vor              :: Gr String Int
 
-clr479 = mkGraph (genLNodes 'u' 6) 
+clr479 = mkGraph (genLNodes 'u' 6)
          (labUEdges [(1,2),(1,4),(2,5),(3,5),(3,6),(4,2),(5,4),(6,6)])
 clr486 = mkGraph (zip [1..9] ["shorts","socks","watch","pants","shoes",
                               "shirt","belt","tie","jacket"])
@@ -134,10 +135,10 @@ clr508 = mkGraph (genLNodes 'a' 9)
 clr528 = mkGraph [(1,'s'),(2,'u'),(3,'v'),(4,'x'),(5,'y')]
                  [(1,2,10),(1,4,5),(2,3,1),(2,4,2),(3,5,4),
                   (4,2,3),(4,3,9),(4,5,2),(5,1,7),(5,3,6)]
-clr595 = mkGraph (zip [1..6] [1..6]) 
+clr595 = mkGraph (zip [1..6] [1..6])
                  [(1,2,16),(1,3,13),(2,3,10),(2,4,12),(3,2,4),
                   (3,5,14),(4,3,9),(4,6,20),(5,4,7),(5,6,4)]
-gr1    = mkGraph (zip [1..10] [1..10]) 
+gr1    = mkGraph (zip [1..10] [1..10])
                  [(1,2,12),(1,3,1),(1,4,2),(2,3,1),(2,5,7),(2,6,5),(3,6,1),
                   (3,7,7),(4,3,3),(4,6,2),(4,7,5),(5,3,2),(5,6,3),(5,8,3),
                   (6,7,2),(6,8,3),(6,9,1),(7,9,9),(8,9,1),(8,10,4),(9,10,11)]
@@ -159,7 +160,7 @@ clr508',clr528'  :: IO (SGr Char Int)
 kin248'          :: IO (SGr Int ())
 vor'             :: IO (SGr String Int)
 
-clr479' = mkGraphM (genLNodes 'u' 6) 
+clr479' = mkGraphM (genLNodes 'u' 6)
           (labUEdges [(1,2),(1,4),(2,5),(3,5),(3,6),(4,2),(5,4),(6,6)])
 clr486' = mkGraphM (zip [1..9] ["shorts","socks","watch","pants","shoes",
                                 "shirt","belt","tie","jacket"])

@@ -1,5 +1,5 @@
 -- (c) 2002 by Martin Erwig [see file COPYRIGHT]
--- | Static IOArray-based Graphs  
+-- | Static IOArray-based Graphs
 module Data.Graph.Inductive.Monad.IOArray(
     -- * Graph Representation
     SGr(..), GraphRep, Context', USGr,
@@ -43,7 +43,7 @@ showGraph (_,a,m) = concatMap showAdj (indices a)
                         Nothing      -> ""
                         Just (_,l,s) -> '\n':show v++":"++show l++"->"++show s'
                           where s' = unsafePerformIO (removeDel m s)
-               
+
 instance (Show a,Show b) => Show (SGr a b) where
   show (SGr g) = showGraph g
 
@@ -56,14 +56,14 @@ run x = seq x (print x)
 -}
 
 -- GraphM
--- 
+--
 instance GraphM IO SGr where
   emptyM = emptyN defaultGraphSize
   isEmptyM g = do {SGr (n,_,_) <- g; return (n==0)}
   matchM v g = do g'@(SGr (n,a,m)) <- g
-                  case a!v of 
+                  case a!v of
                     Nothing -> return (Nothing,g')
-                    Just (pr,l,su) -> 
+                    Just (pr,l,su) ->
                        do b <- readArray m v
                           if b then return (Nothing,g') else
                              do s  <- removeDel m su
@@ -85,15 +85,15 @@ instance GraphM IO SGr where
 		addPre Nothing _ = error "mkGraphM (SGr): addPre Nothing"
   labNodesM g = do (SGr (_,a,m)) <- g
                    let getLNode vs (_,Nothing)      = return vs
-                       getLNode vs (v,Just (_,l,_)) = 
-                           do b <- readArray m v 
+                       getLNode vs (v,Just (_,l,_)) =
+                           do b <- readArray m v
                               return (if b then vs else (v,l):vs)
                    foldM getLNode [] (assocs a)
-  
+
 defaultGraphSize :: Int
 defaultGraphSize = 100
 
-emptyN :: Int -> IO (SGr a b) 
+emptyN :: Int -> IO (SGr a b)
 emptyN n = do m <- newArray (1,n) False
               return (SGr (0,array (1,n) [(i,Nothing) | i <- [1..n]],m))
 
