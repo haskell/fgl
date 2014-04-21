@@ -16,6 +16,7 @@ import Data.Maybe (fromJust)
 ----------------------------------------------------------------------
 
 data Gr a b = Gr (GraphRep a b)
+              deriving (Eq)
 
 type GraphRep a b = FiniteMap Node (Context' a b)
 type Context' a b = (Adj b,a,Adj b)
@@ -27,17 +28,19 @@ type UGr = Gr () ()
 -- CLASS INSTANCES
 ----------------------------------------------------------------------
 
+instance (Show a, Show b) => Show (Gr a b) where
+  showsPrec d g = showParen (d > 10) $
+                    showString "mkGraph "
+                    . shows (labNodes g)
+                    . showString " "
+                    . shows (labEdges g)
 
--- Show
---
-showsGraph :: (Show a,Show b) => GraphRep a b -> ShowS
-showsGraph Empty = id
-showsGraph (Node _ l (v,(_,l',s)) r) = showsGraph l . ('\n':) .
-     shows v . (':':) . shows l' . ("->"++) . shows s . showsGraph r
-                
-instance (Show a,Show b) => Show (Gr a b) where
-  showsPrec _ (Gr g) = showsGraph g
-
+instance (Read a, Read b) => Read (Gr a b) where
+  readsPrec p = readParen (p > 10) $ \ r -> do
+    ("mkGraph", s) <- lex r
+    (ns,t) <- reads s
+    (es,u) <- reads t
+    return (mkGraph ns es, u)
 
 -- Graph
 --

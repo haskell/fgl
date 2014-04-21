@@ -31,12 +31,26 @@ import           Control.Arrow(second)
 
 
 newtype Gr a b = Gr (GraphRep a b)
+                 deriving (Eq)
 
 type GraphRep a b = IntMap (Context' a b)
 type Context' a b = (IntMap [b], a, IntMap [b])
 
 type UGr = Gr () ()
 
+instance (Show a, Show b) => Show (Gr a b) where
+  showsPrec d g = showParen (d > 10) $
+                    showString "mkGraph "
+                    . shows (labNodes g)
+                    . showString " "
+                    . shows (labEdges g)
+
+instance (Read a, Read b) => Read (Gr a b) where
+  readsPrec p = readParen (p > 10) $ \ r -> do
+    ("mkGraph", s) <- lex r
+    (ns,t) <- reads s
+    (es,u) <- reads t
+    return (mkGraph ns es, u)
 
 instance Graph Gr where
     -- required members
