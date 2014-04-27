@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 -- | Example Graphs
 module Data.Graph.Inductive.Example(
     -- * Auxiliary Functions

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
---  
---  Inductive.hs -- Functional Graph Library  
+--
+--  Inductive.hs -- Functional Graph Library
 --
 --  (c) 1999-2007 by Martin Erwig [see file COPYRIGHT]
 --
@@ -19,14 +19,14 @@ module Data.Graph.Inductive(
     version
 ) where
 
-import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Tree
 import Data.Graph.Inductive.Basic
+import Data.Graph.Inductive.Graph
+import Data.Graph.Inductive.Graphviz
 import Data.Graph.Inductive.Monad
 import Data.Graph.Inductive.Monad.IOArray
-import Data.Graph.Inductive.Query
-import Data.Graph.Inductive.Graphviz
 import Data.Graph.Inductive.NodeMap
+import Data.Graph.Inductive.Query
+import Data.Graph.Inductive.Tree
 
 -- | Version info
 version :: IO ()
