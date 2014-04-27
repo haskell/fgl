@@ -1,5 +1,8 @@
 -- (c) 1999 - 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Tree-based implementation of 'Graph' and 'DynGraph'
+--
+--   You will probably have better performance using the
+--   "Data.Graph.Inductive.PatriciaTree" implementation instead.
 
 module Data.Graph.Inductive.Tree (Gr,UGr) where
 

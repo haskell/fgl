@@ -8,7 +8,7 @@
 
 module Data.Graph.Inductive(
     module Data.Graph.Inductive.Graph,
-    module Data.Graph.Inductive.Tree,
+    module Data.Graph.Inductive.PatriciaTree,
     module Data.Graph.Inductive.Basic,
     module Data.Graph.Inductive.Monad,
     module Data.Graph.Inductive.Monad.IOArray,
@@ -25,8 +25,8 @@ import Data.Graph.Inductive.Graphviz
 import Data.Graph.Inductive.Monad
 import Data.Graph.Inductive.Monad.IOArray
 import Data.Graph.Inductive.NodeMap
+import Data.Graph.Inductive.PatriciaTree
 import Data.Graph.Inductive.Query
-import Data.Graph.Inductive.Tree
 
 -- | Version info
 version :: IO ()

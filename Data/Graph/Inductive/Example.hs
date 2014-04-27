@@ -22,7 +22,7 @@ module Data.Graph.Inductive.Example(
 )where
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Tree
+import Data.Graph.Inductive.PatriciaTree
 
 import Data.Graph.Inductive.Monad
 import Data.Graph.Inductive.Monad.IOArray
