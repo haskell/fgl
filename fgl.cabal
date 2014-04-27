@@ -3,7 +3,7 @@ version:       5.5.0.0
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
-maintainer:    Ivan.Miljenovic@gmail.com, tomberek@gmail.com
+maintainer:    Ivan.Miljenovic@gmail.com
 homepage:      http://web.engr.oregonstate.edu/~erwig/fgl/haskell
 category:      Data Structures, Graphs
 synopsis:      Martin Erwig's Functional Graph Library
