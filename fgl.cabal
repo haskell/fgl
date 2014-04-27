@@ -9,6 +9,8 @@ category:      Data Structures, Graphs
 synopsis:      Martin Erwig's Functional Graph Library
 cabal-version: >= 1.6
 build-type:    Simple
+extra-source-files:
+               ChangeLog
 
 source-repository head
     type:         darcs

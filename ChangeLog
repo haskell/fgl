@@ -1,0 +1,32 @@
+5.5.0.0
+-------
+
+* Add proper Show, Read and Eq instances to Data.Graph.Inductive.Tree
+  and Data.Graph.Inductive.PatriciaTree.
+
+* Add pretty-printing functions to Data.Graph.Inductive.Graph.  These
+  are based upon the old Show implementation for
+  Data.Graph.Inductive.Tree.
+
+* Now use PatriciaTree by default rather than Tree (and recommend as
+  such).  IntMap has been receiving a lot of optimisation work on it,
+  whereas the internal FiniteMap implementation hasn't received any
+  attention.
+
+* The `version :: IO ()` action now uses the actual Cabal version.
+
+* Remove Data.Graph.Inductive.Graphviz; use the graphviz package
+  instead.
+
+5.4.2.4
+-------
+
+* Update to work with GHC-7.2 and Cabal-1.6.
+
+5.4.2.3
+-------
+
+* Maintainership taken over by Ivan Miljenovic.
+
+* Allow Data.Graph.Inductive.PatriciaTree to deal with multiple edges
+  between nodes.
