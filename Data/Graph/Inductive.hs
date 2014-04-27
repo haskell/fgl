@@ -13,7 +13,6 @@ module Data.Graph.Inductive(
     module Data.Graph.Inductive.Monad,
     module Data.Graph.Inductive.Monad.IOArray,
     module Data.Graph.Inductive.Query,
-    module Data.Graph.Inductive.Graphviz,
     module Data.Graph.Inductive.NodeMap,
     -- * Version Information
     version
@@ -21,7 +20,6 @@ module Data.Graph.Inductive(
 
 import Data.Graph.Inductive.Basic
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Graphviz
 import Data.Graph.Inductive.Monad
 import Data.Graph.Inductive.Monad.IOArray
 import Data.Graph.Inductive.NodeMap

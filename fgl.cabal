@@ -24,7 +24,6 @@ library {
         Data.Graph.Inductive.Basic,
         Data.Graph.Inductive.Example,
         Data.Graph.Inductive.Graph,
-        Data.Graph.Inductive.Graphviz,
         Data.Graph.Inductive.Monad,
         Data.Graph.Inductive.NodeMap,
         Data.Graph.Inductive.PatriciaTree,
