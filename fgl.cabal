@@ -45,5 +45,9 @@ library {
         Data.Graph.Inductive.Query.SP,
         Data.Graph.Inductive.Query.TransClos,
         Data.Graph.Inductive
+
+    other-modules:
+        Paths_fgl
+
     build-depends:    base < 5, mtl, containers, array
 }
