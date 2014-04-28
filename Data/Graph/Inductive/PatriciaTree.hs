@@ -31,12 +31,16 @@ import           Data.Maybe
 
 
 newtype Gr a b = Gr (GraphRep a b)
-                 deriving (Eq)
 
 type GraphRep a b = IntMap (Context' a b)
 type Context' a b = (IntMap [b], a, IntMap [b])
 
 type UGr = Gr () ()
+
+instance (Eq a, Ord b) => Eq (Gr a b) where
+  (Gr g1) == (Gr g2) = fmap sortAdj g1 == fmap sortAdj g2
+    where
+      sortAdj (a1,n,a2) = (fmap sort a1,n,fmap sort a2)
 
 instance (Show a, Show b) => Show (Gr a b) where
   showsPrec d g = showParen (d > 10) $

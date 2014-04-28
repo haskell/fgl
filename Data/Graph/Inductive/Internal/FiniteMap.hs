@@ -23,6 +23,9 @@ data FiniteMap a b =
     Empty | Node Int (FiniteMap a b) (a,b) (FiniteMap a b)
     deriving (Eq)
 
+instance Functor (FiniteMap a) where
+  fmap _ Empty = Empty
+  fmap f (Node h l (i,x) r) = Node h (fmap f l) (i, f x) (fmap f r)
 
 ----------------------------------------------------------------------
 -- UTILITIES

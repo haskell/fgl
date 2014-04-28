@@ -9,7 +9,7 @@ module Data.Graph.Inductive.Tree (Gr,UGr) where
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Internal.FiniteMap
 
-import Data.List  (foldl')
+import Data.List  (foldl', sort)
 import Data.Maybe (fromJust)
 
 ----------------------------------------------------------------------
@@ -17,7 +17,6 @@ import Data.Maybe (fromJust)
 ----------------------------------------------------------------------
 
 data Gr a b = Gr (GraphRep a b)
-              deriving (Eq)
 
 type GraphRep a b = FiniteMap Node (Context' a b)
 type Context' a b = (Adj b,a,Adj b)
@@ -27,6 +26,11 @@ type UGr = Gr () ()
 ----------------------------------------------------------------------
 -- CLASS INSTANCES
 ----------------------------------------------------------------------
+
+instance (Eq a, Ord b) => Eq (Gr a b) where
+  (Gr g1) == (Gr g2) = fmap sortAdj g1 == fmap sortAdj g2
+    where
+      sortAdj (a1,n,a2) = (sort a1,n,sort a2)
 
 instance (Show a, Show b) => Show (Gr a b) where
   showsPrec d g = showParen (d > 10) $
