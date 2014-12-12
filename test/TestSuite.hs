@@ -57,21 +57,26 @@ graphTests nm p = describe nm $ do
     propType  "test_hasLEdge"   test_hasLEdge
 
   describe "Dynamic tests" $ do
-    propType  "merging (&)"     valid_merge
-    propType  "gmap (id)"       gmap_id
-    propType  "insNode"         valid_insNode
-    propType  "insNodes"        valid_insNodes
-    propType  "insEdge"         valid_insEdge
-    propType  "insEdges"        valid_insEdges
-    propType  "insEdges (mult)" valid_insEdges_multiple
-    propType  "delNode"         valid_delNode
-    propType  "delNodes"        valid_delNodes
-    propType  "delEdge"         valid_delEdge
-    propType  "delEdges"        valid_delEdges
-    propType  "delLEdge"        valid_delLEdge
-    propType  "delAllLEdge"     valid_delAllLEdge
-    proxyProp "valid_mkGraph"   valid_mkGraph
-    propType  "valid_buildGr"   valid_buildGr
+    propType  "merging (&)"       valid_merge
+    propType  "gmap (id)"         gmap_id
+    propType  "insNode"           valid_insNode
+    propType  "insNodes"          valid_insNodes
+    propType  "insEdge"           valid_insEdge
+    propType  "insEdges"          valid_insEdges
+    propType  "insEdges (mult)"   valid_insEdges_multiple
+    propType  "delNode"           valid_delNode
+    propType  "delNodes"          valid_delNodes
+    propType  "delEdge"           valid_delEdge
+    propType  "delEdges"          valid_delEdges
+    propType  "delLEdge"          valid_delLEdge
+    propType  "delAllLEdge"       valid_delAllLEdge
+    proxyProp "valid_mkGraph"     valid_mkGraph
+    propType  "valid_buildGr"     valid_buildGr
+    propType  "gfiltermap (id)"   gfiltermap_id
+    propType  "nfilter (true)"    nfilter_true
+    propType  "labnfilter (true)" labnfilter_true
+    propType  "labfilter (true)"  labfilter_true
+    propType  "subgraph"          valid_subgraph
 
   where
     proxyProp str = prop str . ($p)
