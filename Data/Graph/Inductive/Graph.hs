@@ -40,6 +40,8 @@ module Data.Graph.Inductive.Graph (
     insNode,insEdge,delNode,delEdge,delLEdge,delAllLEdge,
     insNodes,insEdges,delNodes,delEdges,
     buildGr,mkUGraph,
+    -- ** Subgraphs
+    gfiltermap,nfilter,labnfilter,labfilter,subgraph,
     -- ** Graph Inspection
     context,lab,neighbors,lneighbors,
     suc,pre,lsuc,lpre,
@@ -62,6 +64,8 @@ import Data.Function (on)
 import Data.List     (delete, foldl', groupBy, sortBy, (\\), sort)
 import Data.Maybe    (fromMaybe, isJust)
 import Data.Monoid   (mappend)
+import qualified Data.IntSet as IntSet
+import qualified Data.IntMap as IntMap
 
 -- | Unlabeled node
 type  Node   = Int
@@ -303,6 +307,31 @@ mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
    where
      labUEdges = map (`toLEdge` ())
      labUNodes = map (flip (,) ())
+
+-- | Build a graph out of the contexts for which the predicate is
+-- true.
+gfiltermap :: DynGraph gr => (Context a b -> MContext c d) -> gr a b -> gr c d
+gfiltermap f = ufold (maybe id (&) . f) empty
+
+-- | Returns the subgraph only containing the labelled nodes which
+-- satisfy the given predicate.
+labnfilter :: Graph gr => (LNode a -> Bool) -> gr a b -> gr a b
+labnfilter p gr = delNodes (map fst . filter (not . p) $ labNodes gr) gr
+
+-- | Returns the subgraph only containing the nodes which satisfy the
+-- given predicate.
+nfilter :: DynGraph gr => (Node -> Bool) -> gr a b -> gr a b
+nfilter f = labnfilter (f . fst)
+
+-- | Returns the subgraph only containing the nodes whose labels
+-- satisfy the given predicate.
+labfilter :: DynGraph gr => (a -> Bool) -> gr a b -> gr a b
+labfilter f = labnfilter (f . snd)
+
+-- | Returns the subgraph induced by the supplied nodes.
+subgraph :: DynGraph gr => [Node] -> gr a b -> gr a b
+subgraph vs = let vs' = IntSet.fromList vs
+              in nfilter (`IntSet.member` vs')
 
 -- | Find the context for the given 'Node'.  Causes an error if the 'Node' is
 -- not present in the 'Graph'.
