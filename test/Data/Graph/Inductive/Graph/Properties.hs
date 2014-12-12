@@ -345,6 +345,32 @@ valid_buildGr g = equal g (buildGr cs)
   where
     cs = ufold (:) [] g
 
+-- | Tests `gfiltermap` with a function accepting all contexts.
+gfiltermap_id :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
+gfiltermap_id g = equal (gfiltermap Just g) g
+
+-- | Tests `nfilter` with a function accepting all nodes.
+nfilter_true :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
+nfilter_true g = equal (nfilter (\_ -> True) g) g
+
+-- | Tests `labnfilter` with a function accepting all nodes.
+labnfilter_true :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
+labnfilter_true g = equal (labnfilter (\_ -> True) g) g
+
+-- | Tests `labnfilter` with a function accepting all nodes.
+labfilter_true :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
+labfilter_true g = equal (labfilter (\_ -> True) g) g
+
+-- | The subgraph induced by a list of nodes should contain exactly
+-- the nodes from this list, as well as all edges between these nodes.
+valid_subgraph :: (DynGraph gr, Eq b, Ord b) => gr a b -> Gen Bool
+valid_subgraph gr = do
+  vs <- sublistOf $ nodes gr
+  let sg = subgraph vs gr
+      svs = S.fromList vs
+      subedges = filter (\(v,w,_) -> v `S.member` svs && w `S.member` svs) $ labEdges gr
+  return $ sort (nodes sg) == sort vs && sort (labEdges sg) == sort subedges
+
 -- -----------------------------------------------------------------------------
 -- Miscellaneous
 
