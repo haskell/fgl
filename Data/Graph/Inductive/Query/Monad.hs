@@ -27,7 +27,7 @@ module Data.Graph.Inductive.Query.Monad(
 --
 
 import Data.Tree
---import Control.Monad (liftM)
+import Control.Monad (ap, liftM)
 
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Monad
@@ -68,6 +68,12 @@ applyWith' h gt = applyWith h gt . return
 runGT :: Monad m => GT m g a -> m g -> m a
 runGT gt mg = do {(x,_) <- apply gt mg; return x}
 
+instance Monad m => Functor (GT m g) where
+    fmap  = liftM
+
+instance Monad m => Applicative (GT m g) where
+    pure  = return
+    (<*>) = ap
 
 instance Monad m => Monad (GT m g) where
   return x = MGT (\mg->do {g<-mg; return (x,g)})
