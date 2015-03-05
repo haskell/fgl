@@ -26,6 +26,7 @@ module Data.Graph.Inductive.Query.Monad(
 --  ==> we can safely use imperative updates in the graph implementation
 --
 
+import Control.Applicative (Applicative (..))
 import Data.Tree
 import Control.Monad (ap, liftM)
 
