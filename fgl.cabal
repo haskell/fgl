@@ -13,8 +13,8 @@ extra-source-files:
                ChangeLog
 
 source-repository head
-    type:         darcs
-    location:     http://code.haskell.org/FGL/fgl-5
+    type:         git
+    location:     git://github.com/haskell/fgl.git
 
 library {
     exposed-modules:
