@@ -18,7 +18,6 @@ source-repository head
 
 library {
     exposed-modules:
-        Data.Graph.Inductive.Internal.FiniteMap,
         Data.Graph.Inductive.Internal.Heap,
         Data.Graph.Inductive.Internal.Queue,
         Data.Graph.Inductive.Internal.RootPath,
