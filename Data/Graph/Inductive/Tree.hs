@@ -7,10 +7,13 @@
 module Data.Graph.Inductive.Tree (Gr,UGr) where
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Internal.FiniteMap
 
-import Data.List  (foldl', sort)
-import Data.Maybe (fromJust)
+import           Control.Applicative (liftA2)
+import           Control.Arrow       (first)
+import           Data.List           (foldl', sort)
+import           Data.Map            (Map)
+import qualified Data.Map            as M
+import           Data.Maybe          (fromMaybe)
 
 ----------------------------------------------------------------------
 -- GRAPH REPRESENTATION
@@ -18,7 +21,7 @@ import Data.Maybe (fromJust)
 
 data Gr a b = Gr (GraphRep a b)
 
-type GraphRep a b = FiniteMap Node (Context' a b)
+type GraphRep a b = Map Node (Context' a b)
 type Context' a b = (Adj b,a,Adj b)
 
 type UGr = Gr () ()
@@ -49,55 +52,71 @@ instance (Read a, Read b) => Read (Gr a b) where
 -- Graph
 --
 instance Graph Gr where
-  empty           = Gr emptyFM
-  isEmpty (Gr g)  = case g of {Empty -> True; _ -> False}
-  match           = matchGr
-  mkGraph vs es   = (insEdges' . insNodes vs) empty
+  empty             = Gr M.empty
+  isEmpty (Gr g)    = M.null g
+  match v gr@(Gr g) = maybe (Nothing, gr)
+                            (first Just . uncurry (cleanSplit v))
+                      . (\(m,g') -> fmap (flip (,) g') m)
+                      $ M.updateLookupWithKey (const (const Nothing)) v g
+  mkGraph vs es     = (insEdges' . insNodes vs) empty
         where
           insEdges' g = foldl' (flip insEdge) g es
 
-  labNodes (Gr g) = map (\(v,(_,l,_))->(v,l)) (fmToList g)
+  labNodes (Gr g)   = map (\(v,(_,l,_))->(v,l)) (M.toList g)
   -- more efficient versions of derived class members
   --
-  matchAny (Gr Empty)                = error "Match Exception, Empty Graph"
-  matchAny g@(Gr (Node _ _ (v,_) _)) = (c,g') where (Just c,g') = matchGr v g
-  noNodes   (Gr g) = sizeFM g
-  nodeRange (Gr Empty) = (0,0)
-  nodeRange (Gr g)     = (ix (minFM g),ix (maxFM g)) where ix = fst.fromJust
-  labEdges  (Gr g) = concatMap (\(v,(_,_,s))->map (\(l,w)->(v,w,l)) s) (fmToList g)
+  matchAny (Gr g)   = maybe (error "Match Exception, Empty Graph")
+                            (uncurry (uncurry cleanSplit))
+                            (M.minViewWithKey g)
+  noNodes   (Gr g)  = M.size g
+  nodeRange (Gr g)  = fromMaybe (0,0)
+                      $ liftA2 (,) (ix (M.minViewWithKey g))
+                                   (ix (M.maxViewWithKey g))
+    where
+      ix            = fmap (fst . fst)
+  labEdges  (Gr g)  = concatMap (\(v,(_,_,s))->map (\(l,w)->(v,w,l)) s) (M.toList g)
 
+-- After a Node (with its corresponding Context') are split out of a
+-- GraphRep, clean up the remainders.
+cleanSplit :: Node -> Context' a b -> GraphRep a b
+              -> (Context a b, Gr a b)
+cleanSplit v (p,l,s) g = (c, Gr g')
+  where
+    -- Note: loops are kept only in successor list
+    c = (p', v, l, s)
+    p' = rmLoops p
+    s' = rmLoops s
+    rmLoops = filter ((/=v) . snd)
 
-matchGr v (Gr g) =
-      case splitFM g v of
-           Nothing -> (Nothing,Gr g)
-           Just (g',(_,(p,l,s))) -> (Just (p',v,l,s),Gr g2)
-                where s'   = filter ((/=v).snd) s
-                      p'   = filter ((/=v).snd) p
-                      g1   = updAdj g' s' (clearPred v)
-                      g2   = updAdj g1 p' (clearSucc v)
-
+    g' = updAdj s' (clearPred v) . updAdj p' (clearSucc v) $ g
 
 -- DynGraph
 --
 instance DynGraph Gr where
-  (p,v,l,s) & (Gr g) | elemFM g v = error ("Node Exception, Node: "++show v)
-                     | otherwise  = Gr g3
-      where g1 = addToFM g v (p,l,s)
-            g2 = updAdj g1 p (addSucc v)
-            g3 = updAdj g2 s (addPred v)
-
+  (p,v,l,s) & (Gr g) = Gr
+                       . updAdj p (addSucc v)
+                       . updAdj s (addPred v)
+                       $ M.alter addCntxt v g
+    where
+      addCntxt = maybe (Just cntxt')
+                       (const (error ("Node Exception, Node: "++show v)))
+      cntxt' = (p,l,s)
 
 ----------------------------------------------------------------------
 -- UTILITIES
 ----------------------------------------------------------------------
 
+addSucc :: Node -> b -> Context' a b -> Context' a b
 addSucc v l (p,l',s) = (p,l',(l,v):s)
+
+addPred :: Node -> b -> Context' a b -> Context' a b
 addPred v l (p,l',s) = ((l,v):p,l',s)
 
+clearSucc :: Node -> b -> Context' a b -> Context' a b
 clearSucc v _ (p,l,s) = (p,l,filter ((/=v).snd) s)
+
+clearPred :: Node -> b -> Context' a b -> Context' a b
 clearPred v _ (p,l,s) = (filter ((/=v).snd) p,l,s)
 
-updAdj :: GraphRep a b -> Adj b -> (b -> Context' a b -> Context' a b) -> GraphRep a b
-updAdj g []         _              = g
-updAdj g ((l,v):vs) f | elemFM g v = updAdj (updFM g v (f l)) vs f
-                      | otherwise  = error ("Edge Exception, Node: "++show v)
+updAdj :: Adj b -> (b -> Context' a b -> Context' a b) -> GraphRep a b -> GraphRep a b
+updAdj adj f g = foldl' (\g' (l,v) -> M.adjust (f l) v g') g adj
