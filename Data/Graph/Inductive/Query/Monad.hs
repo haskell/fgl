@@ -54,7 +54,7 @@ orP p q (x,y) = p x || q y
 -- monadic graph transformer monad
 ----------------------------------------------------------------------
 
-data GT m g a = MGT (m g -> m (a,g))
+newtype GT m g a = MGT (m g -> m (a,g))
 
 apply :: GT m g a -> m g -> m (a,g)
 apply (MGT f) mg = f mg

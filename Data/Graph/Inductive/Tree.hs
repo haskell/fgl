@@ -19,7 +19,7 @@ import           Data.Maybe          (fromMaybe)
 -- GRAPH REPRESENTATION
 ----------------------------------------------------------------------
 
-data Gr a b = Gr (GraphRep a b)
+newtype Gr a b = Gr (GraphRep a b)
 
 type GraphRep a b = Map Node (Context' a b)
 type Context' a b = (Adj b,a,Adj b)

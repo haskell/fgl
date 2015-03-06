@@ -24,7 +24,7 @@ import System.IO.Unsafe
 -- GRAPH REPRESENTATION
 ----------------------------------------------------------------------
 
-data SGr a b = SGr (GraphRep a b)
+newtype SGr a b = SGr (GraphRep a b)
 
 type GraphRep a b = (Int,Array Node (Context' a b),IOArray Node Bool)
 type Context' a b = Maybe (Adj b,a,Adj b)
