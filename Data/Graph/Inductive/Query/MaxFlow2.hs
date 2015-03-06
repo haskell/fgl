@@ -10,11 +10,12 @@ module Data.Graph.Inductive.Query.MaxFlow2(
 import Data.Maybe
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Internal.FiniteMap
 import Data.Graph.Inductive.Internal.Queue
 import Data.Graph.Inductive.PatriciaTree
-import Data.Graph.Inductive.Query.BFS          (bft)
+import Data.Graph.Inductive.Query.BFS      (bft)
 
+import           Data.Set (Set)
+import qualified Data.Set as S
 
 ------------------------------------------------------------------------------
 -- Data types
@@ -222,25 +223,15 @@ ekSimple = ekWith ekSimpleStep
 -- Alternative implementation: Process list of edges to extract path instead
 -- of operating on graph structure
 
--- EXTRACT fglEdmondsList.txt
-setFromList :: Ord a => [a] -> FiniteMap a ()
-setFromList [] = emptyFM
-setFromList (x:xs) = addToFM (setFromList xs) x ()
-
-setContains :: Ord a => FiniteMap a () -> a -> Bool
-setContains m i = case (lookupFM m i) of
-    Nothing -> False
-    Just () -> True
-
-extractPathList :: [LEdge (Double, Double)] -> FiniteMap (Node,Node) ()
+extractPathList :: [LEdge (Double, Double)] -> Set (Node,Node)
     -> ([DirEdge (Double, Double)], [LEdge (Double, Double)])
 extractPathList []                 _ = ([], [])
 extractPathList (edge@(u,v,l@(c,f)):es) set
-    | (c>f) && (setContains set (u,v)) =
-        let (pathrest, notrest)=extractPathList es (delFromFM set (u,v))
+    | (c>f) && (S.member (u,v) set) =
+        let (pathrest, notrest)=extractPathList es (S.delete (u,v) set)
             in ((u,v,l,Forward):pathrest, notrest)
-    | (f>0) && (setContains set (v,u)) =
-        let (pathrest, notrest)=extractPathList es (delFromFM set (u,v))
+    | (f>0) && (S.member (v,u) set) =
+        let (pathrest, notrest)=extractPathList es (S.delete (u,v) set)
             in ((u,v,l,Backward):pathrest, notrest)
     | otherwise                        =
         let (pathrest, notrest)=extractPathList es set in
@@ -253,7 +244,7 @@ ekStepList g s t = case maybePath of
     where newEdges      = (integrateDelta es delta) ++ otheredges
           maybePath     = augPathFused g s t
           (es, otheredges) = extractPathList (labEdges g)
-              (setFromList (zip justPath (tail justPath)))
+              (S.fromList (zip justPath (tail justPath)))
           delta         = minimum $ getPathDeltas es
           justPath      = pathFromDirPath (fromJust maybePath)
 
