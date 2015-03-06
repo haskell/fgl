@@ -18,4 +18,3 @@ G* = (V,E*) where E*={(i,j): i,j in V and there is a path from i to j in G}
 trc :: DynGraph gr => gr a b -> gr a ()
 trc g = insEdges (getNewEdges ln g) (insNodes ln empty)
         where ln = labNodes g
-                    

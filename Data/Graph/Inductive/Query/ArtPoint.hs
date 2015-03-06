@@ -33,7 +33,7 @@ getBackEdges v ls   = map head (filter (elem (v,0)) (tail ls))
 -- Builds a DFS tree for a given graph. Each element (v,n,b) in the tree
 -- contains: the node number v, the DFS number n, and a list of backedges b.
 ------------------------------------------------------------------------------
-dfsTree :: Graph gr => Int -> Node -> [Node] -> [[(Node,Int)]] -> 
+dfsTree :: Graph gr => Int -> Node -> [Node] -> [[(Node,Int)]] ->
                        gr a b -> ([DFSTree Int],gr a b,Int)
 dfsTree n _ []      _ g             = ([],g,n)
 dfsTree n _ _       _ g | isEmpty g = ([],g,n)
@@ -66,8 +66,8 @@ getLow (Brc (_,_,l) _) = l
 -- contains: the node number v, the DFS number n, and the low number low.
 ------------------------------------------------------------------------------
 lowTree :: DFSTree Int -> LOWTree Int
-lowTree (B (v,n,[]  ) [] ) = Brc (v,n,n) [] 
-lowTree (B (v,n,bcks) [] ) = Brc (v,n,minbckEdge n bcks) [] 
+lowTree (B (v,n,[]  ) [] ) = Brc (v,n,n) []
+lowTree (B (v,n,bcks) [] ) = Brc (v,n,minbckEdge n bcks) []
 lowTree (B (v,n,bcks) trs) = Brc (v,n,lowv) ts
                              where lowv     = min (minbckEdge n bcks) lowChild
                                    lowChild = minimum (map getLow ts)
@@ -119,4 +119,3 @@ artpoints g v = arp (getLowTree g v)
 -}
 ap :: Graph gr => gr a b -> [Node]
 ap g = artpoints g v where ((_,v,_,_),_) = matchAny g
-

@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 -- (c) 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Monadic Graph Algorithms
 
@@ -22,13 +24,13 @@ module Data.Graph.Inductive.Query.Monad(
 
 -- Why all this?
 --
--- graph monad ensures single-threaded access 
+-- graph monad ensures single-threaded access
 --  ==> we can safely use imperative updates in the graph implementation
 --
 
 import Control.Applicative (Applicative (..))
+import Control.Monad       (ap, liftM)
 import Data.Tree
-import Control.Monad (ap, liftM)
 
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Monad
@@ -82,16 +84,16 @@ instance Monad m => Monad (GT m g) where
 
 condMGT' :: Monad m => (s -> Bool) -> GT m s a -> GT m s a -> GT m s a
 condMGT' p f g = MGT (\mg->do {h<-mg; if p h then apply f mg else apply g mg})
- 
+
 recMGT' :: Monad m => (s -> Bool) -> GT m s a -> (a -> b -> b) -> b -> GT m s b
-recMGT' p mg f u = condMGT' p (return u) 
+recMGT' p mg f u = condMGT' p (return u)
                             (do {x<-mg;y<-recMGT' p mg f u;return (f x y)})
 
 condMGT :: Monad m => (m s -> m Bool) -> GT m s a -> GT m s a -> GT m s a
 condMGT p f g = MGT (\mg->do {b<-p mg; if b then apply f mg else apply g mg})
 
 recMGT :: Monad m => (m s -> m Bool) -> GT m s a -> (a -> b -> b) -> b -> GT m s b
-recMGT p mg f u = condMGT p (return u) 
+recMGT p mg f u = condMGT p (return u)
                           (do {x<-mg;y<-recMGT p mg f u;return (f x y)})
 
 
@@ -101,7 +103,7 @@ recMGT p mg f u = condMGT p (return u)
 
 
 -- some monadic graph accessing functions
--- 
+--
 getNode :: GraphM m gr => GT m (gr a b) Node
 getNode = MGT (\mg->do {((_,v,_,_),g) <- matchAnyM mg; return (v,g)})
 
@@ -110,7 +112,7 @@ getContext = MGT matchAnyM
 
 -- some functions defined by using the do-notation explicitly
 -- Note: most of these can be expressed as an instance of graphRec
--- 
+--
 getNodes' :: (Graph gr,GraphM m gr) => GT m (gr a b) [Node]
 getNodes' = condMGT' isEmpty (return [])
                              (do v  <- getNode
@@ -139,19 +141,19 @@ sucM v = runGT (sucGT v)
 -- some derived graph recursion operators
 ----------------------------------------------------------------------
 
--- 
+--
 -- graphRec :: GraphMonad a b c -> (c -> d -> d) -> d -> GraphMonad a b d
--- graphRec f g u = cond isEmpty (return u) 
+-- graphRec f g u = cond isEmpty (return u)
 --                               (do x <- f
 --                                   y <- graphRec f g u
 --                                   return (g x y))
 
 -- | encapsulates a simple recursion schema on graphs
-graphRec :: GraphM m gr => GT m (gr a b) c -> 
+graphRec :: GraphM m gr => GT m (gr a b) c ->
                            (c -> d -> d) -> d -> GT m (gr a b) d
 graphRec = recMGT isEmptyM
 
-graphRec' :: (Graph gr,GraphM m gr) => GT m (gr a b) c -> 
+graphRec' :: (Graph gr,GraphM m gr) => GT m (gr a b) c ->
                            (c -> d -> d) -> d -> GT m (gr a b) d
 graphRec' = recMGT' isEmpty
 
@@ -165,7 +167,7 @@ graphUFold = graphRec getContext
 ----------------------------------------------------------------------
 
 -- instances of graphRec
--- 
+--
 graphNodesM0 :: GraphM m gr => GT m (gr a b) [Node]
 graphNodesM0 = graphRec getNode (:) []
 
@@ -216,7 +218,7 @@ dffM :: GraphM m gr => [Node] -> GT m (gr a b) [Tree Node]
 dffM vs = MGT (\mg->
           do g<-mg
              b<-isEmptyM mg
-             if b||null vs then return ([],g) else 
+             if b||null vs then return ([],g) else
                 let (v:vs') = vs in
                 do (mc,g1) <- matchM v mg
                    case mc of
@@ -231,4 +233,3 @@ graphDff vs = runGT (dffM vs)
 
 graphDff' :: GraphM m gr => m (gr a b) -> m [Tree Node]
 graphDff' mg = do {vs <- nodesM mg; runGT (dffM vs) mg}
-

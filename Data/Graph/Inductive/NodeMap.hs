@@ -24,16 +24,16 @@ module Data.Graph.Inductive.NodeMap(
     insMapEdgesM, delMapNodesM, delMapEdgesM
 ) where
 
-import Prelude hiding (map)
-import qualified Prelude as P (map)
-import Control.Monad.State
-import Data.Graph.Inductive.Graph
+import           Control.Monad.State
+import           Data.Graph.Inductive.Graph
+import           Prelude                    hiding (map)
+import qualified Prelude                    as P (map)
 --import Data.Graph.Inductive.Tree
 import Data.Graph.Inductive.Internal.FiniteMap
 
 data (Ord a) => NodeMap a =
     NodeMap { map :: FiniteMap a Node,
-	      key :: Int }
+              key :: Int }
     deriving Show
 
 -- | Create a new, empty mapping.
@@ -46,8 +46,8 @@ new = NodeMap { map = emptyFM, key = 0 }
 fromGraph :: (Ord a, Graph g) => g a b -> NodeMap a
 fromGraph g =
     let ns = labNodes g
-	aux (n, a) (m', k') = (addToFM m' a n, max n k')
-	(m, k) = foldr aux (emptyFM, 0) ns
+        aux (n, a) (m', k') = (addToFM m' a n, max n k')
+        (m, k) = foldr aux (emptyFM, 0) ns
     in NodeMap { map = m, key = k+1 }
 
 -- | Generate a labelled node from the given label.  Will return the same node
@@ -55,10 +55,10 @@ fromGraph g =
 mkNode :: (Ord a) => NodeMap a -> a -> (LNode a, NodeMap a)
 mkNode m@(NodeMap mp k) a =
     case lookupFM mp a of
-	Just i	-> ((i, a), m)
-	Nothing	->
-	    let m' = NodeMap { map = addToFM mp a k, key = k+1 }
-	    in ((k, a), m')
+        Just i        -> ((i, a), m)
+        Nothing        ->
+            let m' = NodeMap { map = addToFM mp a k, key = k+1 }
+            in ((k, a), m')
 
 -- | Generate a labelled node and throw away the modified 'NodeMap'.
 mkNode_ :: (Ord a) => NodeMap a -> a -> LNode a
@@ -83,7 +83,7 @@ map' :: (a -> b -> (c, a)) -> a -> [b] -> ([c], a)
 map' _ a [] = ([], a)
 map' f a (b:bs) =
     let (c, a') = f a b
-	(cs, a'') = map' f a' bs
+        (cs, a'') = map' f a' bs
     in (c:cs, a'')
 
 -- | Construct a list of nodes and throw away the modified 'NodeMap'.
@@ -138,13 +138,13 @@ delMapNodes m as g =
 delMapEdges :: (Ord a, DynGraph g) => NodeMap a -> [(a, a)] -> g a b -> g a b
 delMapEdges m ns g =
     let Just ns' =  mkEdges m $ P.map (\(a, b) -> (a, b, ())) ns
-	ns'' = P.map (\(a, b, _) -> (a, b)) ns'
+        ns'' = P.map (\(a, b, _) -> (a, b)) ns'
     in delEdges ns'' g
 
 mkMapGraph :: (Ord a, DynGraph g) => [a] -> [(a, a, b)] -> (g a b, NodeMap a)
 mkMapGraph ns es =
     let (ns', m') = mkNodes new ns
-	Just es' = mkEdges m' es
+        Just es' = mkEdges m' es
     in (mkGraph ns' es', m')
 
 -- | Graph construction monad; handles passing both the 'NodeMap' and the

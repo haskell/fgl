@@ -1,5 +1,5 @@
 -- (c) 2000 - 2005 by Martin Erwig [see file COPYRIGHT]
--- | Depth-First Search  
+-- | Depth-First Search
 
 module Data.Graph.Inductive.Query.DFS(
     CFun,
@@ -18,9 +18,9 @@ module Data.Graph.Inductive.Query.DFS(
     components,noComponents,isConnected
 ) where
 
-import Data.Tree
-import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Basic
+import Data.Graph.Inductive.Graph
+import Data.Tree
 
 ----------------------------------------------------------------------
 -- DFS AND FRIENDS
@@ -37,7 +37,7 @@ import Data.Graph.Inductive.Basic
               |   structure
    direction  |   "s"   "f"
    ------------------------   + optional With + optional '
-      "x"     | xdfs  xdff   
+      "x"     | xdfs  xdff
       " "     |  dfs   dff
       "u"     | udfs  udff
       "r"     | rdfs  rdff
@@ -45,23 +45,23 @@ import Data.Graph.Inductive.Basic
 
   Direction Parameter
   -------------------
-   x : parameterized by a function that specifies which nodes 
+   x : parameterized by a function that specifies which nodes
        to be visited next
 
   " ": the "normal case: just follow successors
- 
+
    u : undirected, ie, follow predecesors and successors
-   
+
    r : reverse, ie, follow predecesors
 
 
   Structure Parameter
   -------------------
-   s : result is a list of 
+   s : result is a list of
         (a) objects computed from visited contexts  ("With"-version)
         (b) nodes                                   (normal version)
 
-   f : result is a tree/forest of 
+   f : result is a tree/forest of
         (a) objects computed from visited contexts  ("With"-version)
         (b) nodes                                   (normal version)
 
@@ -70,7 +70,7 @@ import Data.Graph.Inductive.Basic
    With : objects to be put into list/tree are given by a function
           on contexts, default for non-"With" versions: nodes
 
-   '    : parameter node list is given implicitly by the nodes of the 
+   '    : parameter node list is given implicitly by the nodes of the
           graph to be traversed, default for non-"'" versions: nodes
           must be provided explicitly
 
@@ -85,9 +85,9 @@ import Data.Graph.Inductive.Basic
      dffWith,dffWith',dff,dff'
      udffWith,udffWith',udff,udff'
      rdffWith,rdffWith',rdff,rdff'
-    
+
   Others can be added quite easily if needed.
-  
+
 -}
 
 -- fixNodes fixes the nodes of the graph as a parameter
@@ -97,9 +97,9 @@ fixNodes f g = f (nodes g) g
 
 
 -- generalized depth-first search
---  (could also be simply defined as applying preorderF to the 
+--  (could also be simply defined as applying preorderF to the
 --   result of xdffWith)
---   
+--
 type CFun a b c = Context a b -> c
 
 xdfsWith :: Graph gr => CFun a b [Node] -> CFun a b c -> [Node] -> gr a b -> [c]
@@ -107,7 +107,7 @@ xdfsWith _ _ []     _             = []
 xdfsWith _ _ _      g | isEmpty g = []
 xdfsWith d f (v:vs) g = case match v g of
                          (Just c,g')  -> f c:xdfsWith d f (d c++vs) g'
-                         (Nothing,g') -> xdfsWith d f vs g'  
+                         (Nothing,g') -> xdfsWith d f vs g'
 
 
 -- dfs
@@ -128,7 +128,7 @@ dfs' = dfsWith' node'
 -- undirected dfs, ie, ignore edge directions
 --
 udfs :: Graph gr => [Node] -> gr a b -> [Node]
-udfs = xdfsWith neighbors' node'  
+udfs = xdfsWith neighbors' node'
 
 udfs' :: Graph gr => gr a b -> [Node]
 udfs' = fixNodes udfs
@@ -137,22 +137,22 @@ udfs' = fixNodes udfs
 -- reverse dfs, ie, follow predecessors
 --
 rdfs :: Graph gr => [Node] -> gr a b -> [Node]
-rdfs = xdfsWith pre' node'  
+rdfs = xdfsWith pre' node'
 
 rdfs' :: Graph gr => gr a b -> [Node]
 rdfs' = fixNodes rdfs
 
 
 -- generalized depth-first forest
--- 
+--
 xdfWith :: Graph gr => CFun a b [Node] -> CFun a b c -> [Node] -> gr a b -> ([Tree c],gr a b)
 xdfWith _ _ []     g             = ([],g)
 xdfWith _ _ _      g | isEmpty g = ([],g)
 xdfWith d f (v:vs) g = case match v g of
-                        (Nothing,g1) -> xdfWith d f vs g1 
-                        (Just c,g1)  -> (Node (f c) ts:ts',g3) 
+                        (Nothing,g1) -> xdfWith d f vs g1
+                        (Just c,g1)  -> (Node (f c) ts:ts',g3)
                                  where (ts,g2)  = xdfWith d f (d c) g1
-                                       (ts',g3) = xdfWith d f vs g2 
+                                       (ts',g3) = xdfWith d f vs g2
 
 xdffWith :: Graph gr => CFun a b [Node] -> CFun a b c -> [Node] -> gr a b -> [Tree c]
 xdffWith d f vs g = fst (xdfWith d f vs g)
@@ -234,4 +234,3 @@ scc g = map preorder (rdff (topsort g) g)            -- optimized, using rdff
 
 reachable :: Graph gr => Node -> gr a b -> [Node]
 reachable v g = preorderF (dff [v] g)
-

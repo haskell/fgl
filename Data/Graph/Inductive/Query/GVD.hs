@@ -1,5 +1,5 @@
 -- (c) 2000-2005 by Martin Erwig [see file COPYRIGHT]
--- | Graph Voronoi Diagram 
+-- | Graph Voronoi Diagram
 
 module Data.Graph.Inductive.Query.GVD (
     Voronoi,
@@ -9,15 +9,15 @@ module Data.Graph.Inductive.Query.GVD (
 --    vdO,nnO,nsO
 ) where
 
+import Data.List  (nub)
 import Data.Maybe (listToMaybe)
-import Data.List (nub)
 
 import qualified Data.Graph.Inductive.Internal.Heap as H
 
-import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Query.SP (dijkstra)
-import Data.Graph.Inductive.Internal.RootPath
 import Data.Graph.Inductive.Basic
+import Data.Graph.Inductive.Graph
+import Data.Graph.Inductive.Internal.RootPath
+import Data.Graph.Inductive.Query.SP          (dijkstra)
 
 type Voronoi a = LRTree a
 

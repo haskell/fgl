@@ -16,7 +16,7 @@ showsHeap :: (Show a,Ord a,Show b) => Heap a b -> ShowS
 showsHeap Empty             = id
 showsHeap (Node key val []) = shows key . (": "++) . shows val
 showsHeap (Node key val hs) = shows key . (": "++) . shows val .  (' ':) . shows hs
-                
+
 instance (Show a,Ord a,Show b) => Show (Heap a b) where
   showsPrec _ d = showsHeap d
 
@@ -49,7 +49,7 @@ mergeAll (h:h':hs) = merge (merge h h') (mergeAll hs)
 isEmpty :: Ord a => Heap a b -> Bool
 isEmpty Empty = True
 isEmpty _     = False
-          
+
 findMin :: Ord a => Heap a b -> (a, b)
 findMin Empty      = error "Heap.findMin: empty heap"
 findMin (Node key val _) = (key, val)

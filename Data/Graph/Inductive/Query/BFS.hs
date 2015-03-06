@@ -54,7 +54,7 @@ leveln []         _             = []
 leveln _          g | isEmpty g = []
 leveln ((v,j):vs) g = case match v g of
                         (Just c,g')  -> (v,j):leveln (vs++suci c (j+1)) g'
-                        (Nothing,g') -> leveln vs g'  
+                        (Nothing,g') -> leveln vs g'
 
 
 -- bfe (breadth first edges)
@@ -62,7 +62,7 @@ leveln ((v,j):vs) g = case match v g of
 --
 bfenInternal :: Graph gr => Queue Edge -> gr a b -> [Edge]
 bfenInternal q g | queueEmpty q || isEmpty g = []
-                 | otherwise                 = 
+                 | otherwise                 =
       case match v g of
         (Just c, g')  -> (u,v):bfenInternal (queuePutList (outU c) q') g'
         (Nothing, g') -> bfenInternal q' g'
@@ -83,16 +83,16 @@ outU c = map (\(v,w,_)->(v,w)) (out' c)
 -- bft :: Node -> gr a b -> IT.InTree Node
 -- bft v g = IT.build $ map swap $ bfe v g
 --           where swap (x,y) = (y,x)
--- 
+--
 -- sp (shortest path wrt to number of edges)
 --
 -- sp :: Node -> Node -> gr a b -> [Node]
 -- sp s t g = reverse $ IT.rootPath (bft s g) t
 
 
--- faster shortest paths 
+-- faster shortest paths
 -- here: with root path trees
--- 
+--
 bft :: Graph gr => Node -> gr a b -> RTree
 bft v = bf (queuePut [v] mkQueue)
 
@@ -110,10 +110,10 @@ esp s t = getPath t . bft s
 
 -- lesp is a version of esp that returns labeled paths
 -- Note that the label of the first node in a returned path is meaningless;
--- all other nodes are paired with the label of their incoming edge. 
+-- all other nodes are paired with the label of their incoming edge.
 --
 lbft :: Graph gr => Node -> gr a b -> LRTree b
-lbft v g = case (out g v) of 
+lbft v g = case (out g v) of
              []         -> [LP []]
              (v',_,l):_ -> lbf (queuePut (LP [(v',l)]) mkQueue) g
 
@@ -128,4 +128,3 @@ lbf q g | queueEmpty q || isEmpty g = []
 
 lesp :: Graph gr => Node -> Node -> gr a b -> LPath b
 lesp s t = getLPath t . lbft s
-

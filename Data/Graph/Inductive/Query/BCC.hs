@@ -4,8 +4,8 @@ module Data.Graph.Inductive.Query.BCC(
 
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Query.DFS
 import Data.Graph.Inductive.Query.ArtPoint
+import Data.Graph.Inductive.Query.DFS
 
 
 ------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ findGraph v (g:gs) = case match v g of
 splitGraphs :: DynGraph gr => [gr a b] -> [Node] -> [gr a b]
 splitGraphs gs []     = gs
 splitGraphs [] _      = error "splitGraphs: empty graph list"
-splitGraphs gs (v:vs) = splitGraphs (gs''++gs''') vs 
+splitGraphs gs (v:vs) = splitGraphs (gs''++gs''') vs
                         where gs'' = embedContexts c gs'
                               gs' = gComponents g'
                               ((Just c,g'), gs''') = findGraph v gs
@@ -55,22 +55,3 @@ graph on each articulation point and computes the connected components.
 -}
 bcc :: DynGraph gr => gr a b -> [gr a b]
 bcc g = splitGraphs [g] (ap g)
-
-
-
-
-
-
-
-
-                                                
-
-
-
-
-
-
-
-
-
-

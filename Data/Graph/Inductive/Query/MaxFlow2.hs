@@ -10,10 +10,10 @@ module Data.Graph.Inductive.Query.MaxFlow2(
 import Data.Maybe
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.PatriciaTree
 import Data.Graph.Inductive.Internal.FiniteMap
 import Data.Graph.Inductive.Internal.Queue
-import Data.Graph.Inductive.Query.BFS (bft)
+import Data.Graph.Inductive.PatriciaTree
+import Data.Graph.Inductive.Query.BFS          (bft)
 
 
 ------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ extractPathFused g ((u,_):rest@((v,Backward):_)) =
 
 -- ekFusedStep :: EKStepFunc
 ekFusedStep g s t = case maybePath of
-        Just _	  ->
+        Just _          ->
             Just ((insEdges (integrateDelta es delta) newg), delta)
         Nothing   -> Nothing
     where maybePath     = augPathFused g s t
@@ -158,7 +158,7 @@ extractPath g (u:v:ws) =
                 Just (l, newg) ->
                     ((v, u, l, Backward):tailedges, newerg)
                     where (tailedges, newerg) = extractPath newg (v:ws)
-		Nothing	       -> error "extractPath: revExtract == Nothing"
+                Nothing               -> error "extractPath: revExtract == Nothing"
     where fwdExtract = extractEdge g u v (\(c,f)->(c>f))
           revExtract = extractEdge g v u (\(_,f)->(f>0))
 
@@ -190,7 +190,7 @@ getPathDeltas (e:es) = case e of
 
 integrateDelta :: [DirEdge (Double,Double)] -> Double
     -> [LEdge (Double, Double)]
-integrateDelta []	  _ = []
+integrateDelta []          _ = []
 integrateDelta (e:es) delta = case e of
     (u, v, (c, f), Forward) ->
         (u, v, (c, f+delta)) : (integrateDelta es delta)
@@ -260,4 +260,3 @@ ekStepList g s t = case maybePath of
 ekList :: Network -> Node -> Node -> (Network, Double)
 ekList = ekWith ekStepList
 -- ENDEXTRACT
-

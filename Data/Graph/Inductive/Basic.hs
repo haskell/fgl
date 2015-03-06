@@ -12,18 +12,18 @@ module Data.Graph.Inductive.Basic
     hasLoop,isSimple,
     -- * Tree Operations
     postorder, postorderF, preorder, preorderF
-) 
+)
 where
 
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Internal.Thread (threadMaybe,threadList)
+import Data.Graph.Inductive.Internal.Thread (threadList, threadMaybe)
 
 import Data.List (nub)
 import Data.Tree
 
 -- | Reverse the direction of all edges.
-grev :: DynGraph gr => gr a b -> gr a b 
+grev :: DynGraph gr => gr a b -> gr a b
 grev = gmap (\(p,v,l,s)->(s,v,l,p))
 
 -- | Make the graph undirected, i.e. for every edge from A to B, there
@@ -83,24 +83,24 @@ threadGraph f c = threadMaybe f c match
 gfold1 f d b = threadGraph d (\c->gfoldn f d b (f c))
 gfoldn f d b = threadList b (gfold1 f d b)
 
--- gfold :: ((Context a b) -> [Node]) -> ((Node,a) -> c -> d) -> 
+-- gfold :: ((Context a b) -> [Node]) -> ((Node,a) -> c -> d) ->
 --          (Maybe d -> c -> c) -> c -> [Node] -> Graph a b -> c
 -- gfold f d b u l g = fst (gfoldn f d b u l g)
 
 -- type Dir a b    = (Context a b) -> [Node]  -- direction of fold
 -- type Dagg a b c = (Node,a) -> b -> c       -- depth aggregation
 -- type Bagg a b   = (Maybe a -> b -> b,b)    -- breadth/level aggregation
--- 
+--
 -- gfold :: (Dir a b) -> (Dagg a c d) -> (Bagg d c) -> [Node] -> Graph a b -> c
 -- gfold f d (b,u) l g = fst (gfoldn f d b u l g)
 
 -- | Directed graph fold.
 gfold :: Graph gr =>   ((Context a b) -> [Node])    -- ^ direction of fold
-		    -> ((Context a b) -> c -> d)    -- ^ depth aggregation
-		    -> (Maybe d -> c -> c, c)	    -- ^ breadth\/level aggregation
-		    -> [Node]
-		    -> gr a b
-		    -> c
+        -> ((Context a b) -> c -> d)    -- ^ depth aggregation
+        -> (Maybe d -> c -> c, c)      -- ^ breadth\/level aggregation
+        -> [Node]
+        -> gr a b
+        -> c
 gfold f d b l g = fst (gfoldn f d b l g)
 
 -- not finished yet ...

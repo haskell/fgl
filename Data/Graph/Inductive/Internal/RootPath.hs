@@ -39,7 +39,7 @@ findP v ((LP (p@((w,_):_))):ps) | v==w      = p
                                 | otherwise = findP v ps
 
 getPath :: Node -> RTree -> Path
-getPath v = reverse . first (\(w:_)->w==v) 
+getPath v = reverse . first (\(w:_)->w==v)
 
 getLPath :: Node -> LRTree a -> LPath a
 getLPath v = LP . reverse . findP v

@@ -478,4 +478,3 @@ prettify g = ufold showsContext id g ""
 -- | Pretty-print the graph to stdout.
 prettyPrint :: (DynGraph gr, Show a, Show b) => gr a b -> IO ()
 prettyPrint = putStr . prettify
-

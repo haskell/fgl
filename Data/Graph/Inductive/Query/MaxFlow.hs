@@ -2,7 +2,7 @@
 -- We are given a flow network G=(V,E) with source s and sink t where each
 -- edge (u,v) in E has a nonnegative capacity c(u,v)>=0, and we wish to
 -- find a flow of maximum value from s to t.
--- 
+--
 -- A flow in G=(V,E) is a real-valued function f:VxV->R that satisfies:
 --
 -- @
@@ -51,11 +51,11 @@ getRevEdges ((u,v):es) | notElem (v,u) es = (v,u,0):getRevEdges es
 --                            i         (i,0,i)
 -- label of every edge from a---->b to a------->b
 -- @
--- 
+--
 -- where label (x,y,z)=(Max Capacity, Current flow, Residual capacity)
 augmentGraph :: (DynGraph gr,Num b,Ord b) => gr a b -> gr a (b,b,b)
 augmentGraph g = emap (\i->(i,0,i)) (insEdges (getRevEdges (edges g)) g)
-                                                
+
 -- | Given a successor or predecessor list for node u and given node v, find
 -- the label corresponding to edge (u,v) and update the flow and residual
 -- capacity of that edge's label. Then return the updated list.
@@ -70,7 +70,7 @@ updAdjList s v cf fwd | fwd == True = ((x,y+cf,z-cf),w):rs
 -- predecessor list, then update the corresponding edges (u,v) and (v,u) on
 -- those lists by using the minimum residual capacity of the path.
 updateFlow :: (DynGraph gr,Num b,Ord b) => Path -> b -> gr a (b,b,b) -> gr a (b,b,b)
-updateFlow []	     _ g = g
+updateFlow []       _ g = g
 updateFlow [_]       _ g = g
 updateFlow (u:v:vs) cf g = case match u g of
                              (Nothing,g')        -> g'
@@ -117,11 +117,9 @@ maxFlow g s t = foldr (+) 0 (map (\(_,_,(x,_))->x)(out (maxFlowgraph g s t) s))
 
 ------------------------------------------------------------------------------
 -- Some test cases: clr595 is from the CLR textbook, page 595. The value of
--- the maximum flow for s=1 and t=6 (23) coincides with the example but the 
--- flow itself is slightly different since the textbook does not compute the 
--- shortest augmenting path from s to t, but just any path. However remember 
+-- the maximum flow for s=1 and t=6 (23) coincides with the example but the
+-- flow itself is slightly different since the textbook does not compute the
+-- shortest augmenting path from s to t, but just any path. However remember
 -- that for a given flow graph the maximum flow is not unique.
 -- (gr595 is defined in GraphData.hs)
 ------------------------------------------------------------------------------
-
-

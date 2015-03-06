@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FlexibleContexts, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
 
 -- (c) 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Static IOArray-based Graphs
@@ -82,9 +82,9 @@ instance GraphM IO SGr where
                 vs'  = map fst vs
                 n    = length vs
                 addSuc (Just (p,l',s)) (l,w) = Just (p,l',(l,w):s)
-		addSuc Nothing _ = error "mkGraphM (SGr): addSuc Nothing"
+                addSuc Nothing _ = error "mkGraphM (SGr): addSuc Nothing"
                 addPre (Just (p,l',s)) (l,w) = Just ((l,w):p,l',s)
-		addPre Nothing _ = error "mkGraphM (SGr): addPre Nothing"
+                addPre Nothing _ = error "mkGraphM (SGr): addPre Nothing"
   labNodesM g = do (SGr (_,a,m)) <- g
                    let getLNode vs (_,Nothing)      = return vs
                        getLNode vs (v,Just (_,l,_)) =
@@ -109,6 +109,3 @@ emptyN n = do m <- newArray (1,n) False
 -- representing deleted marks
 removeDel :: IOArray Node Bool -> Adj b -> IO (Adj b)
 removeDel m = filterM (\(_,v)->do {b<-readArray m v;return (not b)})
-
-
-

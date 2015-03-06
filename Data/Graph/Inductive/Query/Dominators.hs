@@ -12,13 +12,13 @@ module Data.Graph.Inductive.Query.Dominators (
     iDom
 ) where
 
-import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Query.DFS
-import Data.Tree (Tree(..))
-import qualified Data.Tree as T
-import Data.Array
-import Data.IntMap (IntMap)
-import qualified Data.IntMap as I
+import           Data.Array
+import           Data.Graph.Inductive.Graph
+import           Data.Graph.Inductive.Query.DFS
+import           Data.IntMap                    (IntMap)
+import qualified Data.IntMap                    as I
+import           Data.Tree                      (Tree (..))
+import qualified Data.Tree                      as T
 
 -- | return immediate dominators for each node of a graph, given a root
 iDom :: Graph gr => gr a b -> Node -> [(Node,Node)]

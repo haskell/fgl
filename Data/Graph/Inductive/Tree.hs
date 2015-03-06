@@ -101,6 +101,3 @@ updAdj :: GraphRep a b -> Adj b -> (b -> Context' a b -> Context' a b) -> GraphR
 updAdj g []         _              = g
 updAdj g ((l,v):vs) f | elemFM g v = updAdj (updFM g v (f l)) vs f
                       | otherwise  = error ("Edge Exception, Node: "++show v)
-
-
-
