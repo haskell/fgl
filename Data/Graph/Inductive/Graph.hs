@@ -246,6 +246,7 @@ gelem v g = case match v g of {(Just _,_) -> True; _ -> False}
 -- | Insert a 'LNode' into the 'Graph'.
 insNode :: DynGraph gr => LNode a -> gr a b -> gr a b
 insNode (v,l) = (([],v,l,[])&)
+{-# NOINLINE [0] insNode #-}
 
 -- | Insert a 'LEdge' into the 'Graph'.
 insEdge :: DynGraph gr => LEdge b -> gr a b -> gr a b
