@@ -9,7 +9,7 @@ module Data.Graph.Inductive.Internal.Heap(
 ) where
 
 
-data Ord a => Heap a b = Empty | Node a b [Heap a b]
+data Heap a b = Empty | Node a b [Heap a b]
      deriving Eq
 
 showsHeap :: (Show a,Ord a,Show b) => Heap a b -> ShowS

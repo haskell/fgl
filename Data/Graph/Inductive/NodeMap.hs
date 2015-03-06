@@ -31,7 +31,7 @@ import qualified Prelude                    as P (map)
 --import Data.Graph.Inductive.Tree
 import Data.Graph.Inductive.Internal.FiniteMap
 
-data (Ord a) => NodeMap a =
+data NodeMap a =
     NodeMap { map :: FiniteMap a Node,
               key :: Int }
     deriving Show
