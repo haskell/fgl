@@ -28,17 +28,18 @@ import           Control.Monad.State
 import           Data.Graph.Inductive.Graph
 import           Prelude                    hiding (map)
 import qualified Prelude                    as P (map)
---import Data.Graph.Inductive.Tree
-import Data.Graph.Inductive.Internal.FiniteMap
+
+import           Data.Map (Map)
+import qualified Data.Map as M
 
 data NodeMap a =
-    NodeMap { map :: FiniteMap a Node,
+    NodeMap { map :: Map a Node,
               key :: Int }
     deriving Show
 
 -- | Create a new, empty mapping.
 new :: (Ord a) => NodeMap a
-new = NodeMap { map = emptyFM, key = 0 }
+new = NodeMap { map = M.empty, key = 0 }
 
 -- LNode = (Node, a)
 
@@ -46,18 +47,18 @@ new = NodeMap { map = emptyFM, key = 0 }
 fromGraph :: (Ord a, Graph g) => g a b -> NodeMap a
 fromGraph g =
     let ns = labNodes g
-        aux (n, a) (m', k') = (addToFM m' a n, max n k')
-        (m, k) = foldr aux (emptyFM, 0) ns
+        aux (n, a) (m', k') = (M.insert a n m', max n k')
+        (m, k) = foldr aux (M.empty, 0) ns
     in NodeMap { map = m, key = k+1 }
 
 -- | Generate a labelled node from the given label.  Will return the same node
 -- for the same label.
 mkNode :: (Ord a) => NodeMap a -> a -> (LNode a, NodeMap a)
 mkNode m@(NodeMap mp k) a =
-    case lookupFM mp a of
+    case M.lookup a mp of
         Just i        -> ((i, a), m)
         Nothing        ->
-            let m' = NodeMap { map = addToFM mp a k, key = k+1 }
+            let m' = NodeMap { map = M.insert a k mp, key = k+1 }
             in ((k, a), m')
 
 -- | Generate a labelled node and throw away the modified 'NodeMap'.
@@ -67,8 +68,8 @@ mkNode_ m a = fst $ mkNode m a
 -- | Generate a 'LEdge' from the node labels.
 mkEdge :: (Ord a) => NodeMap a -> (a, a, b) -> Maybe (LEdge b)
 mkEdge (NodeMap m _) (a1, a2, b) =
-    do n1 <- lookupFM m a1
-       n2 <- lookupFM m a2
+    do n1 <- M.lookup a1 m
+       n2 <- M.lookup a2 m
        return (n1, n2, b)
 
 -- | Generates a list of 'LEdge's.
