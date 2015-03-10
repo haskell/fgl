@@ -92,9 +92,10 @@ queryTests = describe "Queries" $ do
     propP "bfs"        test_bfs
     propP "level"      test_level
   describe "DFS" $ do
-    propP "components" test_components
-    propP "scc"        test_scc
-    propP "reachable"  test_reachable
+    propP "components"   test_components
+    propP "scc"          test_scc
+    propP "reachable"    test_reachable
+    propP "condensation" test_condensation
   describe "Dominators" $ do
     test_dom
     test_iDom
