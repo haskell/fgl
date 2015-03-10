@@ -107,6 +107,21 @@ test_reachable _ cg = not (isEmpty g) ==> sort (reachable v g) == sort (nodes g)
 
     v = node' . fst . matchAny $ g
 
+-- | The nodes of the condensation should be exactly the connected
+-- components, and the edges of the condensation should correspond
+-- exactly to the edges between the connected components.
+test_condensation :: (Graph gr) => Proxy (gr a b) -> gr a b -> Bool
+test_condensation _ g = sort sccs == sort (map snd $ labNodes cdg)
+                        && and [ or [ hasEdge g (v,w) == hasEdge cdg (cv,cw)
+                                    | v <- sccv, w <- sccw ]
+                               | (cv,sccv) <- labNodes cdg
+                               , (cw,sccw) <- labNodes cdg
+                               , cv /= cw
+                               ]
+  where
+    sccs = scc g
+    cdg = condensation g
+
 -- -----------------------------------------------------------------------------
 -- Dominators
 

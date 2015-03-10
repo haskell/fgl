@@ -41,13 +41,15 @@ module Data.Graph.Inductive.Query.DFS (
     topsort, topsort', scc, reachable,
 
     -- * Applications of undirected depth first search/forest
-    components, noComponents, isConnected
+    components, noComponents, isConnected, condensation
 
 ) where
 
 import Data.Graph.Inductive.Basic
 import Data.Graph.Inductive.Graph
 import Data.Tree
+import qualified Data.Map as Map
+import Control.Monad (liftM2)
 
 
 
@@ -232,3 +234,18 @@ scc g = map preorder (rdff (topsort g) g)
 -- | Collection of nodes reachable from a starting point.
 reachable :: (Graph gr) => Node -> gr a b -> [Node]
 reachable v g = preorderF (dff [v] g)
+
+-- | The condensation of the given graph, i.e., the graph of its
+-- strongly connected components.
+condensation :: Graph gr => gr a b -> gr [Node] ()
+condensation gr = mkGraph vs es
+  where
+    sccs = scc gr
+    vs = zip [1..] sccs
+    vMap = Map.fromList $ map swap vs
+
+    swap = uncurry $ flip (,)
+
+    getN = (vMap Map.!)
+    es = [ (getN c1, getN c2, ()) | c1 <- sccs, c2 <- sccs
+                                  , (c1 /= c2) && any (hasEdge gr) (liftM2 (,) c1 c2) ]
