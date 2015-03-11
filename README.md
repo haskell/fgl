@@ -1,5 +1,7 @@
-The *F*unctional *G*raph *L*ibrary for Haskell. [![Hackage](https://img.shields.io/hackage/v/fgl.svg)](https://hackage.haskell.org/package/fgl) [![Build Status](https://travis-ci.org/haskell/fgl.svg)](https://travis-ci.org/haskell/fgl)
-===============================================
+The *F*unctional *G*raph *L*ibrary for Haskell
+==============================================
+
+[![Hackage](https://img.shields.io/hackage/v/fgl.svg)](https://hackage.haskell.org/package/fgl) [![Build Status](https://travis-ci.org/haskell/fgl.svg)](https://travis-ci.org/haskell/fgl)
 
 Originally by Martin Erwig, this library provides an inductive approach to dealing with graphs.
 
