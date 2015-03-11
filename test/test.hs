@@ -21,9 +21,9 @@ t3 = run_ empty $
        insMapNodeM 'b'
        insMapNodeM 'c'
        insMapEdgesM [('a', 'b', "right"),
-		     ('b', 'a', "left"),
-		     ('b', 'c', "down"),
-		     ('c', 'a', "up")]
+                     ('b', 'a', "left"),
+                     ('b', 'c', "down"),
+                     ('c', 'a', "up")]
 
 t4 :: Gr String ()
 t4 = run_ clr486 $ insMapEdgeM ("shirt", "watch", ())
