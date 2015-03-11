@@ -1,5 +1,6 @@
 -- (c) 2000-2005 by Martin Erwig [see file COPYRIGHT]
 
+-- | Shortest path algorithms
 module Data.Graph.Inductive.Query.SP(
     spTree,spLength,sp,
     dijkstra
