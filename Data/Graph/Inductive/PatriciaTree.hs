@@ -22,12 +22,14 @@ module Data.Graph.Inductive.PatriciaTree
     )
     where
 
-import           Control.Arrow              (second)
-import           Data.Graph.Inductive.Graph
-import           Data.IntMap                (IntMap)
-import qualified Data.IntMap                as IM
-import           Data.List
-import           Data.Maybe
+import Data.Graph.Inductive.Graph
+
+import           Control.Applicative (liftA2)
+import           Control.Arrow       (second)
+import           Data.IntMap         (IntMap)
+import qualified Data.IntMap         as IM
+import           Data.List           (foldl', sort)
+import           Data.Maybe          (fromMaybe)
 
 
 newtype Gr a b = Gr (GraphRep a b)
@@ -70,17 +72,16 @@ instance Graph Gr where
 
     -- overriding members for efficiency
     noNodes   (Gr g) = IM.size g
-    nodeRange (Gr g)
-        | IM.null g = (0, 0)
-        | otherwise = (ix (IM.minViewWithKey g), ix (IM.maxViewWithKey g))
-                  where
-                    ix = fst . fst . fromJust
+    nodeRange (Gr g) = fromMaybe (0,0)
+                       $ liftA2 (,) (ix (IM.minViewWithKey g))
+                                    (ix (IM.maxViewWithKey g))
+      where
+        ix = fmap (fst . fst)
 
     labEdges (Gr g) = do (node, (_, _, s)) <- IM.toList g
                          (next, labels)    <- IM.toList s
                          label             <- labels
                          return (node, next, label)
-
 
 instance DynGraph Gr where
     (p, v, l, s) & (Gr g)
