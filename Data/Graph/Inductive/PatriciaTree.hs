@@ -170,7 +170,7 @@ toAdj = concatMap expand . IM.toList
 
 
 fromAdj :: Adj b -> IntMap [b]
-fromAdj = IM.fromListWith addLists . map (second return . swap)
+fromAdj = IM.fromListWith addLists . map (second (:[]) . swap)
 
 
 toContext :: Node -> Context' a b -> Context a b
