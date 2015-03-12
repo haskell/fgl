@@ -10,6 +10,7 @@ import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
 import           Control.Arrow       (first)
+import           Control.DeepSeq     (NFData (..))
 import           Data.List           (foldl', sort)
 import           Data.Map            (Map)
 import qualified Data.Map            as M
@@ -101,6 +102,9 @@ instance DynGraph Gr where
       addCntxt = maybe (Just cntxt')
                        (const (error ("Node Exception, Node: "++show v)))
       cntxt' = (p,l,s)
+
+instance (NFData a, NFData b) => NFData (Gr a b) where
+  rnf (Gr g) = rnf g
 
 ----------------------------------------------------------------------
 -- UTILITIES

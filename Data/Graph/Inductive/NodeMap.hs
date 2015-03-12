@@ -24,6 +24,7 @@ module Data.Graph.Inductive.NodeMap(
     insMapEdgesM, delMapNodesM, delMapEdgesM
 ) where
 
+import           Control.DeepSeq            (NFData (..))
 import           Control.Monad.Trans.State
 import           Data.Graph.Inductive.Graph
 import           Prelude                    hiding (map)
@@ -36,6 +37,9 @@ data NodeMap a =
     NodeMap { map :: Map a Node,
               key :: Int }
     deriving (Eq, Show, Read)
+
+instance (NFData a) => NFData (NodeMap a) where
+  rnf (NodeMap mp k) = rnf mp `seq` rnf k
 
 -- | Create a new, empty mapping.
 new :: (Ord a) => NodeMap a

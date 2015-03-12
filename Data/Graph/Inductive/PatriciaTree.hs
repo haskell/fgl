@@ -26,6 +26,7 @@ import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
 import           Control.Arrow       (second)
+import           Control.DeepSeq     (NFData (..))
 import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (foldl', sort)
@@ -91,6 +92,8 @@ instance DynGraph Gr where
           in
             Gr g3
 
+instance (NFData a, NFData b) => NFData (Gr a b) where
+  rnf (Gr g) = rnf g
 
 matchGr :: Node -> Gr a b -> Decomp Gr a b
 matchGr node (Gr g)

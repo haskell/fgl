@@ -8,10 +8,15 @@ module Data.Graph.Inductive.Internal.Heap(
     build, toList, heapsort
 ) where
 
-import Text.Show (showListWith)
+import Control.DeepSeq (NFData (..))
+import Text.Show       (showListWith)
 
 data Heap a b = Empty | Node a b [Heap a b]
      deriving (Eq, Show, Read)
+
+instance (NFData a, NFData b) => NFData (Heap a b) where
+  rnf Empty         = ()
+  rnf (Node a b hs) = rnf a `seq` rnf b `seq` rnf hs
 
 prettyHeap :: (Show a, Show b) => Heap a b -> String
 prettyHeap = (`showsHeap` "")
