@@ -24,7 +24,7 @@ module Data.Graph.Inductive.NodeMap(
     insMapEdgesM, delMapNodesM, delMapEdgesM
 ) where
 
-import           Control.Monad.State
+import           Control.Monad.Trans.State
 import           Data.Graph.Inductive.Graph
 import           Prelude                    hiding (map)
 import qualified Prelude                    as P (map)
