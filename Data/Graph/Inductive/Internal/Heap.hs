@@ -10,15 +10,12 @@ module Data.Graph.Inductive.Internal.Heap(
 
 
 data Heap a b = Empty | Node a b [Heap a b]
-     deriving Eq
 
 showsHeap :: (Show a,Ord a,Show b) => Heap a b -> ShowS
 showsHeap Empty             = id
 showsHeap (Node key val []) = shows key . (": "++) . shows val
 showsHeap (Node key val hs) = shows key . (": "++) . shows val .  (' ':) . shows hs
-
-instance (Show a,Ord a,Show b) => Show (Heap a b) where
-  showsPrec _ d = showsHeap d
+     deriving (Eq, Show, Read)
 
 
 ----------------------------------------------------------------------

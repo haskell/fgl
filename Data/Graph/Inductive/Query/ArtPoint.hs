@@ -12,7 +12,7 @@ import Data.Graph.Inductive.Graph
 -- lead to back back edges for that vertex v.
 ------------------------------------------------------------------------------
 data DFSTree a = B (a,a,[(a,a)]) [DFSTree a]
-     deriving (Eq)
+     deriving (Eq, Show, Read)
 
 ------------------------------------------------------------------------------
 -- Tree for storing the DFS and low numbers for each node in the graph.
@@ -20,7 +20,7 @@ data DFSTree a = B (a,a,[(a,a)]) [DFSTree a]
 -- n is its DFS number and l is its low number.
 ------------------------------------------------------------------------------
 data LOWTree a = Brc (a,a,a) [LOWTree a]
-     deriving (Eq)
+     deriving (Eq, Show, Read)
 
 ------------------------------------------------------------------------------
 -- Finds the back edges for a given node.

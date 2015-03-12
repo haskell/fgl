@@ -35,7 +35,7 @@ import qualified Data.Map as M
 data NodeMap a =
     NodeMap { map :: Map a Node,
               key :: Int }
-    deriving Show
+    deriving (Eq, Show, Read)
 
 -- | Create a new, empty mapping.
 new :: (Ord a) => NodeMap a

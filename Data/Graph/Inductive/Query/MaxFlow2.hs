@@ -25,7 +25,7 @@ type Network = Gr () (Double, Double)
 
 -- Data type for direction in which an edge is traversed
 data Direction = Forward | Backward
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show, Read)
 
 -- Data type for edge with direction of traversal
 type DirEdge b = (Node, Node, b, Direction)
