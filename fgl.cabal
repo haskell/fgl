@@ -54,5 +54,8 @@ library {
     other-modules:
         Paths_fgl
 
-    build-depends:    base < 5, transformers, containers, array
+    build-depends:    base < 5
+                    , transformers
+                    , containers
+                    , array
 }
