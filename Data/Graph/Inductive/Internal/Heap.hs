@@ -8,15 +8,21 @@ module Data.Graph.Inductive.Internal.Heap(
     build, toList, heapsort
 ) where
 
+import Text.Show (showListWith)
 
 data Heap a b = Empty | Node a b [Heap a b]
-
-showsHeap :: (Show a,Ord a,Show b) => Heap a b -> ShowS
-showsHeap Empty             = id
-showsHeap (Node key val []) = shows key . (": "++) . shows val
-showsHeap (Node key val hs) = shows key . (": "++) . shows val .  (' ':) . shows hs
      deriving (Eq, Show, Read)
 
+prettyHeap :: (Show a, Show b) => Heap a b -> String
+prettyHeap = (`showsHeap` "")
+  where
+    showsHeap Empty             = id
+    showsHeap (Node key val []) = shows key . (": "++) . shows val
+    showsHeap (Node key val hs) = shows key . (": "++) . shows val
+                                  .  (' ':) . showListWith showsHeap hs
+
+printPrettyHeap :: (Show a, Show b) => Heap a b -> IO ()
+printPrettyHeap = putStrLn . prettyHeap
 
 ----------------------------------------------------------------------
 -- MAIN FUNCTIONS
