@@ -11,10 +11,11 @@ This module provides default definitions for use with QuickCheck's
  -}
 module Data.Graph.Inductive.Arbitrary
        ( arbitraryGraph
+       , arbitraryGraphWith
        , shrinkGraph
        ) where
 
-import           Data.Graph.Inductive.Graph        (Graph, Node, delNode,
+import           Data.Graph.Inductive.Graph        (Graph, LEdge, Node, delNode,
                                                     mkGraph, nodes)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
@@ -28,11 +29,18 @@ import Data.List           (group, sort)
 
 -- | Generate an arbitrary graph.  Multiple edges are allowed.
 arbitraryGraph :: (Graph gr, Arbitrary a, Arbitrary b) => Gen (gr a b)
-arbitraryGraph = do ns <- suchThat genNs (not . null)
-                    let nGen = elements ns
-                    lns <- mapM makeLNode ns
-                    les <- listOf $ makeLEdge nGen
-                    return $ mkGraph lns les
+arbitraryGraph = arbitraryGraphWith id
+
+-- | Generate an arbitrary graph, using the specified function to
+--   manipulate the generated list of edges (e.g. remove multiple
+--   edges).
+arbitraryGraphWith :: (Graph gr, Arbitrary a, Arbitrary b)
+                      => ([LEdge b] -> [LEdge b]) -> Gen (gr a b)
+arbitraryGraphWith f = do ns <- suchThat genNs (not . null)
+                          let nGen = elements ns
+                          lns <- mapM makeLNode ns
+                          les <- fmap f . listOf $ makeLEdge nGen
+                          return $ mkGraph lns les
   where
     genNs = fmap uniq arbitrary
     makeLNode n = fmap ((,) n) arbitrary
