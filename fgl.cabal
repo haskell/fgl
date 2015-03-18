@@ -12,7 +12,7 @@ An inductive representation of manipulating graph data structures.
 .
 Original website can be found at <http://web.engr.oregonstate.edu/~erwig/fgl/haskell>.
 }
-cabal-version: >= 1.6
+cabal-version: >= 1.10
 build-type:    Simple
 extra-source-files:
                ChangeLog
@@ -22,6 +22,8 @@ source-repository head
     location:     git://github.com/haskell/fgl.git
 
 library {
+    default-language: Haskell98
+
     exposed-modules:
         Data.Graph.Inductive.Internal.Heap,
         Data.Graph.Inductive.Internal.Queue,
