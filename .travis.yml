@@ -34,14 +34,27 @@ script:
    fi
 
 # The following scriptlet checks that the resulting source distribution can be built & installed
- - export SRC_TGZ=$(cabal-$CABALVER info . | awk '{print $2 ".tar.gz";exit}') ;
-   cd dist/;
-   if [ -f "$SRC_TGZ" ]; then
-      cabal install "$SRC_TGZ";
+ - function install_from_tarball {
+   export SRC_TGZ=$(cabal-$CABALVER info . | awk '{print $2 ".tar.gz";exit}') ;
+   if [ -f "dist/$SRC_TGZ" ]; then
+      cabal install "dist/$SRC_TGZ" -v2;
    else
-      echo "expected '$SRC_TGZ' not found";
+      echo "expected 'dist/$SRC_TGZ' not found";
       exit 1;
    fi
+   }
+ - install_from_tarball
+
+# Check the fgl-arbitrary sub-package
+ - cd fgl-arbitrary
+ - cabal sandbox init
+ - cabal sandbox add-source ../
+ - cabal install --dependencies-only
+ - cabal configure
+ - cabal build
+ - cabal check
+ - cabal sdist
+ - install_from_tarball
 
 matrix:
   fast_finish: true
