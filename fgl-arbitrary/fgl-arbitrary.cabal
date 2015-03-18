@@ -16,6 +16,7 @@ cabal-version:       >=1.10
 source-repository head
     type:         git
     location:     git://github.com/haskell/fgl.git
+    subdir:       fgl-arbitrary
 
 library
   exposed-modules:     Data.Graph.Inductive.Arbitrary
