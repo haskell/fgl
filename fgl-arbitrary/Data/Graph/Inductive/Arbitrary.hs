@@ -13,17 +13,22 @@ module Data.Graph.Inductive.Arbitrary
        ( arbitraryGraph
        , arbitraryGraphWith
        , shrinkGraph
+         -- * Specific graph structures
+       , NoMultipleEdges(..)
+       , SimpleGraph(..)
        ) where
 
-import           Data.Graph.Inductive.Graph        (Graph, LEdge, Node, delNode,
-                                                    mkGraph, nodes)
+import           Data.Graph.Inductive.Graph        (Edge, Graph, LEdge, Node,
+                                                    delNode, mkGraph, nodes)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
 
 import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf, suchThat)
 
 import Control.Applicative (liftA3)
-import Data.List           (group, sort)
+import Data.Function       (on)
+import Data.Functor        ((<$>))
+import Data.List           (groupBy, sortBy)
 
 -- -----------------------------------------------------------------------------
 
@@ -49,7 +54,10 @@ arbitraryGraphWith f = do ns <- suchThat genNs (not . null)
 -- Ensure we have a list of unique Node values; this will also sort
 -- the list, but that shouldn't matter.
 uniq :: [Node] -> [Node]
-uniq = map head . group . sort
+uniq = uniqBy id
+
+uniqBy :: (Ord b) => (a -> b) -> [a] -> [a]
+uniqBy f = map head . groupBy ((==) `on` f) . sortBy (compare `on` f)
 
 -- | For a graph with at least two nodes, return every possible way of
 --   deleting a single node (i.e. will never shrink to an empty
@@ -69,3 +77,29 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (P.Gr a b) where
   arbitrary = arbitraryGraph
 
   shrink = shrinkGraph
+
+-- | A newtype wrapper to generate a graph without multiple edges
+--   (loops allowed).
+newtype NoMultipleEdges gr a b = NME { nmeGraph :: gr a b }
+                                 deriving (Eq, Show, Read)
+
+instance (Graph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoMultipleEdges gr a b) where
+  arbitrary = NME <$> arbitraryGraphWith (uniqBy toEdge)
+
+  shrink = map NME . shrinkGraph . nmeGraph
+
+-- | A newtype wrapper to generate a graph without multiple edges and
+--   no loops.
+newtype SimpleGraph gr a b = SG { simpleGraph :: gr a b }
+                             deriving (Eq, Show, Read)
+
+instance (Graph gr, Arbitrary a, Arbitrary b) => Arbitrary (SimpleGraph gr a b) where
+  arbitrary = SG <$> arbitraryGraphWith (filter notLoop . uniqBy toEdge)
+
+  shrink = map SG . shrinkGraph . simpleGraph
+
+toEdge :: LEdge b -> Edge
+toEdge (v,w,_) = (v,w)
+
+notLoop :: LEdge b -> Bool
+notLoop (v,w,_) = v /= w
