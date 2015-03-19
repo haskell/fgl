@@ -19,11 +19,12 @@ module Data.Graph.Inductive.Arbitrary
        ) where
 
 import           Data.Graph.Inductive.Graph        (Edge, Graph, LEdge, Node,
-                                                    delNode, mkGraph, nodes)
+                                                    delNode, empty, mkGraph,
+                                                    nodes)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
 
-import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf, suchThat)
+import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf)
 
 import Control.Applicative (liftA3)
 import Data.Function       (on)
@@ -41,11 +42,13 @@ arbitraryGraph = arbitraryGraphWith id
 --   edges).
 arbitraryGraphWith :: (Graph gr, Arbitrary a, Arbitrary b)
                       => ([LEdge b] -> [LEdge b]) -> Gen (gr a b)
-arbitraryGraphWith f = do ns <- suchThat genNs (not . null)
-                          let nGen = elements ns
-                          lns <- mapM makeLNode ns
-                          les <- fmap f . listOf $ makeLEdge nGen
-                          return $ mkGraph lns les
+arbitraryGraphWith f = do ns <- genNs
+                          if null ns
+                             then return empty
+                             else do let nGen = elements ns
+                                     lns <- mapM makeLNode ns
+                                     les <- fmap f . listOf $ makeLEdge nGen
+                                     return $ mkGraph lns les
   where
     genNs = fmap uniq arbitrary
     makeLNode n = fmap ((,) n) arbitrary
