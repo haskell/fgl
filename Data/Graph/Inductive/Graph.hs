@@ -172,7 +172,8 @@ type UDecomp g    = (Maybe UContext,g)
 
 -- | Minimum implementation: 'empty', 'isEmpty', 'match', 'mkGraph', 'labNodes'
 class Graph gr where
-  -- essential operations
+  {-# MINIMAL empty, isEmpty, match, mkGraph, labNodes #-}
+
   -- | An empty 'Graph'.
   empty     :: gr a b
 
@@ -189,7 +190,6 @@ class Graph gr where
   -- | A list of all 'LNode's in the 'Graph'.
   labNodes  :: gr a b -> [LNode a]
 
-  -- derived operations
   -- | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
   -- and the remaining 'Graph'.
   matchAny  :: gr a b -> GDecomp gr a b

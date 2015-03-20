@@ -39,6 +39,8 @@ import Data.Graph.Inductive.Graph
 -- Monadic Graph
 --
 class Monad m => GraphM m gr where
+  {-# MINIMAL emptyM, isEmptyM, matchM, mkGraphM, labNodesM #-}
+
   emptyM     :: m (gr a b)
 
   isEmptyM   :: m (gr a b) -> m Bool
