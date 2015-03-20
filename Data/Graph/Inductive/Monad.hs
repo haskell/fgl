@@ -39,30 +39,36 @@ import Data.Graph.Inductive.Graph
 -- Monadic Graph
 --
 class Monad m => GraphM m gr where
-  -- essential operations
   emptyM     :: m (gr a b)
+
   isEmptyM   :: m (gr a b) -> m Bool
+
   matchM     :: Node -> m (gr a b) -> m (Decomp gr a b)
+
   mkGraphM   :: [LNode a] -> [LEdge b] -> m (gr a b)
+
   labNodesM  :: m (gr a b) -> m [LNode a]
-  -- derived operations
+
   matchAnyM  :: m (gr a b) -> m (GDecomp gr a b)
-  noNodesM   :: m (gr a b) -> m Int
-  nodeRangeM :: m (gr a b) -> m (Node,Node)
-  labEdgesM  :: m (gr a b) -> m [LEdge b]
-  -- default implementation of derived operations
   matchAnyM g = do vs <- labNodesM g
                    case vs of
                      []      -> error "Match Exception, Empty Graph"
                      (v,_):_ -> do (Just c,g') <- matchM v g
                                    return (c,g')
+
+  noNodesM   :: m (gr a b) -> m Int
   noNodesM = labNodesM >>. length
+
+  nodeRangeM :: m (gr a b) -> m (Node,Node)
   nodeRangeM g = do vs <- labNodesM g
                     let vs' = map fst vs
                     return (minimum vs',maximum vs')
+
+  labEdgesM  :: m (gr a b) -> m [LEdge b]
   labEdgesM = ufoldM (\(p,v,_,s)->(((map (i v) p)++(map (o v) s))++)) []
-              where o v = \(l,w)->(v,w,l)
-                    i v = \(l,w)->(w,v,l)
+    where
+      o v = \(l,w)->(v,w,l)
+      i v = \(l,w)->(w,v,l)
 
 
 -- composing a monadic function with a non-monadic one

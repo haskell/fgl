@@ -175,33 +175,39 @@ class Graph gr where
   -- essential operations
   -- | An empty 'Graph'.
   empty     :: gr a b
+
   -- | True if the given 'Graph' is empty.
   isEmpty   :: gr a b -> Bool
+
   -- | Decompose a 'Graph' into the 'MContext' found for the given node and the
   -- remaining 'Graph'.
   match     :: Node -> gr a b -> Decomp gr a b
+
   -- | Create a 'Graph' from the list of 'LNode's and 'LEdge's.
   mkGraph   :: [LNode a] -> [LEdge b] -> gr a b
+
   -- | A list of all 'LNode's in the 'Graph'.
   labNodes  :: gr a b -> [LNode a]
+
   -- derived operations
   -- | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
   -- and the remaining 'Graph'.
   matchAny  :: gr a b -> GDecomp gr a b
-  -- | The number of 'Node's in a 'Graph'.
-  noNodes   :: gr a b -> Int
-  -- | The minimum and maximum 'Node' in a 'Graph'.
-  nodeRange :: gr a b -> (Node,Node)
-  -- | A list of all 'LEdge's in the 'Graph'.
-  labEdges  :: gr a b -> [LEdge b]
-  -- default implementation of derived operations
   matchAny g = case labNodes g of
                  []      -> error "Match Exception, Empty Graph"
                  (v,_):_ -> (c,g') where (Just c,g') = match v g
-  noNodes = length . labNodes
-  nodeRange g = (minimum vs,maximum vs) where vs = map fst (labNodes g)
-  labEdges = ufold (\(_,v,_,s)->((map (\(l,w)->(v,w,l)) s)++)) []
 
+  -- | The number of 'Node's in a 'Graph'.
+  noNodes   :: gr a b -> Int
+  noNodes = length . labNodes
+
+  -- | The minimum and maximum 'Node' in a 'Graph'.
+  nodeRange :: gr a b -> (Node,Node)
+  nodeRange g = (minimum vs,maximum vs) where vs = map fst (labNodes g)
+
+  -- | A list of all 'LEdge's in the 'Graph'.
+  labEdges  :: gr a b -> [LEdge b]
+  labEdges = ufold (\(_,v,_,s)->((map (\(l,w)->(v,w,l)) s)++)) []
 
 class Graph gr => DynGraph gr where
   -- | Merge the 'Context' into the 'DynGraph'.
