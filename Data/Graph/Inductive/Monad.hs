@@ -54,7 +54,7 @@ class Monad m => GraphM m gr where
   matchAnyM  :: m (gr a b) -> m (GDecomp gr a b)
   matchAnyM g = do vs <- labNodesM g
                    case vs of
-                     []      -> error "Match Exception, Empty Graph"
+                     []      -> fail "Match Exception, Empty Graph"
                      (v,_):_ -> do (Just c,g') <- matchM v g
                                    return (c,g')
 
