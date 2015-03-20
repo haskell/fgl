@@ -24,7 +24,7 @@ library
   -- other-extensions:
   build-depends:       base < 5
                      , fgl < 6
-                     , QuickCheck >= 2.3 && < 2.8
+                     , QuickCheck >= 2.3 && < 2.9
   -- hs-source-dirs:
   default-language:    Haskell2010
 
