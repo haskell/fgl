@@ -62,9 +62,11 @@ class Monad m => GraphM m gr where
   noNodesM = labNodesM >>. length
 
   nodeRangeM :: m (gr a b) -> m (Node,Node)
-  nodeRangeM g = do vs <- labNodesM g
-                    let vs' = map fst vs
-                    return (minimum vs',maximum vs')
+  nodeRangeM g = do isE <- isEmptyM g
+                    if isE
+                       then fail "nodeRangeM of empty graph"
+                       else do vs <- nodesM g
+                               return (minimum vs,maximum vs)
 
   labEdgesM  :: m (gr a b) -> m [LEdge b]
   labEdgesM = ufoldM (\(p,v,_,s)->(((map (i v) p)++(map (o v) s))++)) []
@@ -105,8 +107,11 @@ edgesM :: GraphM m gr => m (gr a b) -> m [Edge]
 edgesM =  labEdgesM >>. map (\(v,w,_)->(v,w))
 
 newNodesM :: GraphM m gr => Int -> m (gr a b) -> m [Node]
-newNodesM i g = do (_,n) <- nodeRangeM g
-                   return [n+1..n+i]
+newNodesM i g = do isE <- isEmptyM g
+                   if isE
+                      then return [0..i-1]
+                      else do (_,n) <- nodeRangeM g
+                              return [n+1..n+i]
 
 
 -- graph construction & destruction

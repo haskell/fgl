@@ -203,7 +203,11 @@ class Graph gr where
 
   -- | The minimum and maximum 'Node' in a 'Graph'.
   nodeRange :: gr a b -> (Node,Node)
-  nodeRange g = (minimum vs,maximum vs) where vs = map fst (labNodes g)
+  nodeRange g
+    | isEmpty g = error "nodeRange of empty graph"
+    | otherwise = (minimum vs, maximum vs)
+    where
+      vs = nodes g
 
   -- | A list of all 'LEdge's in the 'Graph'.
   labEdges  :: gr a b -> [LEdge b]
@@ -243,7 +247,11 @@ edges = map (\(v,w,_)->(v,w)) . labEdges
 
 -- | List N available 'Node's, i.e. 'Node's that are not used in the 'Graph'.
 newNodes :: Graph gr => Int -> gr a b -> [Node]
-newNodes i g = [n+1..n+i] where (_,n) = nodeRange g
+newNodes i g
+  | isEmpty g = [0..i-1]
+  | otherwise = [n+1..n+i]
+  where
+    (_,n) = nodeRange g
 
 -- | 'True' if the 'Node' is present in the 'Graph'.
 gelem :: Graph gr => Node -> gr a b -> Bool

@@ -73,7 +73,7 @@ instance Graph Gr where
 
     -- overriding members for efficiency
     noNodes   (Gr g) = IM.size g
-    nodeRange (Gr g) = fromMaybe (0,0)
+    nodeRange (Gr g) = fromMaybe (error "nodeRange of empty graph")
                        $ liftA2 (,) (ix (IM.minViewWithKey g))
                                     (ix (IM.maxViewWithKey g))
       where

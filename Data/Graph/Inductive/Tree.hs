@@ -70,7 +70,7 @@ instance Graph Gr where
                             (uncurry (uncurry cleanSplit))
                             (M.minViewWithKey g)
   noNodes   (Gr g)  = M.size g
-  nodeRange (Gr g)  = fromMaybe (0,0)
+  nodeRange (Gr g)  = fromMaybe (error "nodeRange of empty graph")
                       $ liftA2 (,) (ix (M.minViewWithKey g))
                                    (ix (M.maxViewWithKey g))
     where
