@@ -80,6 +80,7 @@ test-suite fgl-tests {
 
     other-modules:    Data.Graph.Inductive.Arbitrary
                     , Data.Graph.Inductive.Proxy
+                    , Data.Graph.Inductive.Properties
 
     ghc-options:      -Wall -fno-warn-orphans
 

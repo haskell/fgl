@@ -40,3 +40,6 @@ asProxyTypeOf a _ = a
 
 withProxy :: Proxy a -> a -> a
 withProxy _ a = a
+
+asProxyEdgeTypeOf :: gr a' b -> Proxy (gr a b) -> gr a' b
+asProxyEdgeTypeOf gr _ = gr
