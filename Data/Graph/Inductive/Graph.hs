@@ -35,7 +35,7 @@ module Data.Graph.Inductive.Graph (
     -- ** Graph Folds and Maps
     ufold,gmap,nmap,emap,
     -- ** Graph Projection
-    nodes,edges,newNodes,gelem,
+    nodes,edges,toEdge,newNodes,gelem,
     -- ** Graph Construction and Destruction
     insNode,insEdge,delNode,delEdge,delLEdge,
     insNodes,insEdges,delNodes,delEdges,
@@ -243,7 +243,11 @@ nodes = map fst . labNodes
 
 -- | List all 'Edge's in the 'Graph'.
 edges :: Graph gr => gr a b -> [Edge]
-edges = map (\(v,w,_)->(v,w)) . labEdges
+edges = map toEdge . labEdges
+
+-- | Drop the label component of an edge.
+toEdge :: LEdge b -> Edge
+toEdge (v,w,_) = (v,w)
 
 -- | List N available 'Node's, i.e. 'Node's that are not used in the 'Graph'.
 newNodes :: Graph gr => Int -> gr a b -> [Node]
