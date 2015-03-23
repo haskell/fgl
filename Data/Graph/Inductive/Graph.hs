@@ -55,7 +55,8 @@ module Data.Graph.Inductive.Graph (
 ) where
 
 
-import Data.List (sortBy)
+import Data.Function (on)
+import Data.List     (groupBy, sortBy, (\\))
 
 
 {- Signatures:
@@ -428,28 +429,43 @@ deg' (p,_,_,s) = length p+length s
 
 -- graph equality
 --
-nodeComp :: Eq b => LNode b -> LNode b -> Ordering
-nodeComp n@(v,_) n'@(w,_) | n == n'   = EQ
-                          | v<w       = LT
-                          | otherwise = GT
-
 slabNodes :: (Eq a,Graph gr) => gr a b -> [LNode a]
-slabNodes = sortBy nodeComp . labNodes
+slabNodes = sortBy (compare `on` fst) . labNodes
 
-edgeComp :: Eq b => LEdge b -> LEdge b -> Ordering
-edgeComp e@(v,w,_) e'@(x,y,_) | e == e'              = EQ
-                              | v<x || (v==x && w<y) = LT
-                              | otherwise            = GT
+glabEdges :: (Eq b, Graph gr) => gr a b -> [GroupEdges b]
+glabEdges = map (GEs . groupLabels)
+            . groupBy ((==) `on` toEdge)
+            . sortBy (compare `on` toEdge)
+            . labEdges
+  where
+    setLabel (v,w) b = (v,w,b)
 
-slabEdges :: (Eq b,Graph gr) => gr a b -> [LEdge b]
-slabEdges = sortBy edgeComp . labEdges
+    groupLabels les = setLabel (toEdge (head les)) (map edgeLabel les)
 
 -- instance (Eq a,Eq b,Graph gr) => Eq (gr a b) where
 --   g == g' = slabNodes g == slabNodes g' && slabEdges g == slabEdges g'
 
 equal :: (Eq a,Eq b,Graph gr) => gr a b -> gr a b -> Bool
-equal g g' = slabNodes g == slabNodes g' && slabEdges g == slabEdges g'
+equal g g' = slabNodes g == slabNodes g' && glabEdges g == glabEdges g'
+-- This assumes that nodes aren't repeated (which shouldn't happen for
+-- sane graph instances).  If node IDs are repeated, then the usage of
+-- slabNodes cannot guarantee stable ordering.
 
+-- Newtype wrapper just to test for equality of multiple edges.  This
+-- is needed because without an Ord constraint on `b' it is not
+-- possible to guarantee a stable ordering on edge labels.
+newtype GroupEdges b = GEs (LEdge [b])
+  deriving (Show, Read)
+
+instance (Eq b) => Eq (GroupEdges b) where
+  (GEs (v1,w1,bs1)) == (GEs (v2,w2,bs2)) = v1 == v2
+                                           && w1 == w2
+                                           && eqLists bs1 bs2
+
+eqLists :: (Eq a) => [a] -> [a] -> Bool
+eqLists xs ys = null (xs \\ ys) && null (ys \\ xs)
+-- OK to use \\ here as we want each value in xs to cancell a *single*
+-- value in ys.
 
 ----------------------------------------------------------------------
 -- UTILITIES
