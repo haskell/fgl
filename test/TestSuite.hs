@@ -27,6 +27,8 @@ main :: IO ()
 main = hspec $ do
   graphTests "Tree Graphs"         (Proxy :: TreeP)
   graphTests "PatriciaTree Graphs" (Proxy :: PatriciaTreeP)
+  describe "Miscellaneous" $ do
+    prop "edge projections" (edge_projections :: LEdge Char -> Bool)
 
 -- -----------------------------------------------------------------------------
 
@@ -43,9 +45,26 @@ graphTests nm p = describe nm $ do
     proxyProp "mkGraph (edges)" valid_mkGraph_edges
     propType  "match"           valid_match
     propType  "matchAny"        valid_matchAny
+    propType  "newNodes"        newNodes_really_new
+    propType  "ufold (nodes)"   ufold_all_nodes
+    propType  "gelem"           all_nodes_gelem
+    propType  "gelem vs nodes"  gelem_in_nodes
 
   describe "Dynamic tests" $ do
     propType  "merging (&)"     valid_merge
+    propType  "gmap (id)"       gmap_id
+    propType  "insNode"         valid_insNode
+    propType  "insNodes"        valid_insNodes
+    propType  "insEdge"         valid_insEdge
+    propType  "insEdges"        valid_insEdges
+    propType  "delNode"         valid_delNode
+    propType  "delNodes"        valid_delNodes
+    propType  "delEdge"         valid_delEdge
+    propType  "delEdges"        valid_delEdges
+    propType  "delLEdge"        valid_delLEdge
+    propType  "delAllLEdge"     valid_delAllLEdge
+    proxyProp "valid_mkGraph"   valid_mkGraph
+    propType  "valid_buildGr"   valid_buildGr
 
   where
     proxyProp str = prop str . ($p)
