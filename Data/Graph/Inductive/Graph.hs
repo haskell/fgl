@@ -331,6 +331,9 @@ delEdges :: DynGraph gr => [Edge] -> gr a b -> gr a b
 delEdges es g = foldl' (flip delEdge) g es
 
 -- | Build a 'Graph' from a list of 'Context's.
+--
+--   The list should be in the order such that earlier 'Context's
+--   depend upon later ones (i.e. as produced by @'ufold' (:) []@).
 buildGr :: DynGraph gr => [Context a b] -> gr a b
 buildGr = foldr (&) empty
 
