@@ -34,7 +34,7 @@ type UGr = Gr () ()
 instance (Eq a, Ord b) => Eq (Gr a b) where
   (Gr g1) == (Gr g2) = fmap sortAdj g1 == fmap sortAdj g2
     where
-      sortAdj (a1,n,a2) = (sort a1,n,sort a2)
+      sortAdj (p,n,s) = (sort p,n,sort s)
 
 instance (Show a, Show b) => Show (Gr a b) where
   showsPrec d g = showParen (d > 10) $
@@ -54,27 +54,32 @@ instance (Read a, Read b) => Read (Gr a b) where
 --
 instance Graph Gr where
   empty             = Gr M.empty
+
   isEmpty (Gr g)    = M.null g
+
   match v gr@(Gr g) = maybe (Nothing, gr)
                             (first Just . uncurry (cleanSplit v))
                       . (\(m,g') -> fmap (flip (,) g') m)
                       $ M.updateLookupWithKey (const (const Nothing)) v g
+
   mkGraph vs es     = (insEdges' . insNodes vs) empty
-        where
-          insEdges' g = foldl' (flip insEdge) g es
+    where
+      insEdges' g = foldl' (flip insEdge) g es
 
   labNodes (Gr g)   = map (\(v,(_,l,_))->(v,l)) (M.toList g)
-  -- more efficient versions of derived class members
-  --
+
   matchAny (Gr g)   = maybe (error "Match Exception, Empty Graph")
                             (uncurry (uncurry cleanSplit))
                             (M.minViewWithKey g)
+
   noNodes   (Gr g)  = M.size g
+
   nodeRange (Gr g)  = fromMaybe (error "nodeRange of empty graph")
                       $ liftA2 (,) (ix (M.minViewWithKey g))
                                    (ix (M.maxViewWithKey g))
     where
       ix            = fmap (fst . fst)
+
   labEdges  (Gr g)  = concatMap (\(v,(_,_,s))->map (\(l,w)->(v,w,l)) s) (M.toList g)
 
 -- After a Node (with its corresponding Context') are split out of a

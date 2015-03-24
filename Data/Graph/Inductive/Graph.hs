@@ -54,10 +54,10 @@ module Data.Graph.Inductive.Graph (
     prettyPrint
 ) where
 
-
+import Control.Arrow (first)
 import Data.Function (on)
-import Data.List     (groupBy, sortBy, (\\))
-
+import Data.List     (foldl', groupBy, sortBy, (\\))
+import Data.Maybe    (fromMaybe, isJust)
 
 {- Signatures:
 
@@ -196,7 +196,9 @@ class Graph gr where
   matchAny  :: gr a b -> GDecomp gr a b
   matchAny g = case labNodes g of
                  []      -> error "Match Exception, Empty Graph"
-                 (v,_):_ -> (c,g') where (Just c,g') = match v g
+                 (v,_):_ -> (c,g')
+                   where
+                     (Just c,g') = match v g
 
   -- | The number of 'Node's in a 'Graph'.
   noNodes   :: gr a b -> Int
@@ -218,12 +220,13 @@ class Graph gr => DynGraph gr where
   -- | Merge the 'Context' into the 'DynGraph'.
   (&) :: Context a b -> gr a b -> gr a b
 
-
 -- | Fold a function over the graph.
 ufold :: Graph gr => ((Context a b) -> c -> c) -> c -> gr a b -> c
-ufold f u g | isEmpty g = u
-            | otherwise = f c (ufold f u g')
-            where (c,g') = matchAny g
+ufold f u g
+  | isEmpty g = u
+  | otherwise = f c (ufold f u g')
+  where
+    (c,g') = matchAny g
 
 -- | Map a function over the graph.
 gmap :: DynGraph gr => (Context a b -> Context c d) -> gr a b -> gr c d
@@ -236,7 +239,8 @@ nmap f = gmap (\(p,v,l,s)->(p,v,f l,s))
 -- | Map a function over the 'Edge' labels in a graph.
 emap :: DynGraph gr => (b -> c) -> gr a b -> gr a c
 emap f = gmap (\(p,v,l,s)->(map1 f p,v,l,map1 f s))
-         where map1 g = map (\(l,v)->(g l,v))
+  where
+    map1 g = map (first g)
 
 -- | List all 'Node's in the 'Graph'.
 nodes :: Graph gr => gr a b -> [Node]
@@ -264,7 +268,7 @@ newNodes i g
 
 -- | 'True' if the 'Node' is present in the 'Graph'.
 gelem :: Graph gr => Node -> gr a b -> Bool
-gelem v g = case match v g of {(Just _,_) -> True; _ -> False}
+gelem v = isJust . fst . match v
 
 -- | Insert a 'LNode' into the 'Graph'.
 insNode :: DynGraph gr => LNode a -> gr a b -> gr a b
@@ -274,7 +278,8 @@ insNode (v,l) = (([],v,l,[])&)
 -- | Insert a 'LEdge' into the 'Graph'.
 insEdge :: DynGraph gr => LEdge b -> gr a b -> gr a b
 insEdge (v,w,l) g = (pr,v,la,(l,w):su) & g'
-                    where (Just (pr,_,la,su),g') = match v g
+  where
+    (Just (pr,_,la,su),g') = match v g
 
 -- | Remove a 'Node' from the 'Graph'.
 delNode :: Graph gr => Node -> gr a b -> gr a b
@@ -283,31 +288,30 @@ delNode v = delNodes [v]
 -- | Remove an 'Edge' from the 'Graph'.
 delEdge :: DynGraph gr => Edge -> gr a b -> gr a b
 delEdge (v,w) g = case match v g of
-                  (Nothing,_)        -> g
-                  (Just (p,v',l,s),g') -> (p,v',l,filter ((/=w).snd) s) & g'
+                    (Nothing,_)          -> g
+                    (Just (p,v',l,s),g') -> (p,v',l,filter ((/=w).snd) s) & g'
 
 -- | Remove an 'LEdge' from the 'Graph'.
 delLEdge :: (DynGraph gr, Eq b) => LEdge b -> gr a b -> gr a b
 delLEdge (v,w,b) g = case match v g of
-                  (Nothing,_)        -> g
-                  (Just (p,v',l,s),g') -> (p,v',l,filter (\(x,n) -> x /= b || n /= w) s) & g'
+                       (Nothing,_)          -> g
+                       (Just (p,v',l,s),g') -> (p,v',l,filter (/= (b,w)) s) & g'
 
 -- | Insert multiple 'LNode's into the 'Graph'.
 insNodes   :: DynGraph gr => [LNode a] -> gr a b -> gr a b
-insNodes vs g = foldr insNode g vs
+insNodes vs g = foldl' (flip insNode) g vs
 
 -- | Insert multiple 'LEdge's into the 'Graph'.
 insEdges :: DynGraph gr => [LEdge b] -> gr a b -> gr a b
-insEdges es g = foldr insEdge g es
+insEdges es g = foldl' (flip insEdge) g es
 
 -- | Remove multiple 'Node's from the 'Graph'.
 delNodes :: Graph gr => [Node] -> gr a b -> gr a b
-delNodes []     g = g
-delNodes (v:vs) g = delNodes vs (snd (match v g))
+delNodes vs g = foldl' (snd .: flip match) g vs
 
 -- | Remove multiple 'Edge's from the 'Graph'.
-delEdges :: DynGraph gr => [Edge]    -> gr a b -> gr a b
-delEdges es g = foldr delEdge g es
+delEdges :: DynGraph gr => [Edge] -> gr a b -> gr a b
+delEdges es g = foldl' (flip delEdge) g es
 
 -- | Build a 'Graph' from a list of 'Context's.
 buildGr :: DynGraph gr => [Context a b] -> gr a b
@@ -319,19 +323,19 @@ buildGr = foldr (&) empty
 -- | Build a quasi-unlabeled 'Graph'.
 mkUGraph :: Graph gr => [Node] -> [Edge] -> gr () ()
 mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
-   where labUEdges = map (\(v,w)->(v,w,()))
-         labUNodes = map (\v->(v,()))
+   where
+     labUEdges = map (\(v,w)->(v,w,()))
+     labUNodes = map (\v->(v,()))
 
 -- | Find the context for the given 'Node'.  Causes an error if the 'Node' is
 -- not present in the 'Graph'.
 context :: Graph gr => gr a b -> Node -> Context a b
-context g v = case match v g of
-                (Nothing,_) -> error ("Match Exception, Node: "++show v)
-                (Just c,_)  -> c
+context g v = fromMaybe (error ("Match Exception, Node: "++show v))
+                        (fst (match v g))
 
 -- | Find the label for a 'Node'.
 lab :: Graph gr => gr a b -> Node -> Maybe a
-lab g v = fst (match v g) >>= return.lab'
+lab g v = fmap lab' . fst $ match v g
 
 -- | Find the neighbors for a 'Node'.
 neighbors :: Graph gr => gr a b -> Node -> [Node]
@@ -372,7 +376,7 @@ indeg  = length .: context1l
 
 -- | The degree of the 'Node'.
 deg :: Graph gr => gr a b -> Node -> Int
-deg = (\(p,_,_,s) -> length p+length s) .: context
+deg = deg' .: context
 
 -- | The 'Node' in a 'Context'.
 node' :: Context a b -> Node
@@ -425,7 +429,6 @@ indeg' = length . context1l'
 -- | The degree of a 'Context'.
 deg' :: Context a b -> Int
 deg' (p,_,_,s) = length p+length s
-
 
 -- graph equality
 --
