@@ -37,7 +37,7 @@ module Data.Graph.Inductive.Graph (
     -- ** Graph Projection
     nodes,edges,toEdge,edgeLabel,newNodes,gelem,
     -- ** Graph Construction and Destruction
-    insNode,insEdge,delNode,delEdge,delLEdge,
+    insNode,insEdge,delNode,delEdge,delLEdge,delAllLEdge,
     insNodes,insEdges,delNodes,delEdges,
     buildGr,mkUGraph,
     -- ** Graph Inspection
@@ -56,7 +56,7 @@ module Data.Graph.Inductive.Graph (
 
 import Control.Arrow (first)
 import Data.Function (on)
-import Data.List     (foldl', groupBy, sortBy, (\\))
+import Data.List     (delete, foldl', groupBy, sortBy, (\\))
 import Data.Maybe    (fromMaybe, isJust)
 
 {- Signatures:
@@ -286,16 +286,33 @@ delNode :: Graph gr => Node -> gr a b -> gr a b
 delNode v = delNodes [v]
 
 -- | Remove an 'Edge' from the 'Graph'.
+--
+--   NOTE: in the case of multiple edges, this will delete /all/ such
+--   edges from the graph as there is no way to distinguish between
+--   them.  If you need to delete only a single such edge, please use
+--   'delLEdge'.
 delEdge :: DynGraph gr => Edge -> gr a b -> gr a b
 delEdge (v,w) g = case match v g of
                     (Nothing,_)          -> g
                     (Just (p,v',l,s),g') -> (p,v',l,filter ((/=w).snd) s) & g'
 
 -- | Remove an 'LEdge' from the 'Graph'.
+--
+--   NOTE: in the case of multiple edges with the same label, this
+--   will only delete the /first/ such edge.  To delete all such
+--   edges, please use 'delAllLedges'.
 delLEdge :: (DynGraph gr, Eq b) => LEdge b -> gr a b -> gr a b
-delLEdge (v,w,b) g = case match v g of
-                       (Nothing,_)          -> g
-                       (Just (p,v',l,s),g') -> (p,v',l,filter (/= (b,w)) s) & g'
+delLEdge = delLEdgeBy delete
+
+-- | Remove all edges equal to the one specified.
+delAllLEdge :: (DynGraph gr, Eq b) => LEdge b -> gr a b -> gr a b
+delAllLEdge = delLEdgeBy (filter . (/=))
+
+delLEdgeBy :: (DynGraph gr, Eq b) => ((b,Node) -> Adj b -> Adj b)
+              -> LEdge b -> gr a b -> gr a b
+delLEdgeBy f (v,w,b) g = case match v g of
+                           (Nothing,_)          -> g
+                           (Just (p,v',l,s),g') -> (p,v',l,f (b,w) s) & g'
 
 -- | Insert multiple 'LNode's into the 'Graph'.
 insNodes   :: DynGraph gr => [LNode a] -> gr a b -> gr a b
