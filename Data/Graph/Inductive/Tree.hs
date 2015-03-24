@@ -9,7 +9,7 @@ module Data.Graph.Inductive.Tree (Gr,UGr) where
 import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
-import           Control.Arrow       (first)
+import           Control.Arrow       (first, second)
 import           Control.DeepSeq     (NFData (..))
 import           Data.List           (foldl', sort)
 import           Data.Map            (Map)
@@ -62,9 +62,11 @@ instance Graph Gr where
                       . (\(m,g') -> fmap (flip (,) g') m)
                       $ M.updateLookupWithKey (const (const Nothing)) v g
 
-  mkGraph vs es     = (insEdges' . insNodes vs) empty
-    where
-      insEdges' g = foldl' (flip insEdge) g es
+  mkGraph vs es     = insEdges es
+                      . Gr
+                      . M.fromList
+                      . map (second (\l -> ([],l,[])))
+                      $ vs
 
   labNodes (Gr g)   = map (\(v,(_,l,_))->(v,l)) (M.toList g)
 

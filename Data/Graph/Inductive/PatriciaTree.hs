@@ -29,7 +29,7 @@ import           Control.Arrow       (second)
 import           Control.DeepSeq     (NFData (..))
 import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
-import           Data.List           (foldl', sort)
+import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
 
 ----------------------------------------------------------------------
@@ -73,9 +73,11 @@ instance Graph Gr where
 
     match           = matchGr
 
-    mkGraph vs es   = (insEdges' . insNodes vs) empty
-      where
-        insEdges' g = foldl' (flip insEdge) g es
+    mkGraph vs es   = insEdges es
+                      . Gr
+                      . IM.fromList
+                      . map (second (\l -> (IM.empty,l,IM.empty)))
+                      $ vs
 
     labNodes (Gr g) = [ (node, label)
                             | (node, (_, label, _)) <- IM.toList g ]
