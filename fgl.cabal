@@ -76,6 +76,7 @@ test-suite fgl-tests {
                     , base
                     , QuickCheck >= 2.3 && < 2.9
                     , hspec == 2.1.*
+                    , containers
 
     hs-source-dirs:   test
                       fgl-arbitrary
