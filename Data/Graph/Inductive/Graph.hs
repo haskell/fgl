@@ -35,7 +35,7 @@ module Data.Graph.Inductive.Graph (
     -- ** Graph Folds and Maps
     ufold,gmap,nmap,emap,
     -- ** Graph Projection
-    nodes,edges,toEdge,edgeLabel,newNodes,gelem,
+    nodes,edges,toEdge,toLEdge,edgeLabel,newNodes,gelem,
     -- ** Graph Construction and Destruction
     insNode,insEdge,delNode,delEdge,delLEdge,delAllLEdge,
     insNodes,insEdges,delNodes,delEdges,
@@ -254,6 +254,10 @@ edges = map toEdge . labEdges
 toEdge :: LEdge b -> Edge
 toEdge (v,w,_) = (v,w)
 
+-- | Add a label to an edge.
+toLEdge :: Edge -> b -> LEdge b
+toLEdge (v,w) l = (v,w,l)
+
 -- | The label in an edge.
 edgeLabel :: LEdge b -> b
 edgeLabel (_,_,l) = l
@@ -344,8 +348,8 @@ buildGr = foldr (&) empty
 mkUGraph :: Graph gr => [Node] -> [Edge] -> gr () ()
 mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
    where
-     labUEdges = map (\(v,w)->(v,w,()))
-     labUNodes = map (\v->(v,()))
+     labUEdges = map (`toLEdge` ())
+     labUNodes = map (flip (,) ())
 
 -- | Find the context for the given 'Node'.  Causes an error if the 'Node' is
 -- not present in the 'Graph'.
@@ -461,9 +465,7 @@ glabEdges = map (GEs . groupLabels)
             . sortBy (compare `on` toEdge)
             . labEdges
   where
-    setLabel (v,w) b = (v,w,b)
-
-    groupLabels les = setLabel (toEdge (head les)) (map edgeLabel les)
+    groupLabels les = toLEdge (toEdge (head les)) (map edgeLabel les)
 
 -- instance (Eq a,Eq b,Graph gr) => Eq (gr a b) where
 --   g == g' = slabNodes g == slabNodes g' && slabEdges g == slabEdges g'
