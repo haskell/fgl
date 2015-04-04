@@ -82,7 +82,7 @@ test-suite fgl-tests {
                     , Data.Graph.Inductive.Proxy
                     , Data.Graph.Inductive.Properties
 
-    ghc-options:      -Wall -fno-warn-orphans
+    ghc-options:      -Wall
 
     ghc-prof-options: -prof -auto
 }
