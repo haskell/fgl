@@ -60,4 +60,3 @@ matrix:
   fast_finish: true
   allow_failures:
     - env: GHCVER=head CABALVER=1.22 # see section about GHC HEAD snapshots
-    - env: GHCVER=7.10.1 CABALVER=1.22
