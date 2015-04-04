@@ -16,10 +16,14 @@ module Data.Graph.Inductive.Arbitrary
          -- * Specific graph structures
        , NoMultipleEdges(..)
        , SimpleGraph(..)
+         -- * Node and edge lists
+       , arbitraryNodes
+       , arbitraryEdges
+       , GraphNodesEdges(..)
        ) where
 
-import           Data.Graph.Inductive.Graph        (Edge, Graph, LEdge, Node,
-                                                    delNode, empty, mkGraph,
+import           Data.Graph.Inductive.Graph        (Edge, Graph, LEdge, LNode,
+                                                    Node, delNode, mkGraph,
                                                     nodes)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
@@ -29,7 +33,47 @@ import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf)
 import Control.Applicative (liftA3)
 import Data.Function       (on)
 import Data.Functor        ((<$>))
-import Data.List           (groupBy, sortBy)
+import Data.List           (deleteBy, groupBy, sortBy)
+
+-- -----------------------------------------------------------------------------
+
+-- | Generally a list of labelled nodes.
+arbitraryNodes :: (Arbitrary a) => Gen [LNode a]
+arbitraryNodes = arbitrary >>= mapM ((<$> arbitrary) . (,)) . uniq
+
+-- | Given a specified list of nodes, generate a list of edges.
+arbitraryEdges :: (Arbitrary b) => [LNode a] -> Gen [LEdge b]
+arbitraryEdges lns
+  | null lns  = return []
+  | otherwise = listOf (liftA3 (,,) nGen nGen arbitrary)
+  where
+    nGen = elements (map fst lns)
+
+-- | Defined so as to be able to generate valid 'arbitrary' node and
+--   edge lists.
+--
+--   If any specific structure (no multiple edges, no loops, etc.) is
+--   required then you will need to post-process this after generating
+--   it.
+data GraphNodesEdges a b = GNEs { graphNodes :: [LNode a]
+                                , graphEdges :: [LEdge b]
+                                }
+  deriving (Eq, Ord, Show, Read)
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (GraphNodesEdges a b) where
+  arbitrary = do ns <- arbitraryNodes
+                 GNEs ns <$> arbitraryEdges ns
+
+  shrink (GNEs ns es) = case ns of
+                          _:_:_ -> map delN ns
+                          _     -> []
+    where
+      delN ln@(n,_) = GNEs ns' es'
+        where
+          ns' = deleteBy ((==)`on`fst) ln ns
+          es' = filter (not . hasN) es
+
+          hasN (v,w,_) = v == n || w == n
 
 -- -----------------------------------------------------------------------------
 
@@ -42,17 +86,9 @@ arbitraryGraph = arbitraryGraphWith id
 --   edges).
 arbitraryGraphWith :: (Graph gr, Arbitrary a, Arbitrary b)
                       => ([LEdge b] -> [LEdge b]) -> Gen (gr a b)
-arbitraryGraphWith f = do ns <- genNs
-                          if null ns
-                             then return empty
-                             else do let nGen = elements ns
-                                     lns <- mapM makeLNode ns
-                                     les <- fmap f . listOf $ makeLEdge nGen
-                                     return $ mkGraph lns les
-  where
-    genNs = fmap uniq arbitrary
-    makeLNode n = fmap ((,) n) arbitrary
-    makeLEdge nGen = liftA3 (,,) nGen nGen arbitrary
+arbitraryGraphWith f = do GNEs ns es <- arbitrary
+                          let es' = f es
+                          return (mkGraph ns es')
 
 -- Ensure we have a list of unique Node values; this will also sort
 -- the list, but that shouldn't matter.
