@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 {- |
    Module      : Data.Graph.Inductive.Arbitrary
    Description : Arbitrary definition for fgl graphs
