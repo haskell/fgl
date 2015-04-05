@@ -11,12 +11,14 @@
 module Data.Graph.Inductive.Properties where
 
 import Data.Graph.Inductive
+import Data.Graph.Inductive.Arbitrary
 import Data.Graph.Inductive.Proxy
 
-import Test.QuickCheck (Property, (==>))
+import Test.QuickCheck
 
 import Control.Arrow ((***))
 import Data.Function (on)
+import Data.Functor  ((<$>))
 import Data.List     (groupBy, sort, sortBy)
 
 -- -----------------------------------------------------------------------------
@@ -42,32 +44,28 @@ valid_nodeRange g = not (isEmpty g) ==>
 
 -- | Make sure that a graph created with specified nodes contains
 --   those nodes (and only those nodes) and no edges are created.
-valid_mkGraph_nodes :: (Graph gr, Eq a) => Proxy (gr a b) -> [LNode a] -> Bool
-valid_mkGraph_nodes p ns = sortOn fst (labNodes g) == ns'
-                           && null (labEdges g)
-  where
-    ns' = uniqBy fst ns
-
-    g = mkGraph ns' [] `asProxyTypeOf` p
+valid_mkGraph_nodes :: (Graph gr, Arbitrary a, Eq a) => Proxy (gr a b) -> Gen Bool
+valid_mkGraph_nodes p = do ns <- arbitraryNodes
+                           let g = mkGraph ns [] `asProxyTypeOf` p
+                           return ( sortOn fst (labNodes g) == ns
+                                    && null (labEdges g))
 
 -- | Make sure that a graph created with specified edges contains
 --   those edges (and only those edges), and that no additional nodes
 --   are created.
-valid_mkGraph_edges :: (Graph gr, Eq b) => Proxy (gr a b) -> [LEdge b] -> Bool
-valid_mkGraph_edges p es = sortOn toEdge (labEdges g) == es'
-                           && sortOn fst (labNodes g) == ns
+valid_mkGraph_edges :: (Graph gr, Eq a, Eq b) => Proxy (gr a b)
+                       -> GraphNodesEdges a b  -> Bool
+valid_mkGraph_edges p (GNEs ns es) = sortOn toEdge (labEdges g) == es'
+                                     && sortOn fst (labNodes g) == ns
   where
-    -- Just in case multiple edges aren't allowed; test for that later.
     es' = uniqBy toEdge es
 
-    ns = map (flip (,) ()) . esToNs $ es'
-
-    g = mkGraph ns es' `asProxyEdgeTypeOf` p
+    g = mkGraph ns es' `asProxyTypeOf` p
 
 -- | Ensure that when a node is matched, it is indeed removed from the
 --   resulting graph.
-valid_match :: (Graph gr) => gr a b -> Bool
-valid_match g = all check_match (nodes g)
+valid_match :: (Graph gr) => gr a b -> Gen Bool
+valid_match g = check_match <$> elements (nodes g)
   where
     order = noNodes g
 
