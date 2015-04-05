@@ -30,6 +30,8 @@ main = hspec $ do
 
 -- -----------------------------------------------------------------------------
 
+-- | Run all available tests on the specified graph type.  Requires
+--   multiple edges and loops to be permissible.
 graphTests :: forall gr. (DynGraph gr, Eq (GraphType gr), Arbitrary (GraphType gr), Show (GraphType gr))
                => String -> GraphProxy gr -> Spec
 graphTests nm p = describe nm $ do
