@@ -41,12 +41,13 @@ module Data.Graph.Inductive.Graph (
     insNodes,insEdges,delNodes,delEdges,
     buildGr,mkUGraph,
     -- ** Graph Inspection
-    context,lab,neighbors,
+    context,lab,neighbors,lneighbors,
     suc,pre,lsuc,lpre,
     out,inn,outdeg,indeg,deg,
+    hasEdge,hasNeighbor,hasLEdge,hasNeighborAdj,
     equal,
     -- ** Context Inspection
-    node',lab',labNode',neighbors',
+    node',lab',labNode',neighbors',lneighbors',
     suc',pre',lpre',lsuc',
     out',inn',outdeg',indeg',deg',
     -- * Pretty-printing
@@ -315,7 +316,11 @@ lab g v = fmap lab' . fst $ match v g
 
 -- | Find the neighbors for a 'Node'.
 neighbors :: (Graph gr) => gr a b -> Node -> [Node]
-neighbors = maybe [] (\(p,_,_,s) -> map snd (p++s)) .: mcontext
+neighbors = map snd .: lneighbors
+
+-- | Find the labelled links coming into or going from a 'Context'.
+lneighbors :: (Graph gr) => gr a b -> Node -> Adj b
+lneighbors = maybe [] lneighbors' .: mcontext
 
 -- | Find all 'Node's that have a link from the given 'Node'.
 suc :: (Graph gr) => gr a b -> Node -> [Node]
@@ -370,6 +375,10 @@ labNode' (_,v,l,_) = (v,l)
 neighbors' :: Context a b -> [Node]
 neighbors' (p,_,_,s) = map snd p++map snd s
 
+-- | All labelled links coming into or going from a 'Context'.
+lneighbors' :: Context a b -> Adj b
+lneighbors' (p,_,_,s) = p ++ s
+
 -- | All 'Node's linked to in a 'Context'.
 suc' :: Context a b -> [Node]
 suc' = map snd . context4l'
@@ -405,6 +414,22 @@ indeg' = length . context1l'
 -- | The degree of a 'Context'.
 deg' :: Context a b -> Int
 deg' (p,_,_,s) = length p+length s
+
+-- | Checks if there is a directed edge between two nodes.
+hasEdge :: Graph gr => gr a b -> Edge -> Bool
+hasEdge gr (v,w) = w `elem` suc gr v
+
+-- | Checks if there is an undirected edge between two nodes.
+hasNeighbor :: Graph gr => gr a b -> Node -> Node -> Bool
+hasNeighbor gr v w = w `elem` neighbors gr v
+
+-- | Checks if there is a labelled edge between two nodes.
+hasLEdge :: (Graph gr, Eq b) => gr a b -> LEdge b -> Bool
+hasLEdge gr (v,w,l) = (w,l) `elem` lsuc gr v
+
+-- | Checks if there is an undirected labelled edge between two nodes.
+hasNeighborAdj :: (Graph gr, Eq b) => gr a b -> Node -> (b,Node) -> Bool
+hasNeighborAdj gr v a = a `elem` lneighbors gr v
 
 ----------------------------------------------------------------------
 -- GRAPH EQUALITY
