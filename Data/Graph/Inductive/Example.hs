@@ -32,7 +32,7 @@ genUNodes :: Int -> [UNode]
 genUNodes n = zip [1..n] (repeat ())
 
 -- | generate list of labeled nodes
-genLNodes :: Enum a => a -> Int -> [LNode a]
+genLNodes :: (Enum a) => a -> Int -> [LNode a]
 genLNodes q i = take i (zip [1..] [q..])
 
 -- | denote unlabeled edges
@@ -101,18 +101,18 @@ dag4' = mkGraphM (genLNodes 1 4) (labUEdges [(1,2),(1,4),(2,3),(2,4),(4,3)])
 d1'   = mkGraphM (genLNodes 1 2) [(1,2,1)]
 d3'   = mkGraphM (genLNodes 1 3) [(1,2,1),(1,3,4),(2,3,2)]
 
-ucycle :: Graph gr => Int -> gr () ()
+ucycle :: (Graph gr) => Int -> gr () ()
 ucycle n = mkUGraph vs (map (\v->(v,v `mod` n+1)) vs)
            where vs = [1..n]
 
-star :: Graph gr => Int -> gr () ()
+star :: (Graph gr) => Int -> gr () ()
 star n = mkUGraph [1..n] (map (\v->(1,v)) [2..n])
 
-ucycleM :: GraphM m gr => Int -> m (gr () ())
+ucycleM :: (GraphM m gr) => Int -> m (gr () ())
 ucycleM n = mkUGraphM vs (map (\v->(v,v `mod` n+1)) vs)
             where vs = [1..n]
 
-starM :: GraphM m gr => Int -> m (gr () ())
+starM :: (GraphM m gr) => Int -> m (gr () ())
 starM n = mkUGraphM [1..n] (map (\v->(1,v)) [2..n])
 
 

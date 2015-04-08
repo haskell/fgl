@@ -12,12 +12,12 @@ module Data.Graph.Inductive.Internal.RootPath (
 import Data.Graph.Inductive.Graph
 
 
-instance Eq a => Eq (LPath a) where
+instance (Eq a) => Eq (LPath a) where
   (LP [])        == (LP [])        = True
   (LP ((_,x):_)) == (LP ((_,y):_)) = x==y
   (LP _)         == (LP _)         = False
 
-instance Ord a => Ord (LPath a) where
+instance (Ord a) => Ord (LPath a) where
   compare (LP [])        (LP [])        = EQ
   compare (LP ((_,x):_)) (LP ((_,y):_)) = compare x y
   compare _ _ = error "LPath: cannot compare to empty paths"

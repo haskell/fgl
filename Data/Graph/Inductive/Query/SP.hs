@@ -11,7 +11,7 @@ import qualified Data.Graph.Inductive.Internal.Heap as H
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Internal.RootPath
 
-expand :: Real b => b -> LPath b -> Context a b -> [H.Heap b (LPath b)]
+expand :: (Real b) => b -> LPath b -> Context a b -> [H.Heap b (LPath b)]
 expand d (LP p) (_,_,_,s) = map (\(l,v)->H.unit (l+d) (LP ((v,l+d):p))) s
 
 -- | Implementation of Dijkstra's shortest path algorithm

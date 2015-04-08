@@ -62,56 +62,56 @@ import Data.Maybe    (fromMaybe, isJust)
 {- Signatures:
 
 -- basic operations
-empty      ::    Graph gr => gr a b
-isEmpty    ::    Graph gr => gr a b -> Bool
-match      ::    Graph gr => Node -> gr a b -> Decomp gr a b
-mkGraph    ::    Graph gr => [LNode a] -> [LEdge b] -> gr a b
-(&)        :: DynGraph gr => Context a b -> gr a b -> gr a b
+empty      ::    (Graph gr) => gr a b
+isEmpty    ::    (Graph gr) => gr a b -> Bool
+match      ::    (Graph gr) => Node -> gr a b -> Decomp gr a b
+mkGraph    ::    (Graph gr) => [LNode a] -> [LEdge b] -> gr a b
+(&)        :: (DynGraph gr) => Context a b -> gr a b -> gr a b
 
 -- graph folds and maps
-ufold      :: Graph gr => ((Context a b) -> c -> c) -> c -> gr a b -> c
-gmap       :: Graph gr => (Context a b -> Context c d) -> gr a b -> gr c d
-nmap       :: Graph gr => (a -> c) -> gr a b -> gr c b
-emap       :: Graph gr => (b -> c) -> gr a b -> gr a c
+ufold      :: (Graph gr) => ((Context a b) -> c -> c) -> c -> gr a b -> c
+gmap       :: (Graph gr) => (Context a b -> Context c d) -> gr a b -> gr c d
+nmap       :: (Graph gr) => (a -> c) -> gr a b -> gr c b
+emap       :: (Graph gr) => (b -> c) -> gr a b -> gr a c
 
 -- graph projection
-matchAny   :: Graph gr => gr a b -> GDecomp g a b
-nodes      :: Graph gr => gr a b -> [Node]
-edges      :: Graph gr => gr a b -> [Edge]
-labNodes   :: Graph gr => gr a b -> [LNode a]
-labEdges   :: Graph gr => gr a b -> [LEdge b]
-newNodes   :: Graph gr => Int -> gr a b -> [Node]
-noNodes    :: Graph gr => gr a b -> Int
-nodeRange  :: Graph gr => gr a b -> (Node,Node)
-gelem      :: Graph gr => Node -> gr a b -> Bool
+matchAny   :: (Graph gr) => gr a b -> GDecomp g a b
+nodes      :: (Graph gr) => gr a b -> [Node]
+edges      :: (Graph gr) => gr a b -> [Edge]
+labNodes   :: (Graph gr) => gr a b -> [LNode a]
+labEdges   :: (Graph gr) => gr a b -> [LEdge b]
+newNodes   :: (Graph gr) => Int -> gr a b -> [Node]
+noNodes    :: (Graph gr) => gr a b -> Int
+nodeRange  :: (Graph gr) => gr a b -> (Node,Node)
+gelem      :: (Graph gr) => Node -> gr a b -> Bool
 
 -- graph construction & destruction
-insNode    :: DynGraph gr => LNode a   -> gr a b -> gr a b
-insEdge    :: DynGraph gr => LEdge b   -> gr a b -> gr a b
-delNode    ::    Graph gr => Node      -> gr a b -> gr a b
-delEdge    :: DynGraph gr => Edge      -> gr a b -> gr a b
+insNode    :: (DynGraph gr) => LNode a   -> gr a b -> gr a b
+insEdge    :: (DynGraph gr) => LEdge b   -> gr a b -> gr a b
+delNode    ::    (Graph gr) => Node      -> gr a b -> gr a b
+delEdge    :: (DynGraph gr) => Edge      -> gr a b -> gr a b
 delLEdge   :: (DynGraph gr, Eq b) =>
                              LEdge b   -> gr a b -> gr a b
-insNodes   :: DynGraph gr => [LNode a] -> gr a b -> gr a b
-insEdges   :: DynGraph gr => [LEdge b] -> gr a b -> gr a b
-delNodes   ::    Graph gr => [Node]    -> gr a b -> gr a b
-delEdges   :: DynGraph gr => [Edge]    -> gr a b -> gr a b
-buildGr    :: DynGraph gr => [Context a b] -> gr a b
-mkUGraph   :: DynGraph gr => [Node] -> [Edge] -> gr () ()
+insNodes   :: (DynGraph gr) => [LNode a] -> gr a b -> gr a b
+insEdges   :: (DynGraph gr) => [LEdge b] -> gr a b -> gr a b
+delNodes   ::    (Graph gr) => [Node]    -> gr a b -> gr a b
+delEdges   :: (DynGraph gr) => [Edge]    -> gr a b -> gr a b
+buildGr    :: (DynGraph gr) => [Context a b] -> gr a b
+mkUGraph   :: (DynGraph gr) => [Node] -> [Edge] -> gr () ()
 
 -- graph inspection
-context    :: Graph gr => gr a b -> Node -> Context a b
-lab        :: Graph gr => gr a b -> Node -> Maybe a
-neighbors  :: Graph gr => gr a b -> Node -> [Node]
-suc        :: Graph gr => gr a b -> Node -> [Node]
-pre        :: Graph gr => gr a b -> Node -> [Node]
-lsuc       :: Graph gr => gr a b -> Node -> [(Node,b)]
-lpre       :: Graph gr => gr a b -> Node -> [(Node,b)]
-out        :: Graph gr => gr a b -> Node -> [LEdge b]
-inn        :: Graph gr => gr a b -> Node -> [LEdge b]
-outdeg     :: Graph gr => gr a b -> Node -> Int
-indeg      :: Graph gr => gr a b -> Node -> Int
-deg        :: Graph gr => gr a b -> Node -> Int
+context    :: (Graph gr) => gr a b -> Node -> Context a b
+lab        :: (Graph gr) => gr a b -> Node -> Maybe a
+neighbors  :: (Graph gr) => gr a b -> Node -> [Node]
+suc        :: (Graph gr) => gr a b -> Node -> [Node]
+pre        :: (Graph gr) => gr a b -> Node -> [Node]
+lsuc       :: (Graph gr) => gr a b -> Node -> [(Node,b)]
+lpre       :: (Graph gr) => gr a b -> Node -> [(Node,b)]
+out        :: (Graph gr) => gr a b -> Node -> [LEdge b]
+inn        :: (Graph gr) => gr a b -> Node -> [LEdge b]
+outdeg     :: (Graph gr) => gr a b -> Node -> Int
+indeg      :: (Graph gr) => gr a b -> Node -> Int
+deg        :: (Graph gr) => gr a b -> Node -> Int
 
 -- context inspection
 node'      :: Context a b -> Node
@@ -149,7 +149,7 @@ type Path    = [Node]
 -- | Labeled path
 newtype LPath a = LP [LNode a]
 
-instance Show a => Show (LPath a) where
+instance (Show a) => Show (LPath a) where
   show (LP xs) = show xs
 
 -- | Quasi-unlabeled path
@@ -216,12 +216,12 @@ class Graph gr where
   labEdges  :: gr a b -> [LEdge b]
   labEdges = ufold (\(_,v,_,s)->((map (\(l,w)->(v,w,l)) s)++)) []
 
-class Graph gr => DynGraph gr where
+class (Graph gr) => DynGraph gr where
   -- | Merge the 'Context' into the 'DynGraph'.
   (&) :: Context a b -> gr a b -> gr a b
 
 -- | Fold a function over the graph.
-ufold :: Graph gr => ((Context a b) -> c -> c) -> c -> gr a b -> c
+ufold :: (Graph gr) => ((Context a b) -> c -> c) -> c -> gr a b -> c
 ufold f u g
   | isEmpty g = u
   | otherwise = f c (ufold f u g')
@@ -229,25 +229,25 @@ ufold f u g
     (c,g') = matchAny g
 
 -- | Map a function over the graph.
-gmap :: DynGraph gr => (Context a b -> Context c d) -> gr a b -> gr c d
+gmap :: (DynGraph gr) => (Context a b -> Context c d) -> gr a b -> gr c d
 gmap f = ufold (\c->(f c&)) empty
 
 -- | Map a function over the 'Node' labels in a graph.
-nmap :: DynGraph gr => (a -> c) -> gr a b -> gr c b
+nmap :: (DynGraph gr) => (a -> c) -> gr a b -> gr c b
 nmap f = gmap (\(p,v,l,s)->(p,v,f l,s))
 
 -- | Map a function over the 'Edge' labels in a graph.
-emap :: DynGraph gr => (b -> c) -> gr a b -> gr a c
+emap :: (DynGraph gr) => (b -> c) -> gr a b -> gr a c
 emap f = gmap (\(p,v,l,s)->(map1 f p,v,l,map1 f s))
   where
     map1 g = map (first g)
 
 -- | List all 'Node's in the 'Graph'.
-nodes :: Graph gr => gr a b -> [Node]
+nodes :: (Graph gr) => gr a b -> [Node]
 nodes = map fst . labNodes
 
 -- | List all 'Edge's in the 'Graph'.
-edges :: Graph gr => gr a b -> [Edge]
+edges :: (Graph gr) => gr a b -> [Edge]
 edges = map toEdge . labEdges
 
 -- | Drop the label component of an edge.
@@ -263,7 +263,7 @@ edgeLabel :: LEdge b -> b
 edgeLabel (_,_,l) = l
 
 -- | List N available 'Node's, i.e. 'Node's that are not used in the 'Graph'.
-newNodes :: Graph gr => Int -> gr a b -> [Node]
+newNodes :: (Graph gr) => Int -> gr a b -> [Node]
 newNodes i g
   | isEmpty g = [0..i-1]
   | otherwise = [n+1..n+i]
@@ -271,22 +271,22 @@ newNodes i g
     (_,n) = nodeRange g
 
 -- | 'True' if the 'Node' is present in the 'Graph'.
-gelem :: Graph gr => Node -> gr a b -> Bool
+gelem :: (Graph gr) => Node -> gr a b -> Bool
 gelem v = isJust . fst . match v
 
 -- | Insert a 'LNode' into the 'Graph'.
-insNode :: DynGraph gr => LNode a -> gr a b -> gr a b
+insNode :: (DynGraph gr) => LNode a -> gr a b -> gr a b
 insNode (v,l) = (([],v,l,[])&)
 {-# NOINLINE [0] insNode #-}
 
 -- | Insert a 'LEdge' into the 'Graph'.
-insEdge :: DynGraph gr => LEdge b -> gr a b -> gr a b
+insEdge :: (DynGraph gr) => LEdge b -> gr a b -> gr a b
 insEdge (v,w,l) g = (pr,v,la,(l,w):su) & g'
   where
     (Just (pr,_,la,su),g') = match v g
 
 -- | Remove a 'Node' from the 'Graph'.
-delNode :: Graph gr => Node -> gr a b -> gr a b
+delNode :: (Graph gr) => Node -> gr a b -> gr a b
 delNode v = delNodes [v]
 
 -- | Remove an 'Edge' from the 'Graph'.
@@ -295,7 +295,7 @@ delNode v = delNodes [v]
 --   edges from the graph as there is no way to distinguish between
 --   them.  If you need to delete only a single such edge, please use
 --   'delLEdge'.
-delEdge :: DynGraph gr => Edge -> gr a b -> gr a b
+delEdge :: (DynGraph gr) => Edge -> gr a b -> gr a b
 delEdge (v,w) g = case match v g of
                     (Nothing,_)          -> g
                     (Just (p,v',l,s),g') -> (p,v',l,filter ((/=w).snd) s) & g'
@@ -319,33 +319,33 @@ delLEdgeBy f (v,w,b) g = case match v g of
                            (Just (p,v',l,s),g') -> (p,v',l,f (b,w) s) & g'
 
 -- | Insert multiple 'LNode's into the 'Graph'.
-insNodes   :: DynGraph gr => [LNode a] -> gr a b -> gr a b
+insNodes   :: (DynGraph gr) => [LNode a] -> gr a b -> gr a b
 insNodes vs g = foldl' (flip insNode) g vs
 
 -- | Insert multiple 'LEdge's into the 'Graph'.
-insEdges :: DynGraph gr => [LEdge b] -> gr a b -> gr a b
+insEdges :: (DynGraph gr) => [LEdge b] -> gr a b -> gr a b
 insEdges es g = foldl' (flip insEdge) g es
 
 -- | Remove multiple 'Node's from the 'Graph'.
-delNodes :: Graph gr => [Node] -> gr a b -> gr a b
+delNodes :: (Graph gr) => [Node] -> gr a b -> gr a b
 delNodes vs g = foldl' (snd .: flip match) g vs
 
 -- | Remove multiple 'Edge's from the 'Graph'.
-delEdges :: DynGraph gr => [Edge] -> gr a b -> gr a b
+delEdges :: (DynGraph gr) => [Edge] -> gr a b -> gr a b
 delEdges es g = foldl' (flip delEdge) g es
 
 -- | Build a 'Graph' from a list of 'Context's.
 --
 --   The list should be in the order such that earlier 'Context's
 --   depend upon later ones (i.e. as produced by @'ufold' (:) []@).
-buildGr :: DynGraph gr => [Context a b] -> gr a b
+buildGr :: (DynGraph gr) => [Context a b] -> gr a b
 buildGr = foldr (&) empty
 
--- mkGraph :: DynGraph gr => [LNode a] -> [LEdge b] -> gr a b
+-- mkGraph :: (DynGraph gr) => [LNode a] -> [LEdge b] -> gr a b
 -- mkGraph vs es = (insEdges es . insNodes vs) empty
 
 -- | Build a quasi-unlabeled 'Graph'.
-mkUGraph :: Graph gr => [Node] -> [Edge] -> gr () ()
+mkUGraph :: (Graph gr) => [Node] -> [Edge] -> gr () ()
 mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
    where
      labUEdges = map (`toLEdge` ())
@@ -353,53 +353,53 @@ mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
 
 -- | Find the context for the given 'Node'.  Causes an error if the 'Node' is
 -- not present in the 'Graph'.
-context :: Graph gr => gr a b -> Node -> Context a b
+context :: (Graph gr) => gr a b -> Node -> Context a b
 context g v = fromMaybe (error ("Match Exception, Node: "++show v))
                         (fst (match v g))
 
 -- | Find the label for a 'Node'.
-lab :: Graph gr => gr a b -> Node -> Maybe a
+lab :: (Graph gr) => gr a b -> Node -> Maybe a
 lab g v = fmap lab' . fst $ match v g
 
 -- | Find the neighbors for a 'Node'.
-neighbors :: Graph gr => gr a b -> Node -> [Node]
+neighbors :: (Graph gr) => gr a b -> Node -> [Node]
 neighbors = maybe [] (\(p,_,_,s) -> map snd (p++s)) .: mcontext
 
 -- | Find all 'Node's that have a link from the given 'Node'.
-suc :: Graph gr => gr a b -> Node -> [Node]
+suc :: (Graph gr) => gr a b -> Node -> [Node]
 suc = map snd .: context4l
 
 -- | Find all 'Node's that link to to the given 'Node'.
-pre :: Graph gr => gr a b -> Node -> [Node]
+pre :: (Graph gr) => gr a b -> Node -> [Node]
 pre = map snd .: context1l
 
 -- | Find all 'Node's that are linked from the given 'Node' and the label of
 -- each link.
-lsuc :: Graph gr => gr a b -> Node -> [(Node,b)]
+lsuc :: (Graph gr) => gr a b -> Node -> [(Node,b)]
 lsuc = map flip2 .: context4l
 
 -- | Find all 'Node's that link to the given 'Node' and the label of each link.
-lpre :: Graph gr => gr a b -> Node -> [(Node,b)]
+lpre :: (Graph gr) => gr a b -> Node -> [(Node,b)]
 lpre = map flip2 .: context1l
 
 -- | Find all outward-bound 'LEdge's for the given 'Node'.
-out :: Graph gr => gr a b -> Node -> [LEdge b]
+out :: (Graph gr) => gr a b -> Node -> [LEdge b]
 out g v = map (\(l,w)->(v,w,l)) (context4l g v)
 
 -- | Find all inward-bound 'LEdge's for the given 'Node'.
-inn :: Graph gr => gr a b -> Node -> [LEdge b]
+inn :: (Graph gr) => gr a b -> Node -> [LEdge b]
 inn g v = map (\(l,w)->(w,v,l)) (context1l g v)
 
 -- | The outward-bound degree of the 'Node'.
-outdeg :: Graph gr => gr a b -> Node -> Int
+outdeg :: (Graph gr) => gr a b -> Node -> Int
 outdeg = length .: context4l
 
 -- | The inward-bound degree of the 'Node'.
-indeg :: Graph gr => gr a b -> Node -> Int
+indeg :: (Graph gr) => gr a b -> Node -> Int
 indeg  = length .: context1l
 
 -- | The degree of the 'Node'.
-deg :: Graph gr => gr a b -> Node -> Int
+deg :: (Graph gr) => gr a b -> Node -> Int
 deg = deg' .: context
 
 -- | The 'Node' in a 'Context'.
@@ -512,10 +512,10 @@ flip2 (x,y) = (y,x)
 
 -- projecting on context elements
 --
-context1l :: Graph gr => gr a b -> Node -> Adj b
+context1l :: (Graph gr) => gr a b -> Node -> Adj b
 context1l = maybe [] context1l' .: mcontext
 
-context4l :: Graph gr => gr a b -> Node -> Adj b
+context4l :: (Graph gr) => gr a b -> Node -> Adj b
 context4l = maybe [] context4l' .: mcontext
 
 mcontext :: (Graph gr) => gr a b -> Node -> MContext a b
@@ -531,7 +531,7 @@ context4l' (p,v,_,s) = s++filter ((==v).snd) p
 -- PRETTY PRINTING
 ----------------------------------------------------------------------
 
--- ufold :: Graph gr => (Context a b -> c -> c) -> c -> gr a b -> c
+-- ufold :: (Graph gr) => (Context a b -> c -> c) -> c -> gr a b -> c
 
 -- | Pretty-print the graph.  Note that this loses a lot of
 --   information, such as edge inverses, etc.
