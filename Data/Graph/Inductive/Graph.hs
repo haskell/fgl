@@ -363,7 +363,7 @@ lab g v = fmap lab' . fst $ match v g
 
 -- | Find the neighbors for a 'Node'.
 neighbors :: Graph gr => gr a b -> Node -> [Node]
-neighbors = (\(p,_,_,s) -> map snd (p++s)) .: context
+neighbors = maybe [] (\(p,_,_,s) -> map snd (p++s)) .: mcontext
 
 -- | Find all 'Node's that have a link from the given 'Node'.
 suc :: Graph gr => gr a b -> Node -> [Node]
@@ -513,10 +513,13 @@ flip2 (x,y) = (y,x)
 -- projecting on context elements
 --
 context1l :: Graph gr => gr a b -> Node -> Adj b
-context1l = context1l' .: context
+context1l = maybe [] context1l' .: mcontext
 
 context4l :: Graph gr => gr a b -> Node -> Adj b
-context4l = context4l' .: context
+context4l = maybe [] context4l' .: mcontext
+
+mcontext :: (Graph gr) => gr a b -> Node -> MContext a b
+mcontext = fst .: flip match
 
 context1l' :: Context a b -> Adj b
 context1l' (p,v,_,s) = p++filter ((==v).snd) s
