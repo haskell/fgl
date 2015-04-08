@@ -27,19 +27,19 @@ gvdIn vs g = gvdOut vs (grev g)
 gvdOut :: (Graph gr, Real b) => [Node] -> gr a b -> Voronoi b
 gvdOut vs = dijkstra (H.build (zip (repeat 0) (map (\v->LP [(v,0)]) vs)))
 
-voronoiSet :: Real b => Node -> Voronoi b -> [Node]
+voronoiSet :: (Real b) => Node -> Voronoi b -> [Node]
 voronoiSet v = nub . concat . filter (\p->last p==v) . map (\(LP p)->map fst p)
 
-maybePath :: Real b => Node -> Voronoi b -> Maybe (LPath b)
+maybePath :: (Real b) => Node -> Voronoi b -> Maybe (LPath b)
 maybePath v = listToMaybe . filter (\(LP ((w,_):_))->w==v)
 
-nearestNode :: Real b => Node -> Voronoi b -> Maybe Node
+nearestNode :: (Real b) => Node -> Voronoi b -> Maybe Node
 nearestNode v = fmap (\(LP ((w,_):_))->w) . maybePath v
 
-nearestDist :: Real b => Node -> Voronoi b -> Maybe b
+nearestDist :: (Real b) => Node -> Voronoi b -> Maybe b
 nearestDist v = fmap (\(LP ((_,l):_))->l) . maybePath v
 
-nearestPath :: Real b => Node -> Voronoi b -> Maybe Path
+nearestPath :: (Real b) => Node -> Voronoi b -> Maybe Path
 nearestPath v = fmap (\(LP p)->map fst p) . maybePath v
 
 

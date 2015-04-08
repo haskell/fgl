@@ -25,7 +25,7 @@ class Thread t a b where
 instance Thread (Graph a b) Node (MContext a b) where
   split = match
 
-instance D.Discrete a => Thread (D.Diet a) a a where
+instance (D.Discrete a) => Thread (D.Diet a) a a where
   split x s = (x,D.delete x s)
 -}
 

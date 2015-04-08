@@ -21,12 +21,12 @@ import           Data.Tree                      (Tree (..))
 import qualified Data.Tree                      as T
 
 -- | return immediate dominators for each node of a graph, given a root
-iDom :: Graph gr => gr a b -> Node -> [(Node,Node)]
+iDom :: (Graph gr) => gr a b -> Node -> [(Node,Node)]
 iDom g root = let (result, toNode, _) = idomWork g root
               in  map (\(a, b) -> (toNode ! a, toNode ! b)) (assocs result)
 
 -- | return the set of dominators of the nodes of a graph, given a root
-dom :: Graph gr => gr a b -> Node -> [(Node,[Node])]
+dom :: (Graph gr) => gr a b -> Node -> [(Node,[Node])]
 dom g root = let
     (iDom, toNode, fromNode) = idomWork g root
     dom' = getDom toNode iDom
@@ -48,7 +48,7 @@ type Preds = Array Node' [Node']
 type ToNode = Array Node' Node
 type FromNode = IntMap Node'
 
-idomWork :: Graph gr => gr a b -> Node -> (IDom, ToNode, FromNode)
+idomWork :: (Graph gr) => gr a b -> Node -> (IDom, ToNode, FromNode)
 idomWork g root = let
     -- use depth first tree from root do build the first approximation
     trees@(~[tree]) = dff [root] g
@@ -106,7 +106,7 @@ treeEdges :: a -> Tree a -> [(a,a)]
 treeEdges a (Node b ts) = (b,a) : concatMap (treeEdges b) ts
 
 -- find a fixed point of f, iteratively
-fixEq :: Eq a => (a -> a) -> a -> a
+fixEq :: (Eq a) => (a -> a) -> a -> a
 fixEq f v | v' == v   = v
           | otherwise = fixEq f v'
     where v' = f v
