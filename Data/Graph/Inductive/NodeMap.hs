@@ -4,7 +4,7 @@ module Data.Graph.Inductive.NodeMap(
     -- * Functional Construction
     NodeMap,
     -- ** Map Construction
-    new, fromGraph, mkNode, mkNode_, mkNodes, mkNodes_, mkEdge, mkEdges,
+    new, toMap, fromGraph, mkNode, mkNode_, mkNodes, mkNodes_, mkEdge, mkEdges,
     -- ** Graph Construction
     -- | These functions mirror the construction and destruction functions in
     -- 'Data.Graph.Inductive.Graph', but use the given 'NodeMap' to look up
@@ -44,6 +44,10 @@ instance (NFData a) => NFData (NodeMap a) where
 -- | Create a new, empty mapping.
 new :: (Ord a) => NodeMap a
 new = NodeMap { map = M.empty, key = 0 }
+
+-- | Unwrap a NodeMap to a Map.
+toMap :: (Ord a) => NodeMap a -> Map a Node
+toMap (NodeMap mp _) = mp 
 
 -- LNode = (Node, a)
 
