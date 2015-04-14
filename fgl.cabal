@@ -61,6 +61,10 @@ library {
                     , containers
                     , array
                     , deepseq >= 1.1.0.0 && < 1.5.0.0
+
+    if impl(ghc >= 7.2) && impl(ghc <= 7.4)
+        build-depends:
+            ghc-prim
 }
 
 test-suite fgl-tests {

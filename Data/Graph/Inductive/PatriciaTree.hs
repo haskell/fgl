@@ -1,4 +1,7 @@
-{-# LANGUAGE BangPatterns, ScopedTypeVariables #-}
+{-# LANGUAGE BangPatterns, CPP, ScopedTypeVariables #-}
+#if __GLASGOW_HASKELL__ >= 720
+{-# LANGUAGE DeriveGeneric #-}
+#endif
 
 -- |An efficient implementation of 'Data.Graph.Inductive.Graph.Graph'
 -- using big-endian patricia tree (i.e. "Data.IntMap").
@@ -31,12 +34,18 @@ import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
+#if __GLASGOW_HASKELL__ >= 720
+import           GHC.Generics        (Generic)
+#endif
 
 ----------------------------------------------------------------------
 -- GRAPH REPRESENTATION
 ----------------------------------------------------------------------
 
 newtype Gr a b = Gr (GraphRep a b)
+#if __GLASGOW_HASKELL__ >= 720
+  deriving (Generic)
+#endif
 
 type GraphRep a b = IntMap (Context' a b)
 type Context' a b = (IntMap [b], a, IntMap [b])

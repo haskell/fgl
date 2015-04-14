@@ -1,3 +1,8 @@
+{-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ >= 720
+{-# LANGUAGE DeriveGeneric #-}
+#endif
+
 -- (c) 1999 - 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Tree-based implementation of 'Graph' and 'DynGraph'
 --
@@ -15,12 +20,18 @@ import           Data.List           (foldl', sort)
 import           Data.Map            (Map)
 import qualified Data.Map            as M
 import           Data.Maybe          (fromMaybe)
+#if __GLASGOW_HASKELL__ >= 720
+import           GHC.Generics        (Generic)
+#endif
 
 ----------------------------------------------------------------------
 -- GRAPH REPRESENTATION
 ----------------------------------------------------------------------
 
 newtype Gr a b = Gr (GraphRep a b)
+#if __GLASGOW_HASKELL__ >= 720
+  deriving (Generic)
+#endif
 
 type GraphRep a b = Map Node (Context' a b)
 type Context' a b = (Adj b,a,Adj b)
