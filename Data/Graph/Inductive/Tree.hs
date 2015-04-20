@@ -1,5 +1,5 @@
 {-# LANGUAGE CPP #-}
-#if __GLASGOW_HASKELL__ >= 720
+#if __GLASGOW_HASKELL__ >= 702
 {-# LANGUAGE DeriveGeneric #-}
 #endif
 
@@ -20,7 +20,7 @@ import           Data.List           (foldl', sort)
 import           Data.Map            (Map)
 import qualified Data.Map            as M
 import           Data.Maybe          (fromMaybe)
-#if __GLASGOW_HASKELL__ >= 720
+#if __GLASGOW_HASKELL__ >= 702
 import           GHC.Generics        (Generic)
 #endif
 
@@ -29,7 +29,7 @@ import           GHC.Generics        (Generic)
 ----------------------------------------------------------------------
 
 newtype Gr a b = Gr (GraphRep a b)
-#if __GLASGOW_HASKELL__ >= 720
+#if __GLASGOW_HASKELL__ >= 702
   deriving (Generic)
 #endif
 

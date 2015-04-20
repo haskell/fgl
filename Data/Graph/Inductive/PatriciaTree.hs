@@ -1,5 +1,5 @@
 {-# LANGUAGE BangPatterns, CPP, ScopedTypeVariables #-}
-#if __GLASGOW_HASKELL__ >= 720
+#if __GLASGOW_HASKELL__ >= 702
 {-# LANGUAGE DeriveGeneric #-}
 #endif
 
@@ -34,7 +34,7 @@ import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
-#if __GLASGOW_HASKELL__ >= 720
+#if __GLASGOW_HASKELL__ >= 702
 import           GHC.Generics        (Generic)
 #endif
 
@@ -43,7 +43,7 @@ import           GHC.Generics        (Generic)
 ----------------------------------------------------------------------
 
 newtype Gr a b = Gr (GraphRep a b)
-#if __GLASGOW_HASKELL__ >= 720
+#if __GLASGOW_HASKELL__ >= 702
   deriving (Generic)
 #endif
 
