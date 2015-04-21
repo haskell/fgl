@@ -280,10 +280,9 @@ valid_delAllLEdge g (NonNegative c) a1 a2 b = equal g' (delAllLEdge le g'')
     le = (v,w,b)
     g'' = insEdges (replicate c le) g'
 
--- | There is a commented-out version of 'mkGraph' in
---   "Data.Graph.Inductive.Graph" that uses 'DynGraph' (hence why it
---   isn't used by default).  This ensures that the optimised variants
---   match this \"default\" definition.
+-- | There is a version of 'mkGraph' in its documentation that uses
+--   'DynGraph' (hence why it isn't used by default).  This ensures
+--   that the optimised variants match this \"default\" definition.
 valid_mkGraph :: (DynGraph gr, Eq a, Eq b) => Proxy (gr a b)
                  -> GraphNodesEdges a b -> Bool
 valid_mkGraph p (GNEs ns es) = equal mkGr (mkGraph ns es)

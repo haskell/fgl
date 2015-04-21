@@ -35,7 +35,7 @@ module Data.Graph.Inductive.Graph (
     -- ** Graph Folds and Maps
     ufold,gmap,nmap,emap,
     -- ** Graph Projection
-    nodes,edges,toEdge,toLEdge,edgeLabel,newNodes,gelem,
+    nodes,edges,toEdge,edgeLabel,toLEdge,newNodes,gelem,
     -- ** Graph Construction and Destruction
     insNode,insEdge,delNode,delEdge,delLEdge,delAllLEdge,
     insNodes,insEdges,delNodes,delEdges,
@@ -115,6 +115,10 @@ class Graph gr where
   match     :: Node -> gr a b -> Decomp gr a b
 
   -- | Create a 'Graph' from the list of 'LNode's and 'LEdge's.
+  --
+  --   For graphs that are also instances of 'DynGraph', @mkGraph ns
+  --   es@ should be equivalent to @('insEdges' es . 'insNodes' ns)
+  --   'empty'@.
   mkGraph   :: [LNode a] -> [LEdge b] -> gr a b
 
   -- | A list of all 'LNode's in the 'Graph'.
@@ -270,9 +274,6 @@ delEdges es g = foldl' (flip delEdge) g es
 buildGr :: (DynGraph gr) => [Context a b] -> gr a b
 buildGr = foldr (&) empty
 
--- mkGraph :: (DynGraph gr) => [LNode a] -> [LEdge b] -> gr a b
--- mkGraph vs es = (insEdges es . insNodes vs) empty
-
 -- | Build a quasi-unlabeled 'Graph'.
 mkUGraph :: (Graph gr) => [Node] -> [Edge] -> gr () ()
 mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
@@ -383,8 +384,10 @@ indeg' = length . context1l'
 deg' :: Context a b -> Int
 deg' (p,_,_,s) = length p+length s
 
--- graph equality
---
+----------------------------------------------------------------------
+-- GRAPH EQUALITY
+----------------------------------------------------------------------
+
 slabNodes :: (Eq a,Graph gr) => gr a b -> [LNode a]
 slabNodes = sortBy (compare `on` fst) . labNodes
 
@@ -395,9 +398,6 @@ glabEdges = map (GEs . groupLabels)
             . labEdges
   where
     groupLabels les = toLEdge (toEdge (head les)) (map edgeLabel les)
-
--- instance (Eq a,Eq b,Graph gr) => Eq (gr a b) where
---   g == g' = slabNodes g == slabNodes g' && slabEdges g == slabEdges g'
 
 equal :: (Eq a,Eq b,Graph gr) => gr a b -> gr a b -> Bool
 equal g g' = slabNodes g == slabNodes g' && glabEdges g == glabEdges g'
@@ -418,13 +418,12 @@ instance (Eq b) => Eq (GroupEdges b) where
 
 eqLists :: (Eq a) => [a] -> [a] -> Bool
 eqLists xs ys = null (xs \\ ys) && null (ys \\ xs)
--- OK to use \\ here as we want each value in xs to cancell a *single*
+-- OK to use \\ here as we want each value in xs to cancel a *single*
 -- value in ys.
 
 ----------------------------------------------------------------------
 -- UTILITIES
 ----------------------------------------------------------------------
-
 
 -- auxiliary functions used in the implementation of the
 -- derived class members
@@ -459,8 +458,6 @@ context4l' (p,v,_,s) = s++filter ((==v).snd) p
 ----------------------------------------------------------------------
 -- PRETTY PRINTING
 ----------------------------------------------------------------------
-
--- ufold :: (Graph gr) => (Context a b -> c -> c) -> c -> gr a b -> c
 
 -- | Pretty-print the graph.  Note that this loses a lot of
 --   information, such as edge inverses, etc.
