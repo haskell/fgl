@@ -87,8 +87,9 @@ test-suite fgl-tests {
     main-is:          TestSuite.hs
 
     other-modules:    Data.Graph.Inductive.Arbitrary
+                    , Data.Graph.Inductive.Graph.Properties
                     , Data.Graph.Inductive.Proxy
-                    , Data.Graph.Inductive.Properties
+                    , Data.Graph.Inductive.Query.Properties
 
     ghc-options:      -Wall
 

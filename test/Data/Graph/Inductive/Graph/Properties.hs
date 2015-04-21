@@ -8,7 +8,7 @@
 
 
  -}
-module Data.Graph.Inductive.Properties where
+module Data.Graph.Inductive.Graph.Properties where
 
 import Data.Graph.Inductive
 import Data.Graph.Inductive.Arbitrary
