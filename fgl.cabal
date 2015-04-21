@@ -65,6 +65,9 @@ library {
     if impl(ghc >= 7.2) && impl(ghc < 7.6)
         build-depends:
             ghc-prim
+
+    ghc-options:      -Wall
+
 }
 
 test-suite fgl-tests {

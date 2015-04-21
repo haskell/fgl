@@ -2,6 +2,8 @@
 module Data.Graph.Inductive.Internal.Heap(
     -- * Type
     Heap(..),
+    prettyHeap,
+    printPrettyHeap,
     -- * Operations
     empty,unit,insert,merge,mergeAll,
     isEmpty,findMin,deleteMin,splitMin,

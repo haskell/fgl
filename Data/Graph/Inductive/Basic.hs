@@ -17,7 +17,8 @@ where
 
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Internal.Thread (threadList, threadMaybe)
+import Data.Graph.Inductive.Internal.Thread (Collect, Split, SplitM, threadList,
+                                             threadMaybe)
 
 import Data.List (nub)
 import Data.Tree
@@ -76,11 +77,17 @@ hasLoop = not . null . (gsel (\c->(node' c `elem` suc' c)))
 isSimple :: (Graph gr) => gr a b -> Bool
 isSimple = not . hasLoop
 
-
+threadGraph :: (Graph gr) => (Context a b -> r -> t)
+               -> Split (gr a b) (Context a b) r -> SplitM (gr a b) Node t
 threadGraph f c = threadMaybe f c match
 
 -- gfold1 f d b u = threadGraph (\c->d (labNode' c)) (\c->gfoldn f d b u (f c))
+gfold1 :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> r -> t)
+          -> Collect (Maybe t) r -> SplitM (gr a b) Node t
 gfold1 f d b = threadGraph d (\c->gfoldn f d b (f c))
+
+gfoldn :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> r -> t)
+          -> Collect (Maybe t) r -> [Node] -> gr a b -> (r, gr a b)
 gfoldn f d b = threadList b (gfold1 f d b)
 
 -- gfold :: ((Context a b) -> [Node]) -> ((Node,a) -> c -> d) ->
