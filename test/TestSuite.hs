@@ -12,10 +12,11 @@
  -}
 module Main where
 
-import Data.Graph.Inductive.Arbitrary  ()
+import Data.Graph.Inductive.Arbitrary        ()
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Properties
+import Data.Graph.Inductive.Graph.Properties
 import Data.Graph.Inductive.Proxy
+import Data.Graph.Inductive.Query.Properties
 
 import Test.Hspec
 import Test.Hspec.QuickCheck
@@ -27,6 +28,7 @@ main :: IO ()
 main = hspec $ do
   graphTests "Tree Graphs"         (Proxy :: TreeP)
   graphTests "PatriciaTree Graphs" (Proxy :: PatriciaTreeP)
+  queryTests
   describe "Miscellaneous" $ do
     prop "edge projections" (edge_projections :: LEdge Char -> Bool)
 
@@ -75,3 +77,44 @@ graphTests nm p = describe nm $ do
     propType = prop
 
 -- -----------------------------------------------------------------------------
+
+-- | Run all available tests for query functions.  Only tested with
+--   one graph data structure, as it is assumed that any functions
+--   used by a query function are adequately tested with 'graphTests'.
+queryTests :: Spec
+queryTests = describe "Queries" $ do
+  propP   "ap"         test_ap
+  propP   "bcc"        test_bcc
+  describe "BFS" $ do
+    propP "bfs"        test_bfs
+    propP "level"      test_level
+  describe "DFS" $ do
+    propP "components" test_components
+    propP "scc"        test_scc
+    propP "reachable"  test_reachable
+  describe "Dominators" $ do
+    test_dom
+    test_iDom
+  describe "GVD" $ do
+    test_voronoiSet
+    test_nearestNode
+    test_nearestDist
+    test_nearestPath
+  describe "Indep"  . keepSmall $ do
+    -- Due to exponential behaviour of indep, limit the maximum size.
+    propP  "indepSize" test_indepSize
+    propP  "indep"     test_indep
+  test_maxFlow2
+  test_maxFlow
+  propP "msTree"       test_msTree
+  propP "sp"           test_sp
+  keepSmall $
+    -- Just producing the sample graph to compare against is O(|V|^2)
+    propP "trc"        test_trc
+  where
+    propP str = prop str . ($p)
+
+    p :: PatriciaTreeP
+    p = Proxy
+
+    keepSmall = modifyMaxSize (min 30)
