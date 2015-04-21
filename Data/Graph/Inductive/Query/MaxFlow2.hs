@@ -33,7 +33,8 @@ type DirEdge b = (Node, Node, b, Direction)
 type DirPath=[(Node, Direction)]
 type DirRTree=[DirPath]
 
-pathFromDirPath = map (\(n,_)->n)
+pathFromDirPath :: DirPath -> [Node]
+pathFromDirPath = map fst
 
 ------------------------------------------------------------------------------
 -- Example networks
@@ -117,7 +118,7 @@ extractPathFused g ((u,_):rest@((v,Backward):_)) =
         where (tailedges, newerg) = extractPathFused newg rest
               Just (l, newg)    = extractEdge g v u (\(_,f)->(f>0))
 
--- ekFusedStep :: EKStepFunc
+ekFusedStep :: EKStepFunc
 ekFusedStep g s t = case maybePath of
         Just _          ->
             Just ((insEdges (integrateDelta es delta) newg), delta)

@@ -127,7 +127,10 @@ delNodesM (v:vs) g = do (_,g') <- matchM v g
 mkUGraphM :: (GraphM m gr) => [Node] -> [Edge] -> m (gr () ())
 mkUGraphM vs es = mkGraphM (labUNodes vs) (labUEdges es)
 
-labUEdges = map (\(v,w)->(v,w,()))
+labUEdges :: [Edge] -> [LEdge ()]
+labUEdges = map (`toLEdge` ())
+
+labUNodes :: [Node] -> [LNode ()]
 labUNodes = map (\v->(v,()))
 
 

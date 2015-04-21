@@ -81,6 +81,16 @@ newtype LPath a = LP [LNode a]
 instance (Show a) => Show (LPath a) where
   show (LP xs) = show xs
 
+instance (Eq a) => Eq (LPath a) where
+  (LP [])        == (LP [])        = True
+  (LP ((_,x):_)) == (LP ((_,y):_)) = x==y
+  (LP _)         == (LP _)         = False
+
+instance (Ord a) => Ord (LPath a) where
+  compare (LP [])        (LP [])        = EQ
+  compare (LP ((_,x):_)) (LP ((_,y):_)) = compare x y
+  compare _ _ = error "LPath: cannot compare two empty paths"
+
 -- | Quasi-unlabeled path
 type UPath   = [UNode]
 

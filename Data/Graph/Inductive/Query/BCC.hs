@@ -31,8 +31,8 @@ embedContexts (_,v,l,s) gs = map (\(x,y)-> x & y) (zip lc gs)
 findGraph :: (DynGraph gr) => Node -> [gr a b] -> (Decomp gr a b, [gr a b])
 findGraph _ [] = error "findGraph: empty graph list"
 findGraph v (g:gs) = case match v g of
-                          (Nothing,  g) -> let (d, gs') = findGraph v gs
-                                           in (d, g : gs')
+                          (Nothing,  g') -> let (d, gs') = findGraph v gs
+                                            in (d, g' : gs')
                           (Just c,  g') -> ((Just c, g'), gs)
 
 ------------------------------------------------------------------------------

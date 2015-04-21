@@ -47,6 +47,7 @@ bfs = bfsWith node'
 level :: (Graph gr) => Node -> gr a b -> [(Node,Int)]
 level v = leveln [(v,0)]
 
+suci :: Context a b -> Int -> [(Node, Int)]
 suci c i = zip (suc' c) (repeat i)
 
 leveln :: (Graph gr) => [(Node,Int)] -> gr a b -> [(Node,Int)]
@@ -74,7 +75,8 @@ bfen vs g = bfenInternal (queuePutList vs mkQueue) g
 bfe :: (Graph gr) => Node -> gr a b -> [Edge]
 bfe v = bfen [(v,v)]
 
-outU c = map (\(v,w,_)->(v,w)) (out' c)
+outU :: Context a b -> [Edge]
+outU c = map toEdge (out' c)
 
 
 -- bft (breadth first search tree)
