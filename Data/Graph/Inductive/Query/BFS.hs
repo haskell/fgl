@@ -2,16 +2,22 @@
 -- | Breadth-First Search Algorithms
 
 module Data.Graph.Inductive.Query.BFS(
+
     -- * BFS Node List
-    bfs,bfsn,bfsWith,bfsnWith,
+    bfs, bfsn, bfsWith, bfsnWith,
+
     -- * Node List With Depth Info
-    level,leveln,
+    level, leveln,
+
     -- * BFS Edges
-    bfe,bfen,
+    bfe, bfen,
+
     -- * BFS Tree
-    bft,lbft,
+    bft, lbft,
+
     -- * Shortest Path (Number of Edges)
-    esp,lesp
+    esp, lesp
+
 ) where
 
 
@@ -115,7 +121,7 @@ esp s t = getPath t . bft s
 -- all other nodes are paired with the label of their incoming edge.
 --
 lbft :: (Graph gr) => Node -> gr a b -> LRTree b
-lbft v g = case (out g v) of
+lbft v g = case out g v of
              []         -> [LP []]
              (v',_,l):_ -> lbf (queuePut (LP [(v',l)]) mkQueue) g
 
