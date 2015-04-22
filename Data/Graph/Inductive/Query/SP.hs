@@ -16,7 +16,7 @@ import Data.Graph.Inductive.Internal.RootPath
 expand :: (Real b) => b -> LPath b -> Context a b -> [H.Heap b (LPath b)]
 expand d (LP p) (_,_,_,s) = map (\(l,v)->H.unit (l+d) (LP ((v,l+d):p))) s
 
--- | Implementation of <http://en.wikipedia.org/wiki/Dijkstra%27s_algorithm Dijkstra's shortest path algorithm>.
+-- | Dijkstra's shortest path algorithm.
 dijkstra :: (Graph gr, Real b)
     => H.Heap b (LPath b) -- ^ Initial heap of known paths and their lengths.
     -> gr a b
@@ -29,10 +29,10 @@ dijkstra h g =
     where (_,p@(LP ((v,d):_)),h') = H.splitMin h
 
 -- | Tree of shortest paths from a certain node to the rest of the
--- (reachable) nodes.
+--   (reachable) nodes.
 --
--- Corresponds to 'dijkstra' applied to a heap in which the only known node is
--- the starting node, with a path of length 0 leading to it.
+--   Corresponds to 'dijkstra' applied to a heap in which the only known node is
+--   the starting node, with a path of length 0 leading to it.
 spTree :: (Graph gr, Real b)
     => Node
     -> gr a b
