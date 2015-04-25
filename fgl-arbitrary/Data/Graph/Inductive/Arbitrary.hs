@@ -23,9 +23,9 @@ module Data.Graph.Inductive.Arbitrary
        , GraphNodesEdges(..)
        ) where
 
-import           Data.Graph.Inductive.Graph        (Edge, Graph, LEdge, LNode,
-                                                    Node, delNode, mkGraph,
-                                                    nodes)
+import           Data.Graph.Inductive.Graph        (Graph, LEdge, LNode, Node,
+                                                    delNode, mkGraph, nodes,
+                                                    toEdge)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
 
@@ -137,9 +137,6 @@ instance (Graph gr, Arbitrary a, Arbitrary b) => Arbitrary (SimpleGraph gr a b) 
   arbitrary = SG <$> arbitraryGraphWith (filter notLoop . uniqBy toEdge)
 
   shrink = map SG . shrinkGraph . simpleGraph
-
-toEdge :: LEdge b -> Edge
-toEdge (v,w,_) = (v,w)
 
 notLoop :: LEdge b -> Bool
 notLoop (v,w,_) = v /= w
