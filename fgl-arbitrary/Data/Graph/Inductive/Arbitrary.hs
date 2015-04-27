@@ -22,6 +22,7 @@ module Data.Graph.Inductive.Arbitrary
        , NoMultipleEdges(..)
        , NoLoops(..)
        , SimpleGraph
+       , Undirected(..)
          -- * Node and edge lists
        , arbitraryNodes
        , arbitraryEdges
@@ -211,3 +212,38 @@ instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoLoops gr a b) w
 -- | A wrapper to generate a graph without multiple edges and
 --   no loops.
 type SimpleGraph gr a b = NoLoops (NoMultipleEdges gr) a b
+
+-- | A newtype wrapper such that each (non-loop) edge also has its
+--   reverse in the graph.
+--
+--   Note that there is no way to guarantee this after any additional
+--   edges are added or removed.
+--
+--  You should also apply this wrapper /after/ 'NoMultipleEdges' or
+--  else the wrong reverse edge might be removed.
+newtype Undirected gr a b = UG { undirGraph :: gr a b }
+                            deriving (Eq, Show, Read)
+
+instance (ArbGraph gr) => ArbGraph (Undirected gr) where
+  type BaseGraph (Undirected gr) = BaseGraph gr
+
+  toBaseGraph = toBaseGraph . undirGraph
+  fromBaseGraph = UG . fromBaseGraph
+
+  edgeF _ = undirect . edgeF (Proxy :: Proxy gr)
+
+  shrinkF = map UG . shrinkF . undirGraph
+
+undirect :: [LEdge b] -> [LEdge b]
+undirect = concatMap undir
+  where
+    undir le@(v,w,b)
+      | notLoop le = [le, (w,v,b)]
+      | otherwise  = [le]
+
+instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (Undirected gr a b) where
+  arbitrary = arbitraryGraphBy
+
+  shrink = shrinkF
+
+-- -----------------------------------------------------------------------------
