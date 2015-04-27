@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts, ScopedTypeVariables, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {- |
    Module      : Data.Graph.Inductive.Arbitrary
@@ -14,18 +15,22 @@ module Data.Graph.Inductive.Arbitrary
        ( arbitraryGraph
        , arbitraryGraphWith
        , shrinkGraph
-         -- * Specific graph structures
+         -- * Types of graphs
+       , ArbGraph(..)
+       , arbitraryGraphBy
+         -- ** Specific graph structures
        , NoMultipleEdges(..)
-       , SimpleGraph(..)
+       , NoLoops(..)
+       , SimpleGraph
          -- * Node and edge lists
        , arbitraryNodes
        , arbitraryEdges
        , GraphNodesEdges(..)
        ) where
 
-import           Data.Graph.Inductive.Graph        (Graph, LEdge, LNode, Node,
-                                                    delNode, mkGraph, nodes,
-                                                    toEdge)
+import           Data.Graph.Inductive.Graph        (DynGraph, Graph, LEdge,
+                                                    LNode, Node, delNode,
+                                                    mkGraph, nodes, toEdge)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
 
@@ -78,6 +83,42 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (GraphNodesEdges a b) where
 
 -- -----------------------------------------------------------------------------
 
+class (DynGraph (BaseGraph ag)) => ArbGraph ag where
+  type BaseGraph ag :: * -> * -> *
+
+  toBaseGraph :: ag a b -> BaseGraph ag a b
+
+  fromBaseGraph :: BaseGraph ag a b -> ag a b
+
+  edgeF :: Proxy ag -> [LEdge b] -> [LEdge b]
+
+  shrinkF :: ag a b -> [ag a b]
+
+instance ArbGraph T.Gr where
+  type BaseGraph T.Gr = T.Gr
+
+  toBaseGraph = id
+  fromBaseGraph = id
+
+  edgeF _ = id
+
+  shrinkF = shrinkGraph
+
+instance ArbGraph P.Gr where
+  type BaseGraph P.Gr = P.Gr
+
+  toBaseGraph = id
+  fromBaseGraph = id
+
+  edgeF _ = id
+
+  shrinkF = shrinkGraph
+
+data Proxy (gr :: * -> * -> *) = Proxy
+                                 deriving (Eq, Ord, Show, Read)
+
+-- -----------------------------------------------------------------------------
+
 -- | Generate an arbitrary graph.  Multiple edges are allowed.
 arbitraryGraph :: (Graph gr, Arbitrary a, Arbitrary b) => Gen (gr a b)
 arbitraryGraph = arbitraryGraphWith id
@@ -90,6 +131,12 @@ arbitraryGraphWith :: (Graph gr, Arbitrary a, Arbitrary b)
 arbitraryGraphWith f = do GNEs ns es <- arbitrary
                           let es' = f es
                           return (mkGraph ns es')
+
+-- | Generate an instance of 'ArbGraph' using the class methods.
+arbitraryGraphBy :: forall ag a b. (ArbGraph ag, Arbitrary a, Arbitrary b)
+                    => Gen (ag a b)
+arbitraryGraphBy = fromBaseGraph
+                   <$> arbitraryGraphWith (edgeF (Proxy :: Proxy ag))
 
 -- Ensure we have a list of unique Node values; this will also sort
 -- the list, but that shouldn't matter.
@@ -123,20 +170,44 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (P.Gr a b) where
 newtype NoMultipleEdges gr a b = NME { nmeGraph :: gr a b }
                                  deriving (Eq, Show, Read)
 
-instance (Graph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoMultipleEdges gr a b) where
-  arbitrary = NME <$> arbitraryGraphWith (uniqBy toEdge)
+instance (ArbGraph gr) => ArbGraph (NoMultipleEdges gr) where
+  type BaseGraph (NoMultipleEdges gr) = BaseGraph gr
 
-  shrink = map NME . shrinkGraph . nmeGraph
+  toBaseGraph = toBaseGraph. nmeGraph
+  fromBaseGraph = NME . fromBaseGraph
 
--- | A newtype wrapper to generate a graph without multiple edges and
---   no loops.
-newtype SimpleGraph gr a b = SG { simpleGraph :: gr a b }
-                             deriving (Eq, Show, Read)
+  edgeF _ = uniqBy toEdge . edgeF (Proxy :: Proxy gr)
 
-instance (Graph gr, Arbitrary a, Arbitrary b) => Arbitrary (SimpleGraph gr a b) where
-  arbitrary = SG <$> arbitraryGraphWith (filter notLoop . uniqBy toEdge)
+  shrinkF = map NME . shrinkF . nmeGraph
 
-  shrink = map SG . shrinkGraph . simpleGraph
+instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoMultipleEdges gr a b) where
+  arbitrary = arbitraryGraphBy
+
+  shrink = shrinkF
+
+-- | A newtype wrapper to generate a graph without loops (multiple
+--   edges allowed).
+newtype NoLoops gr a b = NL { looplessGraph :: gr a b }
+                         deriving (Eq, Show, Read)
+
+instance (ArbGraph gr) => ArbGraph (NoLoops gr) where
+  type BaseGraph (NoLoops gr) = BaseGraph gr
+
+  toBaseGraph = toBaseGraph . looplessGraph
+  fromBaseGraph = NL . fromBaseGraph
+
+  edgeF _ = filter notLoop . edgeF (Proxy :: Proxy gr)
+
+  shrinkF = map NL . shrinkF . looplessGraph
 
 notLoop :: LEdge b -> Bool
 notLoop (v,w,_) = v /= w
+
+instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoLoops gr a b) where
+  arbitrary = arbitraryGraphBy
+
+  shrink = shrinkF
+
+-- | A wrapper to generate a graph without multiple edges and
+--   no loops.
+type SimpleGraph gr a b = NoLoops (NoMultipleEdges gr) a b
