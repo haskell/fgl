@@ -23,6 +23,7 @@ library
   -- other-modules:
   -- other-extensions:
   build-depends:       base < 5
+                     , containers
                      , fgl < 6
                      , QuickCheck >= 2.3 && < 2.9
   -- hs-source-dirs:
