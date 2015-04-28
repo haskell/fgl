@@ -15,14 +15,19 @@ module Data.Graph.Inductive.Arbitrary
        ( arbitraryGraph
        , arbitraryGraphWith
        , shrinkGraph
+       , shrinkGraphWith
          -- * Types of graphs
        , ArbGraph(..)
+       , shrinkF
        , arbitraryGraphBy
          -- ** Specific graph structures
        , NoMultipleEdges(..)
        , NoLoops(..)
        , SimpleGraph
        , Undirected(..)
+         -- ** Connected graphs
+       , Connected
+       , connGraph
          -- * Node and edge lists
        , arbitraryNodes
        , arbitraryEdges
@@ -31,16 +36,20 @@ module Data.Graph.Inductive.Arbitrary
 
 import           Data.Graph.Inductive.Graph        (DynGraph, Graph, LEdge,
                                                     LNode, Node, delNode,
-                                                    mkGraph, nodes, toEdge)
+                                                    insEdges, insNode, mkGraph,
+                                                    newNodes, nodes, toEdge)
 import qualified Data.Graph.Inductive.PatriciaTree as P
 import qualified Data.Graph.Inductive.Tree         as T
 
 import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf)
 
-import Control.Applicative (liftA3)
-import Data.Function       (on)
-import Data.Functor        ((<$>))
-import Data.List           (deleteBy, groupBy, sortBy)
+import           Control.Applicative (liftA3, (<*>))
+import           Control.Arrow       (second)
+import           Data.Function       (on)
+import           Data.Functor        ((<$>))
+import           Data.List           (deleteBy, groupBy, sortBy)
+import           Data.Map            (Map)
+import qualified Data.Map            as M
 
 -- -----------------------------------------------------------------------------
 
@@ -93,7 +102,10 @@ class (DynGraph (BaseGraph ag)) => ArbGraph ag where
 
   edgeF :: Proxy ag -> [LEdge b] -> [LEdge b]
 
-  shrinkF :: ag a b -> [ag a b]
+  shrinkFWith :: ag a b -> [(Node, ag a b)]
+
+shrinkF :: (ArbGraph ag) => ag a b -> [ag a b]
+shrinkF = map snd . shrinkFWith
 
 instance ArbGraph T.Gr where
   type BaseGraph T.Gr = T.Gr
@@ -103,7 +115,7 @@ instance ArbGraph T.Gr where
 
   edgeF _ = id
 
-  shrinkF = shrinkGraph
+  shrinkFWith = shrinkGraphWith
 
 instance ArbGraph P.Gr where
   type BaseGraph P.Gr = P.Gr
@@ -113,7 +125,7 @@ instance ArbGraph P.Gr where
 
   edgeF _ = id
 
-  shrinkF = shrinkGraph
+  shrinkFWith = shrinkGraphWith
 
 data Proxy (gr :: * -> * -> *) = Proxy
                                  deriving (Eq, Ord, Show, Read)
@@ -151,10 +163,13 @@ uniqBy f = map head . groupBy ((==) `on` f) . sortBy (compare `on` f)
 --   deleting a single node (i.e. will never shrink to an empty
 --   graph).
 shrinkGraph :: (Graph gr) => gr a b -> [gr a b]
-shrinkGraph gr = case nodes gr of
-                   -- Need to have at least 2 nodes before we delete one!
-                   ns@(_:_:_) -> map (`delNode` gr) ns
-                   _          -> []
+shrinkGraph = map snd . shrinkGraphWith
+
+shrinkGraphWith :: (Graph gr) => gr a b -> [(Node, gr a b)]
+shrinkGraphWith gr = case nodes gr of
+                       -- Need to have at least 2 nodes before we delete one!
+                       ns@(_:_:_) -> map ((,) <*> (`delNode` gr)) ns
+                       _          -> []
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (T.Gr a b) where
   arbitrary = arbitraryGraph
@@ -179,7 +194,7 @@ instance (ArbGraph gr) => ArbGraph (NoMultipleEdges gr) where
 
   edgeF _ = uniqBy toEdge . edgeF (Proxy :: Proxy gr)
 
-  shrinkF = map NME . shrinkF . nmeGraph
+  shrinkFWith = map (second NME) . shrinkFWith . nmeGraph
 
 instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoMultipleEdges gr a b) where
   arbitrary = arbitraryGraphBy
@@ -199,7 +214,7 @@ instance (ArbGraph gr) => ArbGraph (NoLoops gr) where
 
   edgeF _ = filter notLoop . edgeF (Proxy :: Proxy gr)
 
-  shrinkF = map NL . shrinkF . looplessGraph
+  shrinkFWith = map (second NL) . shrinkFWith . looplessGraph
 
 notLoop :: LEdge b -> Bool
 notLoop (v,w,_) = v /= w
@@ -232,7 +247,7 @@ instance (ArbGraph gr) => ArbGraph (Undirected gr) where
 
   edgeF _ = undirect . edgeF (Proxy :: Proxy gr)
 
-  shrinkF = map UG . shrinkF . undirGraph
+  shrinkFWith = map (second UG) . shrinkFWith . undirGraph
 
 undirect :: [LEdge b] -> [LEdge b]
 undirect = concatMap undir
@@ -245,5 +260,57 @@ instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (Undirected gr a b
   arbitrary = arbitraryGraphBy
 
   shrink = shrinkF
+
+-- -----------------------------------------------------------------------------
+
+-- | A brute-force approach to generating connected graphs.
+--
+--   Note that this is /not/ an instance of 'ArbGraph' as it is not
+--   possible to arbitrarily layer a transformer on top of this.
+data Connected ag a b = CG { origGraph :: ag a b
+                           , connNode  :: LNode a
+                           , connEdges :: Map Node [LEdge b]
+                           }
+                        deriving (Eq, Show, Read)
+
+instance (ArbGraph ag, Arbitrary a, Arbitrary b) => Arbitrary (Connected ag a b) where
+  arbitrary = arbitraryGraphBy >>= toConnGraph
+
+  shrink = shrinkConnGraph
+
+toConnGraph :: forall ag a b. (ArbGraph ag, Arbitrary a, Arbitrary b)
+               => ag a b -> Gen (Connected ag a b)
+toConnGraph ag = do a <- arbitrary
+                    eM <- M.fromList <$> mapM mkE ws
+                    return $ CG { origGraph = ag
+                                , connNode  = (v, a)
+                                , connEdges = eM
+                                }
+  where
+    g = toBaseGraph ag
+
+    [v] = newNodes 1 g
+
+    ws = nodes g
+
+    mkE w = do b <- arbitrary
+               return (w, edgeF p [(v,w,b)])
+
+    p :: Proxy ag
+    p = Proxy
+
+shrinkConnGraph :: (ArbGraph ag) => Connected ag a b -> [Connected ag a b]
+shrinkConnGraph cg = map go (shrinkFWith (origGraph cg))
+  where
+    go (w,ag') = cg { origGraph = ag'
+                    , connEdges = M.delete w (connEdges cg)
+                    }
+
+connGraph :: (ArbGraph ag) => Connected ag a b -> BaseGraph ag a b
+connGraph cg = insEdges les . insNode lv $ g
+  where
+    g = toBaseGraph (origGraph cg)
+    lv = connNode cg
+    les = concat . M.elems $ connEdges cg
 
 -- -----------------------------------------------------------------------------
