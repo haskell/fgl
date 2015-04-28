@@ -51,13 +51,16 @@ module Data.Graph.Inductive.Graph (
     out',inn',outdeg',indeg',deg',
     -- * Pretty-printing
     prettify,
-    prettyPrint
+    prettyPrint,
+    -- * Ordering of Graphs
+    OrdGr(..)
 ) where
 
 import Control.Arrow (first)
 import Data.Function (on)
-import Data.List     (delete, foldl', groupBy, sortBy, (\\))
+import Data.List     (delete, foldl', groupBy, sortBy, (\\), sort)
 import Data.Maybe    (fromMaybe, isJust)
+import Data.Monoid   (mappend)
 
 -- | Unlabeled node
 type  Node   = Int
@@ -481,3 +484,20 @@ prettify g = ufold showsContext id g ""
 -- | Pretty-print the graph to stdout.
 prettyPrint :: (DynGraph gr, Show a, Show b) => gr a b -> IO ()
 prettyPrint = putStr . prettify
+
+----------------------------------------------------------------------
+-- Ordered Graph
+----------------------------------------------------------------------
+
+-- | OrdGr comes equipped with an Ord instance, so that graphs can be
+--   used as e.g. Map keys.
+newtype OrdGr gr a b = OrdGr { unOrdGr :: gr a b }
+  deriving (Read,Show)
+
+instance (Graph gr, Ord a, Ord b) => Eq (OrdGr gr a b) where
+  g1 == g2 = compare g1 g2 == EQ
+
+instance (Graph gr, Ord a, Ord b) => Ord (OrdGr gr a b) where
+  compare (OrdGr g1) (OrdGr g2) =
+    (compare `on` sort . labNodes) g1 g2
+    `mappend` (compare `on` sort . labEdges) g1 g2
