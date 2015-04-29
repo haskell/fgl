@@ -1,23 +1,33 @@
 -- (c) 2000 - 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Maximum Independent Node Sets
-
 module Data.Graph.Inductive.Query.Indep (
     indep
-) where
-
+  , indepSize
+  ) where
 
 import Data.Graph.Inductive.Graph
 
+import Control.Arrow ((***))
+import Data.Function (on)
+import Data.List     (maximumBy)
 
-first :: (a -> Bool) -> [a] -> a
-first p = head . filter p
+-- -----------------------------------------------------------------------------
 
+-- | Calculate the maximum independent node set of the specified
+--   graph.
 indep :: (DynGraph gr) => gr a b -> [Node]
-indep g | isEmpty g = []
-indep g = if length i1>length i2 then i1 else i2
-          where vs          = nodes g
-                m           = maximum (map (deg g) vs)
-                v           = first (\v'->deg g v'==m) vs
-                (Just c,g') = match v g
-                i1          = indep g'
-                i2          = v:indep (delNodes (neighbors' c) g')
+indep = fst . indepSize
+
+-- | The maximum independent node set along with its size.
+indepSize :: (DynGraph gr) => gr a b -> ([Node], Int)
+indepSize g
+  | isEmpty g = ([], 0)
+  | l1 > l2   = il1
+  | otherwise = il2
+  where
+    vs          = nodes g
+    v           = snd . maximumBy (compare `on` fst)
+                  . map ((,) =<< deg g) $ vs
+    (Just c,g') = match v g
+    il1@(_,l1)  = indepSize g'
+    il2@(_,l2)  = ((v:) *** (+1)) $ indepSize (delNodes (neighbors' c) g')
