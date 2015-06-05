@@ -232,7 +232,10 @@ insNode (v,l) = (([],v,l,[])&)
 insEdge :: (DynGraph gr) => LEdge b -> gr a b -> gr a b
 insEdge (v,w,l) g = (pr,v,la,(l,w):su) & g'
   where
-    (Just (pr,_,la,su),g') = match v g
+    (mcxt,g') = match v g
+    (pr,_,la,su) = fromMaybe
+                     (error ("insEdge: cannot add edge from non-existent vertex " ++ show v))
+                     mcxt
 
 -- | Remove a 'Node' from the 'Graph'.
 delNode :: (Graph gr) => Node -> gr a b -> gr a b
