@@ -93,6 +93,10 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (GraphNodesEdges a b) where
 
 -- -----------------------------------------------------------------------------
 
+-- | Representation of generating arbitrary graph structures.
+--
+--   Typically, you would only use this for the 'toBaseGraph' function
+--   or if you wanted to make a custom graph wrapper.
 class (DynGraph (BaseGraph ag)) => ArbGraph ag where
   type BaseGraph ag :: * -> * -> *
 
@@ -100,8 +104,12 @@ class (DynGraph (BaseGraph ag)) => ArbGraph ag where
 
   fromBaseGraph :: BaseGraph ag a b -> ag a b
 
+  -- | Any manipulation of edges that should be done to satisfy the
+  --   requirements of the specified wrapper.
   edgeF :: Proxy ag -> [LEdge b] -> [LEdge b]
 
+  -- | Shrinking function (assuming only one node is removed at a
+  --   time) which also returns the node that is removed.
   shrinkFWith :: ag a b -> [(Node, ag a b)]
 
 shrinkF :: (ArbGraph ag) => ag a b -> [ag a b]
