@@ -32,3 +32,23 @@ library
   ghc-options:         -Wall
 
   ghc-prof-options:    -prof -auto
+
+test-suite fgl-arbitrary-tests
+    default-language: Haskell2010
+
+    type:             exitcode-stdio-1.0
+
+    build-depends:    fgl-arbitrary
+                    , fgl
+                    , base
+                    , QuickCheck >= 2.3 && < 2.9
+                    , hspec == 2.1.*
+                    , containers
+
+    hs-source-dirs:   test
+
+    main-is:          TestSuite.hs
+
+    ghc-options:      -Wall
+
+    ghc-prof-options: -prof -auto
