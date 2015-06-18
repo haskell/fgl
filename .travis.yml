@@ -49,9 +49,10 @@ script:
  - cd fgl-arbitrary
  - cabal sandbox init
  - cabal sandbox add-source ../
- - cabal install --dependencies-only
- - cabal configure
+ - cabal install --dependencies-only --enable-tests --enable-benchmarks
+ - cabal configure --enable-tests --enable-benchmarks -v2
  - cabal build
+ - cabal test
  - cabal check
  - cabal sdist
  - install_from_tarball
