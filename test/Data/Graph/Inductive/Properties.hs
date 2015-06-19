@@ -139,8 +139,8 @@ valid_merge g = not (isEmpty g) ==> check_merge <$> elements (nodes g)
 -- | Applying a mapping over contexts shouldn't actually change the
 --   structure of the graph.
 --
---   Note that 'nmap' and 'emap' are specialised versions of 'gmap'
---   and thus this property also covers those.
+--   Note that 'nmap', 'emap' and 'nemap' are specialised versions of
+--   'gmap' and thus this property also covers those.
 gmap_id :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
 gmap_id g = equal (gmap id g) g
 
