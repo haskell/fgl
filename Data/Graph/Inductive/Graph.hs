@@ -33,7 +33,7 @@ module Data.Graph.Inductive.Graph (
     DynGraph(..),
     -- * Operations
     -- ** Graph Folds and Maps
-    ufold,gmap,nmap,emap,
+    ufold,gmap,nmap,emap,nemap,
     -- ** Graph Projection
     nodes,edges,toEdge,edgeLabel,toLEdge,newNodes,gelem,
     -- ** Graph Construction and Destruction
@@ -184,6 +184,12 @@ emap :: (DynGraph gr) => (b -> c) -> gr a b -> gr a c
 emap f = gmap (\(p,v,l,s)->(map1 f p,v,l,map1 f s))
   where
     map1 g = map (first g)
+
+-- | Map functions over both the 'Node' and 'Edge' labels in a graph.
+nemap :: (DynGraph gr) => (a -> c) -> (b -> d) -> gr a b -> gr c d
+nemap fn fe = gmap (\(p,v,l,s) -> (fe' p,v,fn l,fe' s))
+  where
+    fe' = map (first fe)
 
 -- | List all 'Node's in the 'Graph'.
 nodes :: (Graph gr) => gr a b -> [Node]
