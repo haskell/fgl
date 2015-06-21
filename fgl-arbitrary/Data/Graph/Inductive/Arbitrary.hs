@@ -10,14 +10,26 @@
 This module provides default definitions for use with QuickCheck's
 'Arbitrary' class.
 
+Both "Data.Graph.Inductive.Tree"- and
+"Data.Graph.Inductive.PatriciaTree"-based graph implementations have
+'Arbitrary' instances.  In most cases, this is all you will need.
+
+If, however, you want to create arbitrary custom graph-like data
+structures, then you will probably want to do some custom processing
+from an arbitrary 'GraphNodesEdges' value, either directly or with a
+custom 'ArbGraph' instance.
+
  -}
 module Data.Graph.Inductive.Arbitrary
-       ( arbitraryGraph
+       ( -- * Explicit graph creation
+         -- $explicit
+         arbitraryGraph
        , arbitraryGraphWith
        , shrinkGraph
        , shrinkGraphWith
          -- * Types of graphs
        , ArbGraph(..)
+       , GrProxy(..)
        , shrinkF
        , arbitraryGraphBy
          -- ** Specific graph structures
@@ -70,7 +82,7 @@ arbitraryEdges lns
 --
 --   If any specific structure (no multiple edges, no loops, etc.) is
 --   required then you will need to post-process this after generating
---   it.
+--   it, or else create a new instance of 'ArbGraph'.
 data GraphNodesEdges a b = GNEs { graphNodes :: [LNode a]
                                 , graphEdges :: [LEdge b]
                                 }
@@ -97,6 +109,10 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (GraphNodesEdges a b) where
 --
 --   Typically, you would only use this for the 'toBaseGraph' function
 --   or if you wanted to make a custom graph wrapper.
+--
+--   The intent of this class is to simplify defining and using
+--   different wrappers on top of graphs (e.g. you may wish to have an
+--   'Undirected' graph, or one with 'NoLoops', or possibly both!).
 class (DynGraph (BaseGraph ag)) => ArbGraph ag where
   type BaseGraph ag :: * -> * -> *
 
@@ -106,12 +122,14 @@ class (DynGraph (BaseGraph ag)) => ArbGraph ag where
 
   -- | Any manipulation of edges that should be done to satisfy the
   --   requirements of the specified wrapper.
-  edgeF :: Proxy ag -> [LEdge b] -> [LEdge b]
+  edgeF :: GrProxy ag -> [LEdge b] -> [LEdge b]
 
   -- | Shrinking function (assuming only one node is removed at a
   --   time) which also returns the node that is removed.
   shrinkFWith :: ag a b -> [(Node, ag a b)]
 
+-- | In most cases, for an instance of 'ArbGraph' the 'Arbitrary'
+--   instance definition will\/can have @shrink = shrinkF@.
 shrinkF :: (ArbGraph ag) => ag a b -> [ag a b]
 shrinkF = map snd . shrinkFWith
 
@@ -135,10 +153,19 @@ instance ArbGraph P.Gr where
 
   shrinkFWith = shrinkGraphWith
 
-data Proxy (gr :: * -> * -> *) = Proxy
-                                 deriving (Eq, Ord, Show, Read)
+-- | A simple graph-specific proxy type.
+data GrProxy (gr :: * -> * -> *) = GrProxy
+  deriving (Eq, Ord, Show, Read)
 
 -- -----------------------------------------------------------------------------
+
+{- $explicit
+
+If you wish to explicitly create a generated graph value (rather than
+using the 'Arbitrary' class) then you will want to use these
+functions.
+
+-}
 
 -- | Generate an arbitrary graph.  Multiple edges are allowed.
 arbitraryGraph :: (Graph gr, Arbitrary a, Arbitrary b) => Gen (gr a b)
@@ -157,7 +184,7 @@ arbitraryGraphWith f = do GNEs ns es <- arbitrary
 arbitraryGraphBy :: forall ag a b. (ArbGraph ag, Arbitrary a, Arbitrary b)
                     => Gen (ag a b)
 arbitraryGraphBy = fromBaseGraph
-                   <$> arbitraryGraphWith (edgeF (Proxy :: Proxy ag))
+                   <$> arbitraryGraphWith (edgeF (GrProxy :: GrProxy ag))
 
 -- Ensure we have a list of unique Node values; this will also sort
 -- the list, but that shouldn't matter.
@@ -173,6 +200,7 @@ uniqBy f = map head . groupBy ((==) `on` f) . sortBy (compare `on` f)
 shrinkGraph :: (Graph gr) => gr a b -> [gr a b]
 shrinkGraph = map snd . shrinkGraphWith
 
+-- | As with 'shrinkGraph', but also return the node that was deleted.
 shrinkGraphWith :: (Graph gr) => gr a b -> [(Node, gr a b)]
 shrinkGraphWith gr = case nodes gr of
                        -- Need to have at least 2 nodes before we delete one!
@@ -200,7 +228,7 @@ instance (ArbGraph gr) => ArbGraph (NoMultipleEdges gr) where
   toBaseGraph = toBaseGraph. nmeGraph
   fromBaseGraph = NME . fromBaseGraph
 
-  edgeF _ = uniqBy toEdge . edgeF (Proxy :: Proxy gr)
+  edgeF _ = uniqBy toEdge . edgeF (GrProxy :: GrProxy gr)
 
   shrinkFWith = map (second NME) . shrinkFWith . nmeGraph
 
@@ -220,7 +248,7 @@ instance (ArbGraph gr) => ArbGraph (NoLoops gr) where
   toBaseGraph = toBaseGraph . looplessGraph
   fromBaseGraph = NL . fromBaseGraph
 
-  edgeF _ = filter notLoop . edgeF (Proxy :: Proxy gr)
+  edgeF _ = filter notLoop . edgeF (GrProxy :: GrProxy gr)
 
   shrinkFWith = map (second NL) . shrinkFWith . looplessGraph
 
@@ -253,7 +281,7 @@ instance (ArbGraph gr) => ArbGraph (Undirected gr) where
   toBaseGraph = toBaseGraph . undirGraph
   fromBaseGraph = UG . fromBaseGraph
 
-  edgeF _ = undirect . edgeF (Proxy :: Proxy gr)
+  edgeF _ = undirect . edgeF (GrProxy :: GrProxy gr)
 
   shrinkFWith = map (second UG) . shrinkFWith . undirGraph
 
@@ -304,8 +332,8 @@ toConnGraph ag = do a <- arbitrary
     mkE w = do b <- arbitrary
                return (w, edgeF p [(v,w,b)])
 
-    p :: Proxy ag
-    p = Proxy
+    p :: GrProxy ag
+    p = GrProxy
 
 shrinkConnGraph :: (ArbGraph ag) => Connected ag a b -> [Connected ag a b]
 shrinkConnGraph cg = map go (shrinkFWith (origGraph cg))
@@ -314,6 +342,7 @@ shrinkConnGraph cg = map go (shrinkFWith (origGraph cg))
                     , connEdges = M.delete w (connEdges cg)
                     }
 
+-- | The underlying graph represented by this 'Connected' value.
 connGraph :: (ArbGraph ag) => Connected ag a b -> BaseGraph ag a b
 connGraph cg = insEdges les . insNode lv $ g
   where
