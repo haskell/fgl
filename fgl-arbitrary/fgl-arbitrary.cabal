@@ -3,7 +3,11 @@ version:             0.1.0.0
 synopsis:            QuickCheck support for fgl
 description:
   Provides Arbitrary instances for fgl graphs (to avoid adding a
-  QuickCheck dependency for fgl)
+  QuickCheck dependency for fgl whilst still making the instances
+  available to others).
+  .
+  Also available are non-fgl-specific functions for generating
+  graph-like data structures.
 license:             BSD3
 license-file:        LICENSE
 author:              Ivan Lazar Miljenovic
