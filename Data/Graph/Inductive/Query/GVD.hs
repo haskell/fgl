@@ -2,7 +2,7 @@
 -- | Graph Voronoi Diagram
 
 module Data.Graph.Inductive.Query.GVD (
-    Voronoi,
+    Voronoi,LRTree,
     gvdIn,gvdOut,
     voronoiSet,nearestNode,nearestDist,nearestPath,
 --    vd,nn,ns,

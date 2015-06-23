@@ -6,6 +6,8 @@ module Data.Graph.Inductive.Query.SP(
     , sp
     , spLength
     , dijkstra
+    , LRTree
+    , H.Heap
 ) where
 
 import qualified Data.Graph.Inductive.Internal.Heap as H
