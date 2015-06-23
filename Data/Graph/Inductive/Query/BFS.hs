@@ -13,7 +13,7 @@ module Data.Graph.Inductive.Query.BFS(
     bfe, bfen,
 
     -- * BFS Tree
-    bft, lbft,
+    bft, lbft, RTree,
 
     -- * Shortest Path (Number of Edges)
     esp, lesp

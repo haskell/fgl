@@ -4,7 +4,9 @@
 module Data.Graph.Inductive.Query.MST (
     msTreeAt,msTree,
     -- * Path in MST
-    msPath
+    msPath,
+    -- * Types used
+    LRTree
 ) where
 
 import           Data.Graph.Inductive.Graph
