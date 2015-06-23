@@ -76,7 +76,7 @@ type UEdge   = LEdge ()
 -- | Unlabeled path
 type Path    = [Node]
 -- | Labeled path
-newtype LPath a = LP [LNode a]
+newtype LPath a = LP { unLPath :: [LNode a] }
 
 instance (Show a) => Show (LPath a) where
   show (LP xs) = show xs
