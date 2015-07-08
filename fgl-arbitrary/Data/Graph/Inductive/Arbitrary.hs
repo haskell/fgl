@@ -262,7 +262,7 @@ instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (NoLoops gr a b) w
 
 -- | A wrapper to generate a graph without multiple edges and
 --   no loops.
-type SimpleGraph gr a b = NoLoops (NoMultipleEdges gr) a b
+type SimpleGraph gr = NoLoops (NoMultipleEdges gr)
 
 -- | A newtype wrapper such that each (non-loop) edge also has its
 --   reverse in the graph.
