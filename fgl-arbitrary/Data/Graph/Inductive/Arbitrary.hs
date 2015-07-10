@@ -38,7 +38,7 @@ module Data.Graph.Inductive.Arbitrary
        , SimpleGraph
        , Undirected(..)
          -- ** Connected graphs
-       , Connected
+       , Connected(..)
        , connGraph
          -- * Node and edge lists
        , arbitraryNodes
@@ -55,13 +55,12 @@ import qualified Data.Graph.Inductive.Tree         as T
 
 import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf)
 
-import           Control.Applicative (liftA3, (<*>))
-import           Control.Arrow       (second)
-import           Data.Function       (on)
-import           Data.Functor        ((<$>))
-import           Data.List           (deleteBy, groupBy, sortBy)
-import           Data.Map            (Map)
-import qualified Data.Map            as M
+import Control.Applicative (liftA3, (<*>))
+import Control.Arrow       (second)
+import Data.Function       (on)
+import Data.Functor        ((<$>))
+import Data.List           (deleteBy, groupBy, sortBy)
+import Data.Maybe          (mapMaybe)
 
 -- -----------------------------------------------------------------------------
 
@@ -301,11 +300,14 @@ instance (ArbGraph gr, Arbitrary a, Arbitrary b) => Arbitrary (Undirected gr a b
 
 -- | A brute-force approach to generating connected graphs.
 --
+--   The resultant graph (obtained with 'connGraph') will /never/ be
+--   empty: it will, at the very least, contain an additional
+--   connected node (obtained with 'connNode').
+--
 --   Note that this is /not/ an instance of 'ArbGraph' as it is not
 --   possible to arbitrarily layer a transformer on top of this.
-data Connected ag a b = CG { origGraph :: ag a b
-                           , connNode  :: LNode a
-                           , connEdges :: Map Node [LEdge b]
+data Connected ag a b = CG { connNode     :: Node
+                           , connArbGraph :: ag a b
                            }
                         deriving (Eq, Show, Read)
 
@@ -317,10 +319,12 @@ instance (ArbGraph ag, Arbitrary a, Arbitrary b) => Arbitrary (Connected ag a b)
 toConnGraph :: forall ag a b. (ArbGraph ag, Arbitrary a, Arbitrary b)
                => ag a b -> Gen (Connected ag a b)
 toConnGraph ag = do a <- arbitrary
-                    eM <- M.fromList <$> mapM mkE ws
-                    return $ CG { origGraph = ag
-                                , connNode  = (v, a)
-                                , connEdges = eM
+                    ces <- concat <$> mapM mkE ws
+                    return $ CG { connNode     = v
+                                , connArbGraph = fromBaseGraph
+                                                 . insEdges ces
+                                                 . insNode (v,a)
+                                                 $ g
                                 }
   where
     g = toBaseGraph ag
@@ -330,24 +334,22 @@ toConnGraph ag = do a <- arbitrary
     ws = nodes g
 
     mkE w = do b <- arbitrary
-               return (w, edgeF p [(v,w,b)])
+               return (edgeF p [(v,w,b)])
 
     p :: GrProxy ag
     p = GrProxy
 
 shrinkConnGraph :: (ArbGraph ag) => Connected ag a b -> [Connected ag a b]
-shrinkConnGraph cg = map go (shrinkFWith (origGraph cg))
+shrinkConnGraph cg = mapMaybe keepConn . shrinkFWith $ g
   where
-    go (w,ag') = cg { origGraph = ag'
-                    , connEdges = M.delete w (connEdges cg)
-                    }
+    v = connNode cg
+    g = connArbGraph cg
+
+    keepConn (w,sgs) | v == w    = Nothing
+                     | otherwise = Just (cg { connArbGraph = sgs })
 
 -- | The underlying graph represented by this 'Connected' value.
 connGraph :: (ArbGraph ag) => Connected ag a b -> BaseGraph ag a b
-connGraph cg = insEdges les . insNode lv $ g
-  where
-    g = toBaseGraph (origGraph cg)
-    lv = connNode cg
-    les = concat . M.elems $ connEdges cg
+connGraph = toBaseGraph . connArbGraph
 
 -- -----------------------------------------------------------------------------
