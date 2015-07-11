@@ -64,6 +64,21 @@ valid_mkGraph_edges p (GNEs ns es) = sortOn toEdge (labEdges g) == es'
 
     g = mkGraph ns es' `asProxyTypeOf` p
 
+-- | The resultant graph shouldn't matter on the order of nodes and
+--   edges provided.
+valid_mkGraph_order :: (Graph gr, Eq a, Eq b) => Proxy (gr a b)
+                       -> GraphNodesEdges a b -> Bool
+valid_mkGraph_order p (GNEs ns es) = all (equal g)
+                                         [ mkGraph ns  esR
+                                         , mkGraph nsR es
+                                         , mkGraph nsR esR
+                                         ]
+  where
+    g = mkGraph ns es `asProxyTypeOf` p
+
+    nsR = reverse ns
+    esR = reverse es
+
 -- | Ensure that when a node is matched, it is indeed removed from the
 --   resulting graph.
 valid_match :: (Graph gr) => gr a b -> Property
@@ -212,6 +227,21 @@ valid_insEdges g bs = not (isEmpty g) ==>
     toLE b = do v <- pickN
                 w <- pickN
                 return (v,w,b)
+
+-- | Explicitly test adding multiple edges.
+valid_insEdges_multiple :: (DynGraph gr, Ord b) => gr a b -> b -> NonNegative Int
+                           -> Property
+valid_insEdges_multiple g b (NonNegative c) = not (isEmpty g) ==>
+                                              do v <- pickN
+                                                 w <- pickN
+                                                 let bes = replicate c (v,w,b)
+                                                     g' = insEdges bes g
+                                                     es' = bes ++ es
+                                                 return $ sort (labEdges g') == sort es'
+  where
+    pickN = elements (nodes g)
+
+    es = labEdges g
 
 -- | Delete a node, and ensure there are no edges
 --   referencing that node afterwards.

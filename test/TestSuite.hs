@@ -43,6 +43,7 @@ graphTests nm p = describe nm $ do
     propType  "nodeRange"       valid_nodeRange
     proxyProp "mkGraph (nodes)" valid_mkGraph_nodes
     proxyProp "mkGraph (edges)" valid_mkGraph_edges
+    proxyProp "mkGraph (order)" valid_mkGraph_order
     propType  "match"           valid_match
     propType  "matchAny"        valid_matchAny
     propType  "newNodes"        newNodes_really_new
@@ -57,6 +58,7 @@ graphTests nm p = describe nm $ do
     propType  "insNodes"        valid_insNodes
     propType  "insEdge"         valid_insEdge
     propType  "insEdges"        valid_insEdges
+    propType  "insEdges (mult)" valid_insEdges_multiple
     propType  "delNode"         valid_delNode
     propType  "delNodes"        valid_delNodes
     propType  "delEdge"         valid_delEdge
