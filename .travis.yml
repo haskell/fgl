@@ -43,7 +43,7 @@ script:
  - cabal sdist   # tests that a source-distribution can be generated
  - cabal --version | grep --quiet '1.22';
    if [ $? -eq 0 ]; then
-      find . -name '*.cabal' | xargs cabal exec packdeps;
+      cabal exec packdeps fgl.cabal;
    fi
 
 # The following scriptlet checks that the resulting source distribution can be built & installed
