@@ -28,8 +28,10 @@ import qualified Data.Set            as S
 
 -- | Ensure that a custom 'Eq' instance matches the behaviour of the
 --   'equal' function.
-valid_Eq :: (Graph gr, Eq a, Eq b, Eq (gr a b)) => gr a b -> Bool
-valid_Eq g = equal g g && g == g
+valid_Eq :: (Graph gr, Eq a, Eq b, Eq (gr a b)) => gr a b -> gr a b -> Bool
+valid_Eq g1 g2 = (equal g1 g1 && g1 == g1)
+                 && (equal g2 g2 && g2 == g2)
+                 && ((equal g1 g2) == (g1 == g2))
 
 -- | Ensure that the definition of 'noNodes' matches the default
 --   implementation.
