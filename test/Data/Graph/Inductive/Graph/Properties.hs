@@ -133,6 +133,23 @@ gelem_in_nodes g = all (liftA2 (==) (`gelem`g) (`S.member`ns))
   where
     ns = S.fromList $ nodes g
 
+-- | Check that having a labelled edge in a graph is equivalent to
+-- 'hasNeighborAdj' reporting that the edge is there.
+test_hasNeighborAdj :: (Graph gr, Eq b, Show b) => gr a b -> Node -> Node -> b -> Bool
+test_hasNeighborAdj gr v w l = ( any (`elem` [ (v,w,l), (w,v,l) ]) $ labEdges gr )
+                               == (hasNeighborAdj gr v (l,w) && hasNeighborAdj gr w (l,v))
+
+-- | Check that having an edge in a graph is equivalent to
+-- 'hasNeighbor' reporting that the edge is there.
+test_hasNeighbor :: (Graph gr, Eq b) => gr a b -> Node -> Node -> Bool
+test_hasNeighbor gr v w =
+  ( any (`elem` [ (v,w), (w,v) ]) $ edges gr ) == (hasNeighbor gr v w && hasNeighbor gr w v)
+
+-- | Check that having a labelled edge in a graph is equivalent to
+-- 'hasLEdge' reporting that the edge is there.
+test_hasLEdge :: (Graph gr, Eq b) => gr a b -> LEdge b -> Bool
+test_hasLEdge gr e = (e `elem` labEdges gr) == hasLEdge gr e
+
 -- -----------------------------------------------------------------------------
 -- Dynamic graphs
 

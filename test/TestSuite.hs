@@ -52,6 +52,9 @@ graphTests nm p = describe nm $ do
     propType  "ufold (nodes)"   ufold_all_nodes
     propType  "gelem"           all_nodes_gelem
     propType  "gelem vs nodes"  gelem_in_nodes
+    propType  "test_hasNeighborAdj" test_hasNeighborAdj
+    propType  "test_hasNeighbor" test_hasNeighbor
+    propType  "test_hasLEdge"   test_hasLEdge
 
   describe "Dynamic tests" $ do
     propType  "merging (&)"     valid_merge
@@ -89,9 +92,10 @@ queryTests = describe "Queries" $ do
     propP "bfs"        test_bfs
     propP "level"      test_level
   describe "DFS" $ do
-    propP "components" test_components
-    propP "scc"        test_scc
-    propP "reachable"  test_reachable
+    propP "components"   test_components
+    propP "scc"          test_scc
+    propP "reachable"    test_reachable
+    propP "condensation" test_condensation
   describe "Dominators" $ do
     test_dom
     test_iDom
