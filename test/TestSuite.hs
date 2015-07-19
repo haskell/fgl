@@ -52,9 +52,9 @@ graphTests nm p = describe nm $ do
     propType  "ufold (nodes)"   ufold_all_nodes
     propType  "gelem"           all_nodes_gelem
     propType  "gelem vs nodes"  gelem_in_nodes
-    propType  "test_hasNeighborAdj" test_hasNeighborAdj
-    propType  "test_hasNeighbor" test_hasNeighbor
-    propType  "test_hasLEdge"   test_hasLEdge
+    propType  "hasNeighborAdj"  valid_hasNeighborAdj
+    propType  "hasNeighbor"     valid_hasNeighbor
+    propType  "hasLEdge"        valid_hasLEdge
 
   describe "Dynamic tests" $ do
     propType  "merging (&)"       valid_merge
