@@ -276,7 +276,7 @@ delLEdge = delLEdgeBy delete
 delAllLEdge :: (DynGraph gr, Eq b) => LEdge b -> gr a b -> gr a b
 delAllLEdge = delLEdgeBy (filter . (/=))
 
-delLEdgeBy :: (DynGraph gr, Eq b) => ((b,Node) -> Adj b -> Adj b)
+delLEdgeBy :: (DynGraph gr) => ((b,Node) -> Adj b -> Adj b)
               -> LEdge b -> gr a b -> gr a b
 delLEdgeBy f (v,w,b) g = case match v g of
                            (Nothing,_)          -> g
@@ -468,10 +468,10 @@ hasNeighborAdj gr v a = a `elem` lneighbors gr v
 -- GRAPH EQUALITY
 ----------------------------------------------------------------------
 
-slabNodes :: (Eq a,Graph gr) => gr a b -> [LNode a]
+slabNodes :: (Graph gr) => gr a b -> [LNode a]
 slabNodes = sortBy (compare `on` fst) . labNodes
 
-glabEdges :: (Eq b, Graph gr) => gr a b -> [GroupEdges b]
+glabEdges :: (Graph gr) => gr a b -> [GroupEdges b]
 glabEdges = map (GEs . groupLabels)
             . groupBy ((==) `on` toEdge)
             . sortBy (compare `on` toEdge)

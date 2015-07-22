@@ -144,13 +144,13 @@ gelem_in_nodes g = all (liftA2 (==) (`gelem`g) (`S.member`ns))
 
 -- | Check that having a labelled edge in a graph is equivalent to
 -- 'hasNeighborAdj' reporting that the edge is there.
-valid_hasNeighborAdj :: (Graph gr, Eq b, Show b) => gr a b -> Node -> Node -> b -> Bool
+valid_hasNeighborAdj :: (Graph gr, Eq b) => gr a b -> Node -> Node -> b -> Bool
 valid_hasNeighborAdj gr v w l = any (`elem` [(v,w,l), (w,v,l)]) (labEdges gr)
                                 == (hasNeighborAdj gr v (l,w) && hasNeighborAdj gr w (l,v))
 
 -- | Check that having an edge in a graph is equivalent to
 -- 'hasNeighbor' reporting that the edge is there.
-valid_hasNeighbor :: (Graph gr, Eq b) => gr a b -> Node -> Node -> Bool
+valid_hasNeighbor :: (Graph gr) => gr a b -> Node -> Node -> Bool
 valid_hasNeighbor gr v w =
   any (`elem` [(v,w), (w,v)]) (edges gr) == (hasNeighbor gr v w && hasNeighbor gr w v)
 
@@ -271,14 +271,14 @@ valid_insEdges_multiple g b (NonNegative c) = not (isEmpty g) ==>
 
 -- | Delete a node, and ensure there are no edges
 --   referencing that node afterwards.
-valid_delNode :: (DynGraph gr, Ord a, Ord b) => gr a b -> Node -> Bool
+valid_delNode :: (DynGraph gr) => gr a b -> Node -> Bool
 valid_delNode g v = not (gelem v g')
                     && (v `S.notMember` S.fromList (esToNs (labEdges g')))
   where
     g' = delNode v g
 
 -- | Test deleting a sub-set of nodes.
-valid_delNodes :: (DynGraph gr, Ord a, Ord b) => gr a b -> [Node] -> Bool
+valid_delNodes :: (DynGraph gr) => gr a b -> [Node] -> Bool
 valid_delNodes g vs = all (liftA2 (&&) (not . (`gelem` g')) (`S.notMember` ens)) vs
   where
     g' = delNodes vs g
@@ -370,7 +370,7 @@ labfilter_true g = equal (labfilter (const True) g) g
 
 -- | The subgraph induced by a list of nodes should contain exactly
 -- the nodes from this list, as well as all edges between these nodes.
-valid_subgraph :: (DynGraph gr, Eq b, Ord b) => gr a b -> Gen Bool
+valid_subgraph :: (DynGraph gr, Ord b) => gr a b -> Gen Bool
 valid_subgraph gr = do
   vs <- sublistOf $ nodes gr
   let sg = subgraph vs gr

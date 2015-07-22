@@ -35,10 +35,10 @@ printPrettyHeap = putStrLn . prettyHeap
 -- MAIN FUNCTIONS
 ----------------------------------------------------------------------
 
-empty :: (Ord a) => Heap a b
+empty :: Heap a b
 empty = Empty
 
-unit :: (Ord a) => a -> b -> Heap a b
+unit :: a -> b -> Heap a b
 unit key val = Node key val []
 
 insert :: (Ord a) => (a, b) -> Heap a b -> Heap a b
@@ -56,11 +56,11 @@ mergeAll []        = Empty
 mergeAll [h]       = h
 mergeAll (h:h':hs) = merge (merge h h') (mergeAll hs)
 
-isEmpty :: (Ord a) => Heap a b -> Bool
+isEmpty :: Heap a b -> Bool
 isEmpty Empty = True
 isEmpty _     = False
 
-findMin :: (Ord a) => Heap a b -> (a, b)
+findMin :: Heap a b -> (a, b)
 findMin Empty      = error "Heap.findMin: empty heap"
 findMin (Node key val _) = (key, val)
 
