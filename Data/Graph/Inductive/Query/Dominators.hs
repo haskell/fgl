@@ -12,7 +12,6 @@ module Data.Graph.Inductive.Query.Dominators (
     iDom
 ) where
 
-import           Control.Arrow                  ((***))
 import           Data.Array
 import           Data.Graph.Inductive.Graph
 import           Data.Graph.Inductive.Query.DFS
