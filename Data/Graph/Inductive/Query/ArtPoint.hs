@@ -90,7 +90,7 @@ getLowTree g v = lowTree (head dfsf)
 isap :: LOWTree Int -> Bool
 isap (Brc (_,_,_) []) = False
 isap (Brc (_,1,_) ts) = length ts > 1
-isap (Brc (_,n,_) ts) = length ch >= 1
+isap (Brc (_,n,_) ts) = not (null ch)
                         where ch = filter ( >=n) (map getLow ts)
 
 ------------------------------------------------------------------------------

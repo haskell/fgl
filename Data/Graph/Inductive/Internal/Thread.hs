@@ -76,7 +76,7 @@ type Collect r c  = (r -> c -> c,c)
 
 --  (3) abstract from split
 --
-threadList' :: (Collect r c) -> (Split t i r) -> [i] -> t -> (c,t)
+threadList' :: Collect r c -> Split t i r -> [i] -> t -> (c,t)
 threadList' (_,c) _ []         t = (c,t)
 threadList' (f,c) split (i:is) t = threadList' (f,f r c) split is t'
                                    where (r,t') = split i t
@@ -88,7 +88,7 @@ threadList' (f,c) split (i:is) t = threadList' (f,f r c) split is t'
    ==> therefore, we define a correpsonding operator for folding
        bottom-up/from right.
 -}
-threadList :: (Collect r c) -> (Split t i r) -> [i] -> t -> (c,t)
+threadList :: Collect r c -> Split t i r -> [i] -> t -> (c,t)
 threadList (_,c) _ []     t  = (c,t)
 threadList (f,c) split (i:is) t = (f r c',t'')
                                   where (r,t')   = split i t
@@ -100,7 +100,7 @@ threadList (f,c) split (i:is) t = (f r c',t'')
 --     threading with "continuation" c, and ignore Nothing-values, ie,
 --     stop threading and return current data structure.
 --
--- threadMaybe' :: (r -> b) -> (Split t i r) -> (e -> f -> (Maybe i,t))
+-- threadMaybe' :: (r -> b) -> Split t i r -> (e -> f -> (Maybe i,t))
 --                 -> e -> f -> (Maybe b,t)
 
 type SplitM t i r = Split t i (Maybe r)

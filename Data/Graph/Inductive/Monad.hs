@@ -20,6 +20,7 @@ module Data.Graph.Inductive.Monad(
 
 import Data.Graph.Inductive.Graph
 
+{-# ANN module "HLint: ignore Redundant lambda" #-}
 
 ----------------------------------------------------------------------
 -- MONADIC GRAPH CLASS
@@ -69,7 +70,7 @@ class (Monad m) => GraphM m gr where
                                return (minimum vs,maximum vs)
 
   labEdgesM  :: m (gr a b) -> m [LEdge b]
-  labEdgesM = ufoldM (\(p,v,_,s)->(((map (i v) p)++(map (o v) s))++)) []
+  labEdgesM = ufoldM (\(p,v,_,s)->((map (i v) p ++ map (o v) s)++)) []
     where
       o v = \(l,w)->(v,w,l)
       i v = \(l,w)->(w,v,l)
@@ -77,7 +78,7 @@ class (Monad m) => GraphM m gr where
 
 -- composing a monadic function with a non-monadic one
 --
-(>>.) :: (Monad m) => (m a -> m b) -> (b -> c) -> (m a -> m c)
+(>>.) :: (Monad m) => (m a -> m b) -> (b -> c) -> m a -> m c
 f >>. g = (>>= return . g) . f
 
 
@@ -89,7 +90,7 @@ f >>. g = (>>= return . g) . f
 --
 
 -- | graph fold
-ufoldM :: (GraphM m gr) => ((Context a b) -> c -> c) -> c -> m (gr a b) -> m c
+ufoldM :: (GraphM m gr) => (Context a b -> c -> c) -> c -> m (gr a b) -> m c
 ufoldM f u g = do b <- isEmptyM g
                   if b then return u
                        else do (c,g') <- matchAnyM g

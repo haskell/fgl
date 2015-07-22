@@ -42,7 +42,7 @@ unit :: (Ord a) => a -> b -> Heap a b
 unit key val = Node key val []
 
 insert :: (Ord a) => (a, b) -> Heap a b -> Heap a b
-insert (key, val) h = merge (unit key val) h
+insert (key, val) = merge (unit key val)
 
 merge :: (Ord a) => Heap a b -> Heap a b -> Heap a b
 merge h Empty = h
@@ -87,7 +87,7 @@ toList h = x:toList r
            where (x,r) = (findMin h,deleteMin h)
 
 heapsort :: (Ord a) => [a] -> [a]
-heapsort = (map fst) . toList . build . map (\x->(x,x))
+heapsort = map fst . toList . build . map (\x->(x,x))
 {-
 l :: (Num a) => [a]
 l  = [6,9,2,13,6,8,14,9,10,7,5]

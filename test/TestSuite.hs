@@ -29,7 +29,7 @@ main = hspec $ do
   graphTests "Tree Graphs"         (Proxy :: TreeP)
   graphTests "PatriciaTree Graphs" (Proxy :: PatriciaTreeP)
   queryTests
-  describe "Miscellaneous" $ do
+  describe "Miscellaneous" $
     prop "edge projections" (edge_projections :: LEdge Char -> Bool)
 
 -- -----------------------------------------------------------------------------
