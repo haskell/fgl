@@ -5,6 +5,7 @@ module Data.Graph.Inductive.Internal.Queue(
     mkQueue, queuePut, queuePutList, queueGet, queueEmpty
 ) where
 
+import Data.List (foldl')
 
 data Queue a = MkQueue [a] [a]
 
@@ -15,12 +16,11 @@ queuePut :: a -> Queue a -> Queue a
 queuePut item (MkQueue ins outs) = MkQueue (item:ins) outs
 
 queuePutList :: [a] -> Queue a -> Queue a
-queuePutList [] q     = q
-queuePutList (x:xs) q = queuePutList xs (queuePut x q)
+queuePutList xs q = foldl' (flip queuePut) q xs
 
 queueGet :: Queue a -> (a, Queue a)
 queueGet (MkQueue ins (item:rest)) = (item, MkQueue ins rest)
 queueGet (MkQueue ins []) = queueGet (MkQueue [] (reverse ins))
 
 queueEmpty :: Queue a -> Bool
-queueEmpty (MkQueue ins outs) = (null ins) && (null outs)
+queueEmpty (MkQueue ins outs) = null ins && null outs

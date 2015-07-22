@@ -164,14 +164,14 @@ class Graph gr where
 
   -- | A list of all 'LEdge's in the 'Graph'.
   labEdges  :: gr a b -> [LEdge b]
-  labEdges = ufold (\(_,v,_,s)->((map (\(l,w)->(v,w,l)) s)++)) []
+  labEdges = ufold (\(_,v,_,s)->(map (\(l,w)->(v,w,l)) s ++)) []
 
 class (Graph gr) => DynGraph gr where
   -- | Merge the 'Context' into the 'DynGraph'.
   (&) :: Context a b -> gr a b -> gr a b
 
 -- | Fold a function over the graph.
-ufold :: (Graph gr) => ((Context a b) -> c -> c) -> c -> gr a b -> c
+ufold :: (Graph gr) => (Context a b -> c -> c) -> c -> gr a b -> c
 ufold f u g
   | isEmpty g = u
   | otherwise = f c (ufold f u g')
@@ -503,7 +503,7 @@ eqLists xs ys = null (xs \\ ys) && null (ys \\ xs)
 -- auxiliary functions used in the implementation of the
 -- derived class members
 --
-(.:) :: (c -> d) -> (a -> b -> c) -> (a -> b -> d)
+(.:) :: (c -> d) -> (a -> b -> c) -> a -> b -> d
 -- f .: g = \x y->f (g x y)
 -- f .: g = (f .) . g
 -- (.:) f = ((f .) .)

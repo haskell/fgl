@@ -71,7 +71,7 @@ elfilter f = efilter (\(_,_,b)->f b)
 
 -- | 'True' if the graph has any edges of the form (A, A).
 hasLoop :: (Graph gr) => gr a b -> Bool
-hasLoop = not . null . (gsel (\c->(node' c `elem` suc' c)))
+hasLoop = not . null . gsel (\c->node' c `elem` suc' c)
 
 -- | The inverse of 'hasLoop'.
 isSimple :: (Graph gr) => gr a b -> Bool
@@ -84,7 +84,7 @@ threadGraph f c = threadMaybe f c match
 -- gfold1 f d b u = threadGraph (\c->d (labNode' c)) (\c->gfoldn f d b u (f c))
 gfold1 :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> r -> t)
           -> Collect (Maybe t) r -> SplitM (gr a b) Node t
-gfold1 f d b = threadGraph d (\c->gfoldn f d b (f c))
+gfold1 f d b = threadGraph d (gfoldn f d b . f)
 
 gfoldn :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> r -> t)
           -> Collect (Maybe t) r -> [Node] -> gr a b -> (r, gr a b)
@@ -102,8 +102,8 @@ gfoldn f d b = threadList b (gfold1 f d b)
 -- gfold f d (b,u) l g = fst (gfoldn f d b u l g)
 
 -- | Directed graph fold.
-gfold :: (Graph gr) =>   ((Context a b) -> [Node])    -- ^ direction of fold
-        -> ((Context a b) -> c -> d)    -- ^ depth aggregation
+gfold :: (Graph gr) =>   (Context a b -> [Node])    -- ^ direction of fold
+        -> (Context a b -> c -> d)    -- ^ depth aggregation
         -> (Maybe d -> c -> c, c)      -- ^ breadth\/level aggregation
         -> [Node]
         -> gr a b

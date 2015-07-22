@@ -21,10 +21,10 @@ first p xss  = case filter p xss of
 
 -- | Find the first path in a tree that starts with the given node
 findP :: Node -> LRTree a -> [LNode a]
-findP _ []                                  = []
-findP v ((LP []):ps)                        = findP v ps
-findP v ((LP (p@((w,_):_))):ps) | v==w      = p
-                                | otherwise = findP v ps
+findP _ []                                = []
+findP v (LP []:ps)                        = findP v ps
+findP v (LP (p@((w,_):_)):ps) | v==w      = p
+                              | otherwise = findP v ps
 
 getPath :: Node -> RTree -> Path
 getPath v = reverse . first (\(w:_)->w==v)

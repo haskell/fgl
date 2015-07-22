@@ -78,7 +78,7 @@ mkEdge (NodeMap m _) (a1, a2, b) =
 
 -- | Generates a list of 'LEdge's.
 mkEdges :: (Ord a) => NodeMap a -> [(a, a, b)] -> Maybe [LEdge b]
-mkEdges m es = mapM (mkEdge m) es
+mkEdges m = mapM (mkEdge m)
 
 -- | Construct a list of nodes.
 mkNodes :: (Ord a) => NodeMap a -> [a] -> ([LNode a], NodeMap a)

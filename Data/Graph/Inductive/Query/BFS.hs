@@ -76,7 +76,7 @@ bfenInternal q g | queueEmpty q || isEmpty g = []
         where ((u,v),q') = queueGet q
 
 bfen :: (Graph gr) => [Edge] -> gr a b -> [Edge]
-bfen vs g = bfenInternal (queuePutList vs mkQueue) g
+bfen vs = bfenInternal (queuePutList vs mkQueue)
 
 bfe :: (Graph gr) => Node -> gr a b -> [Edge]
 bfe v = bfen [(v,v)]
@@ -132,7 +132,7 @@ lbf q g | queueEmpty q || isEmpty g = []
          (Just c, g') ->
              LP p:lbf (queuePutList (map (\v' -> LP (v':p)) (lsuc' c)) q') g'
          (Nothing, g') -> lbf q' g'
-         where ((LP (p@((v,_):_))),q') = queueGet q
+         where (LP (p@((v,_):_)),q') = queueGet q
 
 lesp :: (Graph gr) => Node -> Node -> gr a b -> LPath b
 lesp s t = getLPath t . lbft s

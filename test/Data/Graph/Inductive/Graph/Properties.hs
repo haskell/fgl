@@ -23,6 +23,8 @@ import           Data.Functor        ((<$>))
 import           Data.List           (groupBy, sort, sortBy)
 import qualified Data.Set            as S
 
+{-# ANN module "HLint: ignore Use camelCase" #-}
+
 -- -----------------------------------------------------------------------------
 -- Non-dynamic graphs
 
@@ -31,7 +33,7 @@ import qualified Data.Set            as S
 valid_Eq :: (Graph gr, Eq a, Eq b, Eq (gr a b)) => gr a b -> gr a b -> Bool
 valid_Eq g1 g2 = (equal g1 g1 && g1 == g1)
                  && (equal g2 g2 && g2 == g2)
-                 && ((equal g1 g2) == (g1 == g2))
+                 && (equal g1 g2 == (g1 == g2))
 
 -- | Ensure that the definition of 'noNodes' matches the default
 --   implementation.
@@ -106,8 +108,8 @@ valid_match g = not (isEmpty g) ==> check_match <$> elements (nodes g)
 valid_matchAny :: (Graph gr, Eq a, Ord b) => gr a b -> Property
 valid_matchAny g = not (isEmpty g) ==>
                      (uncurry (&&)
-                      . (maybe False ((c'==) . sortContext) *** (equal g'))
-                       $ match (node' c) g)
+                     . (maybe False ((c'==) . sortContext) *** equal g')
+                     $ match (node' c) g)
   where
     (c,g') = matchAny g
 
@@ -138,14 +140,14 @@ gelem_in_nodes g = all (liftA2 (==) (`gelem`g) (`S.member`ns))
 -- | Check that having a labelled edge in a graph is equivalent to
 -- 'hasNeighborAdj' reporting that the edge is there.
 valid_hasNeighborAdj :: (Graph gr, Eq b, Show b) => gr a b -> Node -> Node -> b -> Bool
-valid_hasNeighborAdj gr v w l = ( any (`elem` [ (v,w,l), (w,v,l) ]) $ labEdges gr )
+valid_hasNeighborAdj gr v w l = any (`elem` [ (v,w,l), (w,v,l) ]) (labEdges gr)
                                 == (hasNeighborAdj gr v (l,w) && hasNeighborAdj gr w (l,v))
 
 -- | Check that having an edge in a graph is equivalent to
 -- 'hasNeighbor' reporting that the edge is there.
 valid_hasNeighbor :: (Graph gr, Eq b) => gr a b -> Node -> Node -> Bool
 valid_hasNeighbor gr v w =
-  ( any (`elem` [ (v,w), (w,v) ]) $ edges gr ) == (hasNeighbor gr v w && hasNeighbor gr w v)
+  any (`elem` [ (v,w), (w,v) ]) (edges gr) == hasNeighbor gr v w && hasNeighbor gr w v
 
 -- | Check that having a labelled edge in a graph is equivalent to
 -- 'hasLEdge' reporting that the edge is there.
@@ -351,15 +353,15 @@ gfiltermap_id g = equal (gfiltermap Just g) g
 
 -- | Tests `nfilter` with a function accepting all nodes.
 nfilter_true :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
-nfilter_true g = equal (nfilter (\_ -> True) g) g
+nfilter_true g = equal (nfilter (const True) g) g
 
 -- | Tests `labnfilter` with a function accepting all nodes.
 labnfilter_true :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
-labnfilter_true g = equal (labnfilter (\_ -> True) g) g
+labnfilter_true g = equal (labnfilter (const True) g) g
 
 -- | Tests `labnfilter` with a function accepting all nodes.
 labfilter_true :: (DynGraph gr, Eq a, Eq b) => gr a b -> Bool
-labfilter_true g = equal (labfilter (\_ -> True) g) g
+labfilter_true g = equal (labfilter (const True) g) g
 
 -- | The subgraph induced by a list of nodes should contain exactly
 -- the nodes from this list, as well as all edges between these nodes.
@@ -391,11 +393,11 @@ sortOn f = sortBy (compare `on` f)
 
 -- | As with suc', but also remove any loops
 sucC :: Context a b -> [Node]
-sucC c = filter (/= (node' c)) (suc' c)
+sucC c = filter (/= node' c) (suc' c)
 
 -- | As with pre', but also remove any loops
 preC :: Context a b -> [Node]
-preC c = filter (/= (node' c)) (pre' c)
+preC c = filter (/= node' c) (pre' c)
 
 -- In case a Context is produced with the Adj lists in different
 -- orders, sort them so that they can then be equality tested.

@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+
 {- |
    Module      : Data.Graph.Inductive.Query.Properties
    Description : Properties for Query modules
@@ -28,6 +29,8 @@ import           Control.Applicative ((<*>))
 import           Control.Arrow       (second)
 import           Data.List           (delete, sort, unfoldr)
 import qualified Data.Set            as S
+
+{-# ANN module "HLint: ignore Use camelCase" #-}
 
 -- -----------------------------------------------------------------------------
 -- Articulation Points
@@ -267,8 +270,8 @@ test_maxFlow2 = describe "MaxFlow2" $ do
 
 exampleFlowGraph1 :: Gr () Int
 exampleFlowGraph1 = mkGraph [ (1,()), (2,()), (3,()), (4,()) ]
-                            [ (1,2,(1000)), (1,3,(1000))
-                            , (2,3,(1)), (2,4,(1000)), (3,4,(1000))
+                            [ (1,2,1000), (1,3,1000)
+                            , (2,3,1), (2,4,1000), (3,4,1000)
                             ]
 
 test_maxFlow :: Spec

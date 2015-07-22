@@ -6,25 +6,19 @@
 --
 ------------------------------------------------------------------------------
 
-module Data.Graph.Inductive(
-    module Data.Graph.Inductive.Graph,
-    module Data.Graph.Inductive.PatriciaTree,
-    module Data.Graph.Inductive.Basic,
-    module Data.Graph.Inductive.Monad,
-    module Data.Graph.Inductive.Monad.IOArray,
-    module Data.Graph.Inductive.Query,
-    module Data.Graph.Inductive.NodeMap,
+module Data.Graph.Inductive
+  ( module I
     -- * Version Information
-    version
-) where
+  , version
+  ) where
 
-import Data.Graph.Inductive.Basic
-import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Monad
-import Data.Graph.Inductive.Monad.IOArray
-import Data.Graph.Inductive.NodeMap
-import Data.Graph.Inductive.PatriciaTree
-import Data.Graph.Inductive.Query
+import Data.Graph.Inductive.Basic         as I
+import Data.Graph.Inductive.Graph         as I
+import Data.Graph.Inductive.Monad         as I
+import Data.Graph.Inductive.Monad.IOArray as I
+import Data.Graph.Inductive.NodeMap       as I
+import Data.Graph.Inductive.PatriciaTree  as I
+import Data.Graph.Inductive.Query         as I
 
 import           Data.Version (showVersion)
 import qualified Paths_fgl    as Paths (version)

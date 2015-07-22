@@ -29,7 +29,7 @@ module Data.Graph.Inductive.Query.Monad(
 --
 
 import Control.Applicative (Applicative (..))
-import Control.Monad       (ap, liftM)
+import Control.Monad       (ap, liftM, liftM2)
 import Data.Tree
 
 import Data.Graph.Inductive.Graph
@@ -57,7 +57,7 @@ orP p q (x,y) = p x || q y
 newtype GT m g a = MGT (m g -> m (a,g))
 
 apply :: GT m g a -> m g -> m (a,g)
-apply (MGT f) mg = f mg
+apply (MGT f) = f
 
 apply' :: (Monad m) => GT m g a -> g -> m (a,g)
 apply' gt = apply gt . return
@@ -114,16 +114,13 @@ getContext = MGT matchAnyM
 -- Note: most of these can be expressed as an instance of graphRec
 --
 getNodes' :: (Graph gr,GraphM m gr) => GT m (gr a b) [Node]
-getNodes' = condMGT' isEmpty (return [])
-                             (do v  <- getNode
-                                 vs <- getNodes
-                                 return (v:vs))
+getNodes' = condMGT' isEmpty (return []) nodeGetter
 
 getNodes :: (GraphM m gr) => GT m (gr a b) [Node]
-getNodes = condMGT isEmptyM (return [])
-                            (do v  <- getNode
-                                vs <- getNodes
-                                return (v:vs))
+getNodes = condMGT isEmptyM (return []) nodeGetter
+
+nodeGetter :: (GraphM m gr) => GT m (gr a b) [Node]
+nodeGetter = liftM2 (:) getNode getNodes
 
 sucGT :: (GraphM m gr) => Node -> GT m (gr a b) (Maybe [Node])
 sucGT v = MGT (\mg->do (c,g) <- matchM v mg

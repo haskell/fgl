@@ -44,8 +44,8 @@ import Data.Graph.Inductive.Query.BFS
 -- @
 getRevEdges :: (Num b) => [Edge] -> [LEdge b]
 getRevEdges [] = []
-getRevEdges ((u,v):es) | notElem (v,u) es = (v,u,0):getRevEdges es
-                       | otherwise        = getRevEdges (delete (v,u) es)
+getRevEdges ((u,v):es) | (v,u) `notElem` es = (v,u,0):getRevEdges es
+                       | otherwise          = getRevEdges (delete (v,u) es)
 
 -- |
 -- @
@@ -112,7 +112,7 @@ mfmg g s t
 --   labeled with (x,y,z)=(max capacity,current flow,residual
 --   capacity) and all edges are of the form a\<---->b
 mf :: (DynGraph gr, Num b, Ord b) => gr a b -> Node -> Node -> gr a (b,b,b)
-mf g s t = mfmg (augmentGraph g) s t
+mf g = mfmg (augmentGraph g)
 
 -- | Compute the maximum flow from s to t on a graph whose edges are labeled
 --   with x, which is the max capacity and where not all edges need to

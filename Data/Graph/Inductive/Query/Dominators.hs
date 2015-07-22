@@ -12,6 +12,7 @@ module Data.Graph.Inductive.Query.Dominators (
     iDom
 ) where
 
+import           Control.Arrow                  ((***))
 import           Data.Array
 import           Data.Graph.Inductive.Graph
 import           Data.Graph.Inductive.Query.DFS
@@ -20,6 +21,7 @@ import qualified Data.IntMap                    as I
 import           Data.Tree                      (Tree (..))
 import qualified Data.Tree                      as T
 
+{-# ANN iDom "HLint: ignore Use ***" #-}
 -- | return immediate dominators for each node of a graph, given a root
 iDom :: (Graph gr) => gr a b -> Node -> [(Node,Node)]
 iDom g root = let (result, toNode, _) = idomWork g root
