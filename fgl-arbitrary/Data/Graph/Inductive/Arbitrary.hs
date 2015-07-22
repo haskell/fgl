@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, ScopedTypeVariables, TypeFamilies #-}
+{-# LANGUAGE CPP, FlexibleContexts, ScopedTypeVariables, TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {- |
    Module      : Data.Graph.Inductive.Arbitrary
@@ -55,12 +55,15 @@ import qualified Data.Graph.Inductive.Tree         as T
 
 import Test.QuickCheck (Arbitrary (..), Gen, elements, listOf)
 
-import Control.Applicative (liftA3, (<*>))
+import Control.Applicative (liftA3)
 import Control.Arrow       (second)
 import Data.Function       (on)
-import Data.Functor        ((<$>))
 import Data.List           (deleteBy, groupBy, sortBy)
 import Data.Maybe          (mapMaybe)
+
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<$>), (<*>))
+#endif
 
 -- -----------------------------------------------------------------------------
 

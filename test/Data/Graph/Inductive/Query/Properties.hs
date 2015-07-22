@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE CPP, FlexibleContexts #-}
 
 {- |
    Module      : Data.Graph.Inductive.Query.Properties
@@ -25,10 +25,13 @@ import Test.Hspec      (Spec, describe, it, shouldBe, shouldMatchList,
                         shouldSatisfy)
 import Test.QuickCheck
 
-import           Control.Applicative ((<*>))
-import           Control.Arrow       (second)
-import           Data.List           (delete, sort, unfoldr)
-import qualified Data.Set            as S
+import           Control.Arrow (second)
+import           Data.List     (delete, sort, unfoldr)
+import qualified Data.Set      as S
+
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative ((<*>))
+#endif
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
