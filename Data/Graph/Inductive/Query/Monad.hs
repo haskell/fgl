@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses #-}
 
 -- (c) 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Monadic Graph Algorithms
@@ -28,9 +28,12 @@ module Data.Graph.Inductive.Query.Monad(
 --  ==> we can safely use imperative updates in the graph implementation
 --
 
-import Control.Applicative (Applicative (..))
-import Control.Monad       (ap, liftM, liftM2)
+import Control.Monad (ap, liftM, liftM2)
 import Data.Tree
+
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative (Applicative (..))
+#endif
 
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Monad

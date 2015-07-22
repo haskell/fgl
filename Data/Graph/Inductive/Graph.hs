@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- (c) 1999-2005 by Martin Erwig [see file COPYRIGHT]
 -- | Static and Dynamic Inductive Graphs
 module Data.Graph.Inductive.Graph (
@@ -64,7 +66,10 @@ import           Data.Function (on)
 import qualified Data.IntSet   as IntSet
 import           Data.List     (delete, foldl', groupBy, sort, sortBy, (\\))
 import           Data.Maybe    (fromMaybe, isJust)
-import           Data.Monoid   (mappend)
+
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid (mappend)
+#endif
 
 -- | Unlabeled node
 type  Node   = Int

@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 {- |
    Module      : Data.Graph.Inductive.Properties
    Description : Expected properties of inductive graphs
@@ -19,9 +21,12 @@ import Test.QuickCheck
 import           Control.Applicative (liftA2)
 import           Control.Arrow       ((***))
 import           Data.Function       (on)
-import           Data.Functor        ((<$>))
 import           Data.List           (groupBy, sort, sortBy)
 import qualified Data.Set            as S
+
+#if __GLASGOW_HASKELL__ < 710
+import Data.Functor ((<$>))
+#endif
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
