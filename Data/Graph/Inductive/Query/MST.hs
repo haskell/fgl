@@ -14,7 +14,7 @@ import qualified Data.Graph.Inductive.Internal.Heap     as H
 import           Data.Graph.Inductive.Internal.RootPath
 
 
-newEdges :: (Ord b) => LPath b -> Context a b -> [H.Heap b (LPath b)]
+newEdges :: LPath b -> Context a b -> [H.Heap b (LPath b)]
 newEdges (LP p) (_,_,_,s) = map (\(l,v)->H.unit l (LP ((v,l):p))) s
 
 prim :: (Graph gr,Real b) => H.Heap b (LPath b) -> gr a b -> LRTree b
