@@ -140,14 +140,14 @@ gelem_in_nodes g = all (liftA2 (==) (`gelem`g) (`S.member`ns))
 -- | Check that having a labelled edge in a graph is equivalent to
 -- 'hasNeighborAdj' reporting that the edge is there.
 valid_hasNeighborAdj :: (Graph gr, Eq b, Show b) => gr a b -> Node -> Node -> b -> Bool
-valid_hasNeighborAdj gr v w l = any (`elem` [ (v,w,l), (w,v,l) ]) (labEdges gr)
+valid_hasNeighborAdj gr v w l = any (`elem` [(v,w,l), (w,v,l)]) (labEdges gr)
                                 == (hasNeighborAdj gr v (l,w) && hasNeighborAdj gr w (l,v))
 
 -- | Check that having an edge in a graph is equivalent to
 -- 'hasNeighbor' reporting that the edge is there.
 valid_hasNeighbor :: (Graph gr, Eq b) => gr a b -> Node -> Node -> Bool
 valid_hasNeighbor gr v w =
-  any (`elem` [ (v,w), (w,v) ]) (edges gr) == (hasNeighbor gr v w && hasNeighbor gr w v)
+  any (`elem` [(v,w), (w,v)]) (edges gr) == (hasNeighbor gr v w && hasNeighbor gr w v)
 
 -- | Check that having a labelled edge in a graph is equivalent to
 -- 'hasLEdge' reporting that the edge is there.
