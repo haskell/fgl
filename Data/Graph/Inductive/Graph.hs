@@ -59,13 +59,12 @@ module Data.Graph.Inductive.Graph (
     OrdGr(..)
 ) where
 
-import Control.Arrow (first)
-import Data.Function (on)
-import Data.List     (delete, foldl', groupBy, sortBy, (\\), sort)
-import Data.Maybe    (fromMaybe, isJust)
-import Data.Monoid   (mappend)
-import qualified Data.IntSet as IntSet
-import qualified Data.IntMap as IntMap
+import           Control.Arrow (first)
+import           Data.Function (on)
+import qualified Data.IntSet   as IntSet
+import           Data.List     (delete, foldl', groupBy, sort, sortBy, (\\))
+import           Data.Maybe    (fromMaybe, isJust)
+import           Data.Monoid   (mappend)
 
 -- | Unlabeled node
 type  Node   = Int
