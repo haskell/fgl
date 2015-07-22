@@ -31,7 +31,7 @@ msTreeAt v = prim (H.unit 0 (LP [(v,0)]))
 msTree :: (Graph gr,Real b) => gr a b -> LRTree b
 msTree g = msTreeAt v g where ((_,v,_,_),_) = matchAny g
 
-msPath :: (Real b) => LRTree b -> Node -> Node -> Path
+msPath :: LRTree b -> Node -> Node -> Path
 msPath t a b = joinPaths (getLPathNodes a t) (getLPathNodes b t)
 
 joinPaths :: Path -> Path -> Path

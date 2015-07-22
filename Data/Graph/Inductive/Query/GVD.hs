@@ -40,12 +40,12 @@ gvdOut vs = dijkstra (H.build (zip (repeat 0) (map (\v->LP [(v,0)]) vs)))
 --   'Voronoi' was constructed) from the specified root node (if the
 --   specified node is not one of the root nodes of the shortest path
 --   forest, an empty list will be returned).
-voronoiSet :: (Real b) => Node -> Voronoi b -> [Node]
+voronoiSet :: Node -> Voronoi b -> [Node]
 voronoiSet v = nub . concat . filter (\p->last p==v) . map (map fst . unLPath)
 
 -- | Try to construct a path to/from a specified node to one of the
 --   root nodes of the shortest path forest.
-maybePath :: (Real b) => Node -> Voronoi b -> Maybe (LPath b)
+maybePath :: Node -> Voronoi b -> Maybe (LPath b)
 maybePath v = listToMaybe . filter ((v==) . fst . head . unLPath)
 
 -- | Try to determine the nearest root node to the one specified in the

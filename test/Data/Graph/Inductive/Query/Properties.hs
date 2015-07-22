@@ -53,7 +53,7 @@ test_ap _ ug = not (isEmpty g) ==>
 
 -- | Test that the bi-connected components are indeed composed solely
 --   from the original graph (and comprise the entire original graph).
-test_bcc :: (ArbGraph gr, Ord a, Ord b) => Proxy (gr a b) -> UConnected gr a b -> Bool
+test_bcc :: (ArbGraph gr, Ord b) => Proxy (gr a b) -> UConnected gr a b -> Bool
 test_bcc _ cg = sort (concatMap labEdges bgs) == sort (labEdges g)
                                     -- Don't test labNodes as a node
                                     -- may be repeated in multiple

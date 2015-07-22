@@ -42,7 +42,7 @@ instance (NFData a) => NFData (NodeMap a) where
   rnf (NodeMap mp k) = rnf mp `seq` rnf k
 
 -- | Create a new, empty mapping.
-new :: (Ord a) => NodeMap a
+new :: NodeMap a
 new = NodeMap { map = M.empty, key = 0 }
 
 -- LNode = (Node, a)
@@ -178,14 +178,14 @@ liftN1' f =
     do (m, g) <- get
        return $ f m
 -}
-liftN2 :: (Ord a, DynGraph g) => (NodeMap a -> c -> (d, NodeMap a)) -> c -> NodeMapM a b g d
+liftN2 :: (DynGraph g) => (NodeMap a -> c -> (d, NodeMap a)) -> c -> NodeMapM a b g d
 liftN2 f c =
     do (m, g) <- get
        let (r, m') = f m c
        put (m', g)
        return r
 
-liftN2' :: (Ord a, DynGraph g) => (NodeMap a -> c -> d) -> c -> NodeMapM a b g d
+liftN2' :: (DynGraph g) => (NodeMap a -> c -> d) -> c -> NodeMapM a b g d
 liftN2' f c =
     do (m, _) <- get
        return $ f m c
@@ -202,13 +202,13 @@ liftN3' f c d =
     do (m, g) <- get
        return $ f m c d
 -}
-liftM1 :: (Ord a, DynGraph g) => (NodeMap a -> c -> g a b -> g a b) -> c -> NodeMapM a b g ()
+liftM1 :: (DynGraph g) => (NodeMap a -> c -> g a b -> g a b) -> c -> NodeMapM a b g ()
 liftM1 f c =
     do (m, g) <- get
        let g' = f m c g
        put (m, g')
 
-liftM1' :: (Ord a, DynGraph g) => (NodeMap a -> c -> g a b -> (g a b, NodeMap a, d)) -> c -> NodeMapM a b g d
+liftM1' :: (DynGraph g) => (NodeMap a -> c -> g a b -> (g a b, NodeMap a, d)) -> c -> NodeMapM a b g d
 liftM1' f c =
     do (m, g) <- get
        let (g', m', r) = f m c g
