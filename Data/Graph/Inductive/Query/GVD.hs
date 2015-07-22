@@ -55,12 +55,12 @@ nearestNode v = fmap (fst . last . unLPath) . maybePath v
 
 -- | The distance to the 'nearestNode' (if there is one) in the
 --   shortest path forest.
-nearestDist :: (Real b) => Node -> Voronoi b -> Maybe b
+nearestDist :: Node -> Voronoi b -> Maybe b
 nearestDist v = fmap (snd . head . unLPath) . maybePath v
 
 -- | Try to construct a path to/from a specified node to one of the
 --   root nodes of the shortest path forest.
-nearestPath :: (Real b) => Node -> Voronoi b -> Maybe Path
+nearestPath :: Node -> Voronoi b -> Maybe Path
 nearestPath v = fmap (map fst . unLPath) . maybePath v
 
 
