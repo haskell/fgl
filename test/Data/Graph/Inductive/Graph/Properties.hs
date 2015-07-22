@@ -147,7 +147,7 @@ valid_hasNeighborAdj gr v w l = any (`elem` [ (v,w,l), (w,v,l) ]) (labEdges gr)
 -- 'hasNeighbor' reporting that the edge is there.
 valid_hasNeighbor :: (Graph gr, Eq b) => gr a b -> Node -> Node -> Bool
 valid_hasNeighbor gr v w =
-  any (`elem` [ (v,w), (w,v) ]) (edges gr) == hasNeighbor gr v w && hasNeighbor gr w v
+  any (`elem` [ (v,w), (w,v) ]) (edges gr) == (hasNeighbor gr v w && hasNeighbor gr w v)
 
 -- | Check that having a labelled edge in a graph is equivalent to
 -- 'hasLEdge' reporting that the edge is there.
