@@ -5,7 +5,12 @@ sudo: false
 # The following enables several GHC versions to be tested; often it's enough to test only against the last release in a major GHC version. Feel free to omit lines listings versions you don't need/want testing for.
 # Note that this setup uses Cabal sandboxes, so we need at least cabal-install-1.18.
 matrix:
+ fast_finish: true
  include:
+  - env: CABALVER=1.18 GHCVER=7.0.4
+    addons: {apt: {packages: [cabal-install-1.18, ghc-7.0.4], sources: [hvr-ghc]}}
+  - env: CABALVER=1.18 GHCVER=7.2.2
+    addons: {apt: {packages: [cabal-install-1.18, ghc-7.2.2], sources: [hvr-ghc]}}
   - env: CABALVER=1.18 GHCVER=7.4.2
     addons: {apt: {packages: [cabal-install-1.18, ghc-7.4.2], sources: [hvr-ghc]}}
   - env: CABALVER=1.18 GHCVER=7.6.3
@@ -17,8 +22,17 @@ matrix:
   - env: CABALVER=head GHCVER=head
     addons: {apt: {packages: [cabal-install-head,ghc-head],  sources: [hvr-ghc]}}
 
-allow_failures:
+ allow_failures:
   - env: CABALVER=head GHCVER=head
+
+cache:
+  directories:
+    - $HOME/.cabal
+    - $HOME/.ghc
+
+before-cache:
+  # Don't cache the Hackage index
+  - rm -rf $HOME/cabal/packages/hackage.haskell.org
 
 # Note: the distinction between `before_install` and `install` is not important.
 before_install:
@@ -30,9 +44,9 @@ install:
   - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
   - ghc --info
   - travis_retry cabal update
-  - cabal sandbox init
-  - cabal install --only-dependencies --enable-tests --enable-benchmarks
   - cabal install -j -O2 packdeps
+  - cabal sandbox init
+  - cabal install -j --only-dependencies --enable-tests --enable-benchmarks
 
 # Here starts the actual work to be performed for the package under test; any command which exits with a non-zero exit code causes the build to fail.
 script:
