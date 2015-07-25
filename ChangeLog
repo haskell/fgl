@@ -1,3 +1,8 @@
+5.5.2.1
+-------
+
+* Only create `NFData` instances for GHC >= 7.4.1.
+
 5.5.2.0
 -------
 
