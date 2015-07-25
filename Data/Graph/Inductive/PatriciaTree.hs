@@ -29,13 +29,17 @@ import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
 import           Control.Arrow       (second)
-import           Control.DeepSeq     (NFData (..))
 import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
+
+#if __GLASGOW_HASKELL__ >= 704
+import Control.DeepSeq (NFData (..))
+#endif
+
 #if __GLASGOW_HASKELL__ >= 702
-import           GHC.Generics        (Generic)
+import GHC.Generics (Generic)
 #endif
 
 ----------------------------------------------------------------------
@@ -111,8 +115,10 @@ instance DynGraph Gr where
               !g3 = addPred g2 v s
           in Gr g3
 
+#if __GLASGOW_HASKELL__ >= 704
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
+#endif
 
 matchGr :: Node -> Gr a b -> Decomp Gr a b
 matchGr node (Gr g)
