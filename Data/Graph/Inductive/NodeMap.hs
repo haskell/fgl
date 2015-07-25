@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- | Utility methods to automatically generate and keep track of a mapping
 -- between node labels and 'Node's.
 module Data.Graph.Inductive.NodeMap(
@@ -24,7 +26,6 @@ module Data.Graph.Inductive.NodeMap(
     insMapEdgesM, delMapNodesM, delMapEdgesM
 ) where
 
-import           Control.DeepSeq            (NFData (..))
 import           Control.Monad.Trans.State
 import           Data.Graph.Inductive.Graph
 import           Prelude                    hiding (map)
@@ -33,13 +34,19 @@ import qualified Prelude                    as P (map)
 import           Data.Map (Map)
 import qualified Data.Map as M
 
+#if __GLASGOW_HASKELL__ >= 704
+import Control.DeepSeq (NFData (..))
+#endif
+
 data NodeMap a =
     NodeMap { map :: Map a Node,
               key :: Int }
     deriving (Eq, Show, Read)
 
+#if __GLASGOW_HASKELL__ >= 704
 instance (NFData a) => NFData (NodeMap a) where
   rnf (NodeMap mp k) = rnf mp `seq` rnf k
+#endif
 
 -- | Create a new, empty mapping.
 new :: NodeMap a

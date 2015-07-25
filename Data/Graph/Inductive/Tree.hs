@@ -15,13 +15,17 @@ import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
 import           Control.Arrow       (first, second)
-import           Control.DeepSeq     (NFData (..))
 import           Data.List           (foldl', sort)
 import           Data.Map            (Map)
 import qualified Data.Map            as M
 import           Data.Maybe          (fromMaybe)
+
+#if __GLASGOW_HASKELL__ >= 704
+import Control.DeepSeq (NFData (..))
+#endif
+
 #if __GLASGOW_HASKELL__ >= 702
-import           GHC.Generics        (Generic)
+import GHC.Generics (Generic)
 #endif
 
 ----------------------------------------------------------------------
@@ -121,8 +125,10 @@ instance DynGraph Gr where
                        (const (error ("Node Exception, Node: "++show v)))
       cntxt' = (p,l,s)
 
+#if __GLASGOW_HASKELL__ >= 704
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
+#endif
 
 ----------------------------------------------------------------------
 -- UTILITIES
