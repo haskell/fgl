@@ -1,3 +1,10 @@
+5.5.2.2
+-------
+
+* Ensure firing of specialised rules for `PatriciaTree`.
+
+* Better way of only creating `NFData` instances when possible.
+
 5.5.2.1
 -------
 
