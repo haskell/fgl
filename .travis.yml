@@ -99,7 +99,6 @@ script:
  - cd fgl-arbitrary
  # Relying upon fgl being installed above when testing sdist, and that
  # it doesn't require any other dependencies not used by fgl.
- - cabal install --dependencies-only --enable-tests --enable-benchmarks
  - cabal configure --enable-tests --enable-benchmarks -v2
  - cabal build
  - cabal test
