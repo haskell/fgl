@@ -34,7 +34,7 @@ import qualified Prelude                    as P (map)
 import           Data.Map (Map)
 import qualified Data.Map as M
 
-#if __GLASGOW_HASKELL__ >= 704
+#if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData (..))
 #endif
 
