@@ -185,6 +185,15 @@ fastEMap f (Gr g) = Gr (IM.map f' g)
     f' :: Context' a b -> Context' a c
     f' (ps, a, ss) = (IM.map (map f) ps, a, IM.map (map f) ss)
 
+{-# RULES
+      "nemap/Data.Graph.Inductive.PatriciaTree"  nemap = fastNEMap
+  #-}
+fastNEMap :: forall a b c d. (a -> c) -> (b -> d) -> Gr a b -> Gr c d
+fastNEMap fn fe (Gr g) = Gr (IM.map f g)
+  where
+    f :: Context' a b -> Context' c d
+    f (ps, a, ss) = (IM.map (map fe) ps, fn a, IM.map (map fe) ss)
+
 ----------------------------------------------------------------------
 -- UTILITIES
 ----------------------------------------------------------------------
