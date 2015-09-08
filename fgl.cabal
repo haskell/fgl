@@ -17,6 +17,9 @@ build-type:    Simple
 extra-source-files:
                ChangeLog
 
+tested-with:   GHC == 7.4.2, GHC == 7.6.3, GHC == 7.8.4,
+               GHC == 7.10.2, GHC == 7.11.*
+
 source-repository head
     type:         git
     location:     git://github.com/haskell/fgl.git
