@@ -186,22 +186,26 @@ ufold f u g
 -- | Map a function over the graph.
 gmap :: (DynGraph gr) => (Context a b -> Context c d) -> gr a b -> gr c d
 gmap f = ufold (\c->(f c&)) empty
+{-# NOINLINE [0] gmap #-}
 
 -- | Map a function over the 'Node' labels in a graph.
 nmap :: (DynGraph gr) => (a -> c) -> gr a b -> gr c b
 nmap f = gmap (\(p,v,l,s)->(p,v,f l,s))
+{-# NOINLINE [0] nmap #-}
 
 -- | Map a function over the 'Edge' labels in a graph.
 emap :: (DynGraph gr) => (b -> c) -> gr a b -> gr a c
 emap f = gmap (\(p,v,l,s)->(map1 f p,v,l,map1 f s))
   where
     map1 g = map (first g)
+{-# NOINLINE [0] emap #-}
 
 -- | Map functions over both the 'Node' and 'Edge' labels in a graph.
 nemap :: (DynGraph gr) => (a -> c) -> (b -> d) -> gr a b -> gr c d
 nemap fn fe = gmap (\(p,v,l,s) -> (fe' p,v,fn l,fe' s))
   where
     fe' = map (first fe)
+{-# NOINLINE [0] nemap #-}
 
 -- | List all 'Node's in the 'Graph'.
 nodes :: (Graph gr) => gr a b -> [Node]
