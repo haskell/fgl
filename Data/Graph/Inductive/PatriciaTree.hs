@@ -34,7 +34,7 @@ import qualified Data.IntMap         as IM
 import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
 
-#if __GLASGOW_HASKELL__ >= 704
+#if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData (..))
 #endif
 
