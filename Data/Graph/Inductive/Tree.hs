@@ -125,7 +125,7 @@ instance DynGraph Gr where
                        (const (error ("Node Exception, Node: "++show v)))
       cntxt' = (p,l,s)
 
-#if __GLASGOW_HASKELL__ >= 704
+#if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
 #endif

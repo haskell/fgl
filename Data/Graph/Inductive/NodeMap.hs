@@ -43,7 +43,7 @@ data NodeMap a =
               key :: Int }
     deriving (Eq, Show, Read)
 
-#if __GLASGOW_HASKELL__ >= 704
+#if MIN_VERSION_containers (0,4,2)
 instance (NFData a) => NFData (NodeMap a) where
   rnf (NodeMap mp k) = rnf mp `seq` rnf k
 #endif

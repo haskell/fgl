@@ -21,7 +21,7 @@ import Control.DeepSeq (NFData (..))
 data Heap a b = Empty | Node a b [Heap a b]
      deriving (Eq, Show, Read)
 
-#if __GLASGOW_HASKELL__ >= 704
+#if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Heap a b) where
   rnf Empty         = ()
   rnf (Node a b hs) = rnf a `seq` rnf b `seq` rnf hs

@@ -115,7 +115,7 @@ instance DynGraph Gr where
               !g3 = addPred g2 v s
           in Gr g3
 
-#if __GLASGOW_HASKELL__ >= 704
+#if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
 #endif
