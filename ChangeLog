@@ -1,3 +1,8 @@
+5.5.2.3
+-------
+
+* Earlier fix for `NFData` wasn't quite complete/correct.
+
 5.5.2.2
 -------
 
