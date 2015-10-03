@@ -31,8 +31,8 @@ import Data.Graph.Inductive.Graph
 import Data.Vector (Vector,maxIndex,freeze,(!))
 import Data.Vector.Mutable (IOVector,write,set,read,new)
 import Control.Monad (MonadPlus,mplus,mzero)
-import Data.Foldable (foldl')
-
+import Data.Foldable (foldl',Foldable)
+import Data.Functor ((<$>))
 -- | A wrapper for any number, including Infinity and NegativeInfinity
 --   options.
 data Number a = Infinity | NegativeInfinity | Number a deriving (Show, Eq)
