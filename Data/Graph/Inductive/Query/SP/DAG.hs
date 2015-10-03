@@ -28,12 +28,6 @@ module Data.Graph.Inductive.Query.SP.DAG (
 
 import Prelude hiding (read)
 import Data.Graph.Inductive.Graph
-
-
-import Data.Graph.Inductive.PatriciaTree
-import Data.Graph.Inductive.Query.DFS
-
-
 import Data.Vector (Vector,maxIndex,freeze,(!))
 import Data.Vector.Mutable (IOVector,write,set,read,new)
 import Control.Monad (MonadPlus,mplus,mzero)
