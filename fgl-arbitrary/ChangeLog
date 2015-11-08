@@ -1,0 +1,21 @@
+0.2.0.1
+-------
+
+* Dependency bump
+
+0.2.0.0
+-------
+
+* Properly set the version of fgl required: it needs some of the newer
+  functions present in 5.5.2.0 (which was not yet released when
+  version 0.1.0.0 of this library was released).
+
+* Allow partial application of the `SimpleGraph` type.
+
+* The `Connected` wrapper has changed, and the constructor is now
+  exported.
+
+0.1.0.0
+-------
+
+* Initial release

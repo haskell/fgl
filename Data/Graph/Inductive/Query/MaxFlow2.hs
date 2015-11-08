@@ -33,7 +33,8 @@ type DirEdge b = (Node, Node, b, Direction)
 type DirPath=[(Node, Direction)]
 type DirRTree=[DirPath]
 
-pathFromDirPath = map (\(n,_)->n)
+pathFromDirPath :: DirPath -> [Node]
+pathFromDirPath = map fst
 
 ------------------------------------------------------------------------------
 -- Example networks
@@ -111,16 +112,16 @@ extractPathFused g [(_,_)] = ([], g)
 extractPathFused g ((u,_):rest@((v,Forward):_)) =
     ((u, v, l, Forward):tailedges, newerg)
         where (tailedges, newerg) = extractPathFused newg rest
-              Just (l, newg)    = extractEdge g u v (\(c,f)->(c>f))
+              Just (l, newg)    = extractEdge g u v (uncurry (>))
 extractPathFused g ((u,_):rest@((v,Backward):_)) =
     ((v, u, l, Backward):tailedges, newerg)
         where (tailedges, newerg) = extractPathFused newg rest
               Just (l, newg)    = extractEdge g v u (\(_,f)->(f>0))
 
--- ekFusedStep :: EKStepFunc
+ekFusedStep :: EKStepFunc
 ekFusedStep g s t = case maybePath of
         Just _          ->
-            Just ((insEdges (integrateDelta es delta) newg), delta)
+            Just (insEdges (integrateDelta es delta) newg, delta)
         Nothing   -> Nothing
     where maybePath     = augPathFused g s t
           (es, newg) = extractPathFused g (fromJust maybePath)
@@ -160,8 +161,8 @@ extractPath g (u:v:ws) =
                     ((v, u, l, Backward):tailedges, newerg)
                     where (tailedges, newerg) = extractPath newg (v:ws)
                 Nothing               -> error "extractPath: revExtract == Nothing"
-    where fwdExtract = extractEdge g u v (\(c,f)->(c>f))
-          revExtract = extractEdge g v u (\(_,f)->(f>0))
+    where fwdExtract = extractEdge g u v (uncurry (>))
+          revExtract = extractEdge g v u ((>0) . snd)
 
 -- Extract an edge from the graph that satisfies a given predicate
 -- Return the label on the edge and the graph without the edge
@@ -172,7 +173,7 @@ extractEdge g u v p =
         Nothing      -> Nothing
     where (Just (p', node, l, s), newg) = match u g
           (adj, rest)=extractAdj s
-              (\(l', dest) -> (dest==v) && (p l'))
+              (\(l', dest) -> dest==v && p l')
 
 -- Extract an item from an adjacency list that satisfies a given
 -- predicate. Return the item and the rest of the adjacency list
@@ -186,24 +187,24 @@ extractAdj (adj:adjs) p
 getPathDeltas :: [DirEdge (Double,Double)] -> [Double]
 getPathDeltas []     = []
 getPathDeltas (e:es) = case e of
-    (_, _, (c,f), Forward)  -> (c-f) : (getPathDeltas es)
-    (_, _, (_,f), Backward) -> f : (getPathDeltas es)
+    (_, _, (c,f), Forward)  -> c-f : getPathDeltas es
+    (_, _, (_,f), Backward) -> f : getPathDeltas es
 
 integrateDelta :: [DirEdge (Double,Double)] -> Double
     -> [LEdge (Double, Double)]
 integrateDelta []          _ = []
 integrateDelta (e:es) delta = case e of
     (u, v, (c, f), Forward) ->
-        (u, v, (c, f+delta)) : (integrateDelta es delta)
+        (u, v, (c, f+delta)) : integrateDelta es delta
     (u, v, (c, f), Backward) ->
-        (u, v, (c, f-delta)) : (integrateDelta es delta)
+        (u, v, (c, f-delta)) : integrateDelta es delta
 
 type EKStepFunc = Network -> Node -> Node -> Maybe (Network, Double)
 
 ekSimpleStep :: EKStepFunc
 ekSimpleStep g s t = case maybePath of
         Just _ ->
-            Just ((insEdges (integrateDelta es delta) newg), delta)
+            Just (insEdges (integrateDelta es delta) newg, delta)
         Nothing   -> Nothing
     where maybePath  = augPath g s t
           (es, newg) = extractPath g (fromJust maybePath)
@@ -212,7 +213,7 @@ ekSimpleStep g s t = case maybePath of
 ekWith :: EKStepFunc -> Network -> Node -> Node -> (Network, Double)
 ekWith stepfunc g s t = case stepfunc g s t of
     Just (newg, delta) -> (finalg, capacity+delta)
-        where (finalg, capacity) = (ekWith stepfunc newg s t)
+        where (finalg, capacity) = ekWith stepfunc newg s t
     Nothing            -> (g, 0)
 
 ekSimple :: Network -> Node -> Node -> (Network, Double)
@@ -227,10 +228,10 @@ extractPathList :: [LEdge (Double, Double)] -> Set (Node,Node)
     -> ([DirEdge (Double, Double)], [LEdge (Double, Double)])
 extractPathList []                 _ = ([], [])
 extractPathList (edge@(u,v,l@(c,f)):es) set
-    | (c>f) && (S.member (u,v) set) =
+    | (c>f) && S.member (u,v) set =
         let (pathrest, notrest)=extractPathList es (S.delete (u,v) set)
             in ((u,v,l,Forward):pathrest, notrest)
-    | (f>0) && (S.member (v,u) set) =
+    | (f>0) && S.member (v,u) set =
         let (pathrest, notrest)=extractPathList es (S.delete (u,v) set)
             in ((u,v,l,Backward):pathrest, notrest)
     | otherwise                        =
@@ -241,7 +242,7 @@ ekStepList :: EKStepFunc
 ekStepList g s t = case maybePath of
         Just _  -> Just (mkGraph (labNodes g) newEdges, delta)
         Nothing -> Nothing
-    where newEdges      = (integrateDelta es delta) ++ otheredges
+    where newEdges      = integrateDelta es delta ++ otheredges
           maybePath     = augPathFused g s t
           (es, otheredges) = extractPathList (labEdges g)
               (S.fromList (zip justPath (tail justPath)))

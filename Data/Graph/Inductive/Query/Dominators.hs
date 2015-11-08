@@ -20,16 +20,17 @@ import qualified Data.IntMap                    as I
 import           Data.Tree                      (Tree (..))
 import qualified Data.Tree                      as T
 
+{-# ANN iDom "HLint: ignore Use ***" #-}
 -- | return immediate dominators for each node of a graph, given a root
-iDom :: Graph gr => gr a b -> Node -> [(Node,Node)]
+iDom :: (Graph gr) => gr a b -> Node -> [(Node,Node)]
 iDom g root = let (result, toNode, _) = idomWork g root
               in  map (\(a, b) -> (toNode ! a, toNode ! b)) (assocs result)
 
 -- | return the set of dominators of the nodes of a graph, given a root
-dom :: Graph gr => gr a b -> Node -> [(Node,[Node])]
+dom :: (Graph gr) => gr a b -> Node -> [(Node,[Node])]
 dom g root = let
-    (iDom, toNode, fromNode) = idomWork g root
-    dom' = getDom toNode iDom
+    (iD, toNode, fromNode) = idomWork g root
+    dom' = getDom toNode iD
     nodes' = nodes g
     rest = I.keys (I.filter (-1 ==) fromNode)
   in
@@ -48,14 +49,14 @@ type Preds = Array Node' [Node']
 type ToNode = Array Node' Node
 type FromNode = IntMap Node'
 
-idomWork :: Graph gr => gr a b -> Node -> (IDom, ToNode, FromNode)
+idomWork :: (Graph gr) => gr a b -> Node -> (IDom, ToNode, FromNode)
 idomWork g root = let
     -- use depth first tree from root do build the first approximation
     trees@(~[tree]) = dff [root] g
     -- relabel the tree so that paths from the root have increasing nodes
     (s, ntree) = numberTree 0 tree
     -- the approximation iDom0 just maps each node to its parent
-    iDom0 = array (1, s-1) (tail $ treeEdges (-1) ntree)
+    iD0 = array (1, s-1) (tail $ treeEdges (-1) ntree)
     -- fromNode translates graph nodes to relabeled (internal) nodes
     fromNode = I.unionWith const (I.fromList (zip (T.flatten tree) (T.flatten ntree))) (I.fromList (zip (nodes g) (repeat (-1))))
     -- toNode translates internal nodes to graph nodes
@@ -63,29 +64,29 @@ idomWork g root = let
     preds = array (1, s-1) [(i, filter (/= -1) (map (fromNode I.!)
                             (pre g (toNode ! i)))) | i <- [1..s-1]]
     -- iteratively improve the approximation to find iDom.
-    iDom = fixEq (refineIDom preds) iDom0
+    iD = fixEq (refineIDom preds) iD0
   in
     if null trees then error "Dominators.idomWork: root not in graph"
-                  else (iDom, toNode, fromNode)
+                  else (iD, toNode, fromNode)
 
 -- for each node in iDom, find the intersection of all its predecessor's
 -- dominating sets, and update iDom accordingly.
 refineIDom :: Preds -> IDom -> IDom
-refineIDom preds iDom = fmap (foldl1 (intersect iDom)) preds
+refineIDom preds iD = fmap (foldl1 (intersect iD)) preds
 
 -- find the intersection of the two given dominance sets.
 intersect :: IDom -> Node' -> Node' -> Node'
-intersect iDom a b = case a `compare` b of
-    LT -> intersect iDom a (iDom ! b)
+intersect iD a b = case a `compare` b of
+    LT -> intersect iD a (iD ! b)
     EQ -> a
-    GT -> intersect iDom (iDom ! a) b
+    GT -> intersect iD (iD ! a) b
 
 -- convert an IDom to dominance sets. we translate to graph nodes here
 -- because mapping later would be more expensive and lose sharing.
 getDom :: ToNode -> IDom -> Array Node' [Node]
-getDom toNode iDom = let
-    res = array (0, snd (bounds iDom)) ((0, [toNode ! 0]) :
-          [(i, toNode ! i : res ! (iDom ! i)) | i <- range (bounds iDom)])
+getDom toNode iD = let
+    res = array (0, snd (bounds iD)) ((0, [toNode ! 0]) :
+          [(i, toNode ! i : res ! (iD ! i)) | i <- range (bounds iD)])
   in
     res
 
@@ -106,7 +107,7 @@ treeEdges :: a -> Tree a -> [(a,a)]
 treeEdges a (Node b ts) = (b,a) : concatMap (treeEdges b) ts
 
 -- find a fixed point of f, iteratively
-fixEq :: Eq a => (a -> a) -> a -> a
+fixEq :: (Eq a) => (a -> a) -> a -> a
 fixEq f v | v' == v   = v
           | otherwise = fixEq f v'
     where v' = f v

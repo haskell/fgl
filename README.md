@@ -9,6 +9,12 @@ For more information, please read the documentation on [Hackage](http://hackage.
 
 The [original website](http://web.engr.oregonstate.edu/~erwig/fgl/haskell) contains various papers that might help learning and understanding the approach taken by this library; however, the code might no longer match the actual implementation.
 
+### Arbitrary instances
+
+[![Hackage](https://img.shields.io/hackage/v/fgl-arbitrary.svg)](https://hackage.haskell.org/package/fgl-arbitrary)
+
+If you wish to use fgl graphs with [QuickCheck](http://hackage.haskell.org/package/QuickCheck), have a look at the _fgl-arbitrary_ package.
+
 ### Original Credit attribution
 
 *From Martin Erwig's original README*

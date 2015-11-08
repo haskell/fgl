@@ -2,16 +2,22 @@
 -- | Breadth-First Search Algorithms
 
 module Data.Graph.Inductive.Query.BFS(
+
     -- * BFS Node List
-    bfs,bfsn,bfsWith,bfsnWith,
+    bfs, bfsn, bfsWith, bfsnWith,
+
     -- * Node List With Depth Info
-    level,leveln,
+    level, leveln,
+
     -- * BFS Edges
-    bfe,bfen,
+    bfe, bfen,
+
     -- * BFS Tree
-    bft,lbft,
+    bft, lbft, RTree,
+
     -- * Shortest Path (Number of Edges)
-    esp,lesp
+    esp, lesp
+
 ) where
 
 
@@ -21,7 +27,7 @@ import Data.Graph.Inductive.Internal.RootPath
 
 -- bfs (node list ordered by distance)
 --
-bfsnInternal :: Graph gr => (Context a b -> c) -> Queue Node -> gr a b -> [c]
+bfsnInternal :: (Graph gr) => (Context a b -> c) -> Queue Node -> gr a b -> [c]
 bfsnInternal f q g | queueEmpty q || isEmpty g = []
                    | otherwise                 =
        case match v g of
@@ -29,27 +35,28 @@ bfsnInternal f q g | queueEmpty q || isEmpty g = []
         (Nothing, g') -> bfsnInternal f q' g'
         where (v,q') = queueGet q
 
-bfsnWith :: Graph gr => (Context a b -> c) -> [Node] -> gr a b -> [c]
+bfsnWith :: (Graph gr) => (Context a b -> c) -> [Node] -> gr a b -> [c]
 bfsnWith f vs = bfsnInternal f (queuePutList vs mkQueue)
 
-bfsn :: Graph gr => [Node] -> gr a b -> [Node]
+bfsn :: (Graph gr) => [Node] -> gr a b -> [Node]
 bfsn = bfsnWith node'
 
-bfsWith :: Graph gr => (Context a b -> c) -> Node -> gr a b -> [c]
+bfsWith :: (Graph gr) => (Context a b -> c) -> Node -> gr a b -> [c]
 bfsWith f v = bfsnInternal f (queuePut v mkQueue)
 
-bfs :: Graph gr => Node -> gr a b -> [Node]
+bfs :: (Graph gr) => Node -> gr a b -> [Node]
 bfs = bfsWith node'
 
 
 -- level (extension of bfs giving the depth of each node)
 --
-level :: Graph gr => Node -> gr a b -> [(Node,Int)]
+level :: (Graph gr) => Node -> gr a b -> [(Node,Int)]
 level v = leveln [(v,0)]
 
+suci :: Context a b -> Int -> [(Node, Int)]
 suci c i = zip (suc' c) (repeat i)
 
-leveln :: Graph gr => [(Node,Int)] -> gr a b -> [(Node,Int)]
+leveln :: (Graph gr) => [(Node,Int)] -> gr a b -> [(Node,Int)]
 leveln []         _             = []
 leveln _          g | isEmpty g = []
 leveln ((v,j):vs) g = case match v g of
@@ -60,7 +67,7 @@ leveln ((v,j):vs) g = case match v g of
 -- bfe (breadth first edges)
 -- remembers predecessor information
 --
-bfenInternal :: Graph gr => Queue Edge -> gr a b -> [Edge]
+bfenInternal :: (Graph gr) => Queue Edge -> gr a b -> [Edge]
 bfenInternal q g | queueEmpty q || isEmpty g = []
                  | otherwise                 =
       case match v g of
@@ -68,13 +75,14 @@ bfenInternal q g | queueEmpty q || isEmpty g = []
         (Nothing, g') -> bfenInternal q' g'
         where ((u,v),q') = queueGet q
 
-bfen :: Graph gr => [Edge] -> gr a b -> [Edge]
-bfen vs g = bfenInternal (queuePutList vs mkQueue) g
+bfen :: (Graph gr) => [Edge] -> gr a b -> [Edge]
+bfen vs = bfenInternal (queuePutList vs mkQueue)
 
-bfe :: Graph gr => Node -> gr a b -> [Edge]
+bfe :: (Graph gr) => Node -> gr a b -> [Edge]
 bfe v = bfen [(v,v)]
 
-outU c = map (\(v,w,_)->(v,w)) (out' c)
+outU :: Context a b -> [Edge]
+outU c = map toEdge (out' c)
 
 
 -- bft (breadth first search tree)
@@ -93,10 +101,10 @@ outU c = map (\(v,w,_)->(v,w)) (out' c)
 -- faster shortest paths
 -- here: with root path trees
 --
-bft :: Graph gr => Node -> gr a b -> RTree
+bft :: (Graph gr) => Node -> gr a b -> RTree
 bft v = bf (queuePut [v] mkQueue)
 
-bf :: Graph gr => Queue Path -> gr a b -> RTree
+bf :: (Graph gr) => Queue Path -> gr a b -> RTree
 bf q g | queueEmpty q || isEmpty g = []
        | otherwise                 =
        case match v g of
@@ -104,7 +112,7 @@ bf q g | queueEmpty q || isEmpty g = []
          (Nothing, g') -> bf q' g'
          where (p@(v:_),q') = queueGet q
 
-esp :: Graph gr => Node -> Node -> gr a b -> Path
+esp :: (Graph gr) => Node -> Node -> gr a b -> Path
 esp s t = getPath t . bft s
 
 
@@ -112,19 +120,19 @@ esp s t = getPath t . bft s
 -- Note that the label of the first node in a returned path is meaningless;
 -- all other nodes are paired with the label of their incoming edge.
 --
-lbft :: Graph gr => Node -> gr a b -> LRTree b
-lbft v g = case (out g v) of
+lbft :: (Graph gr) => Node -> gr a b -> LRTree b
+lbft v g = case out g v of
              []         -> [LP []]
              (v',_,l):_ -> lbf (queuePut (LP [(v',l)]) mkQueue) g
 
-lbf :: Graph gr => Queue (LPath b) -> gr a b -> LRTree b
+lbf :: (Graph gr) => Queue (LPath b) -> gr a b -> LRTree b
 lbf q g | queueEmpty q || isEmpty g = []
         | otherwise                 =
        case match v g of
          (Just c, g') ->
              LP p:lbf (queuePutList (map (\v' -> LP (v':p)) (lsuc' c)) q') g'
          (Nothing, g') -> lbf q' g'
-         where ((LP (p@((v,_):_))),q') = queueGet q
+         where (LP (p@((v,_):_)),q') = queueGet q
 
-lesp :: Graph gr => Node -> Node -> gr a b -> LPath b
+lesp :: (Graph gr) => Node -> Node -> gr a b -> LPath b
 lesp s t = getLPath t . lbft s

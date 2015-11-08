@@ -1,3 +1,77 @@
+5.5.2.3
+-------
+
+* Earlier fix for `NFData` wasn't quite complete/correct.
+
+5.5.2.2
+-------
+
+* Ensure firing of specialised rules for `PatriciaTree`.
+
+* Better way of only creating `NFData` instances when possible.
+
+5.5.2.1
+-------
+
+* Only create `NFData` instances for GHC >= 7.4.1.
+
+5.5.2.0
+-------
+
+* Documentation, clean-up and refactoring of various parts of the
+  library.
+
+    - As part of this, various types now have instances for classes
+      like `Show`, `Eq`, `Ord`, `NFData`, etc. where applicable.
+
+    - In particular, the various options for use with depth-first
+      search and shortest path queries was documented by David
+      Luposchainsky.
+
+* Addition of a proper test-suite.  So far it covers the
+  `Data.Graph.Inductive.Graph` module and all
+  `Data.Graph.Inductive.Query.*` modules except for `Monad`.
+
+    - The tests are also automatically run for every (set of) commits
+      thanks to Travis-CI.
+
+* Arbitrary instances for the two graph types are now available in the
+  new `fgl-arbitrary` sub-package.
+
+* Now depends solely on the `transformers` library rather than `mtl`.
+
+* Potentially breaking changes:
+
+    These changes are those where the behaviour was un-specified or
+    didn't match the documentation.
+
+    - `nodeRange` and `nodeRangeM` for the various graph data
+      structures erroneously returned `(0,0)` for empty graphs (making
+      them indistinguishable from graphs containing the single node
+      `0`).  They now match the default implementation of throwing an
+      error.
+
+    - The behaviour of `delLEdge` when dealing with multiple edges was
+      unspecified; it now deletes only a single edge and the new
+      function `delAllLEdge` deletes all edges matching the one
+      provided.
+
+* Additional functions thanks to Sergiu Ivanov:
+
+    - Creating sub-graphs by `Node`- and `Context`-filtering as well
+      as induced by a set of `Node`s.
+
+    - Graph condensation (i.e. graph of
+      strongly-connected-components).
+
+    - Various edge- and neighbor-based helper functions.
+
+* The graph types now have `Generic` instances thanks to Piotr
+  Mlodawski.
+
+* The `OrdGr` wrapper by Trevor Cook allows performing `Ord`-based
+  comparisons on graphs.
+
 5.5.1.0
 -------
 

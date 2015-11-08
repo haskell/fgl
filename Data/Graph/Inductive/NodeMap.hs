@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 -- | Utility methods to automatically generate and keep track of a mapping
 -- between node labels and 'Node's.
 module Data.Graph.Inductive.NodeMap(
@@ -24,7 +26,6 @@ module Data.Graph.Inductive.NodeMap(
     insMapEdgesM, delMapNodesM, delMapEdgesM
 ) where
 
-import           Control.DeepSeq            (NFData (..))
 import           Control.Monad.Trans.State
 import           Data.Graph.Inductive.Graph
 import           Prelude                    hiding (map)
@@ -33,16 +34,22 @@ import qualified Prelude                    as P (map)
 import           Data.Map (Map)
 import qualified Data.Map as M
 
+#if MIN_VERSION_containers (0,4,2)
+import Control.DeepSeq (NFData (..))
+#endif
+
 data NodeMap a =
     NodeMap { map :: Map a Node,
               key :: Int }
     deriving (Eq, Show, Read)
 
+#if MIN_VERSION_containers (0,4,2)
 instance (NFData a) => NFData (NodeMap a) where
   rnf (NodeMap mp k) = rnf mp `seq` rnf k
+#endif
 
 -- | Create a new, empty mapping.
-new :: (Ord a) => NodeMap a
+new :: NodeMap a
 new = NodeMap { map = M.empty, key = 0 }
 
 -- LNode = (Node, a)
@@ -78,7 +85,7 @@ mkEdge (NodeMap m _) (a1, a2, b) =
 
 -- | Generates a list of 'LEdge's.
 mkEdges :: (Ord a) => NodeMap a -> [(a, a, b)] -> Maybe [LEdge b]
-mkEdges m es = mapM (mkEdge m) es
+mkEdges m = mapM (mkEdge m)
 
 -- | Construct a list of nodes.
 mkNodes :: (Ord a) => NodeMap a -> [a] -> ([LNode a], NodeMap a)
@@ -178,14 +185,14 @@ liftN1' f =
     do (m, g) <- get
        return $ f m
 -}
-liftN2 :: (Ord a, DynGraph g) => (NodeMap a -> c -> (d, NodeMap a)) -> c -> NodeMapM a b g d
+liftN2 :: (NodeMap a -> c -> (d, NodeMap a)) -> c -> NodeMapM a b g d
 liftN2 f c =
     do (m, g) <- get
        let (r, m') = f m c
        put (m', g)
        return r
 
-liftN2' :: (Ord a, DynGraph g) => (NodeMap a -> c -> d) -> c -> NodeMapM a b g d
+liftN2' :: (NodeMap a -> c -> d) -> c -> NodeMapM a b g d
 liftN2' f c =
     do (m, _) <- get
        return $ f m c
@@ -202,13 +209,13 @@ liftN3' f c d =
     do (m, g) <- get
        return $ f m c d
 -}
-liftM1 :: (Ord a, DynGraph g) => (NodeMap a -> c -> g a b -> g a b) -> c -> NodeMapM a b g ()
+liftM1 :: (NodeMap a -> c -> g a b -> g a b) -> c -> NodeMapM a b g ()
 liftM1 f c =
     do (m, g) <- get
        let g' = f m c g
        put (m, g')
 
-liftM1' :: (Ord a, DynGraph g) => (NodeMap a -> c -> g a b -> (g a b, NodeMap a, d)) -> c -> NodeMapM a b g d
+liftM1' :: (NodeMap a -> c -> g a b -> (g a b, NodeMap a, d)) -> c -> NodeMapM a b g d
 liftM1' f c =
     do (m, g) <- get
        let (g', m', r) = f m c g

@@ -1,5 +1,5 @@
 name:          fgl
-version:       5.5.1.0
+version:       5.5.2.3
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
@@ -12,16 +12,26 @@ An inductive representation of manipulating graph data structures.
 .
 Original website can be found at <http://web.engr.oregonstate.edu/~erwig/fgl/haskell>.
 }
-cabal-version: >= 1.6
+cabal-version: >= 1.10
 build-type:    Simple
 extra-source-files:
                ChangeLog
+
+tested-with:   GHC == 7.0.4, GHC == 7.2.2, GHC == 7.4.2, GHC == 7.6.3,
+               GHC == 7.8.4, GHC == 7.10.2, GHC == 7.11.*
 
 source-repository head
     type:         git
     location:     git://github.com/haskell/fgl.git
 
+flag containers042 {
+    manual:  False
+    default: True
+}
+
 library {
+    default-language: Haskell98
+
     exposed-modules:
         Data.Graph.Inductive.Internal.Heap,
         Data.Graph.Inductive.Internal.Queue,
@@ -56,7 +66,44 @@ library {
 
     build-depends:    base < 5
                     , transformers
-                    , containers
                     , array
-                    , deepseq >= 1.1.0.0 && < 1.5.0.0
+
+    if flag(containers042)
+        build-depends:    containers >= 0.4.2
+                        , deepseq >= 1.1.0.0 && < 1.5
+    else
+        build-depends:    containers < 0.4.2
+
+    if impl(ghc >= 7.2) && impl(ghc < 7.6)
+        build-depends:
+            ghc-prim
+
+    ghc-options:      -Wall
+
+}
+
+test-suite fgl-tests {
+    default-language: Haskell98
+
+    type:             exitcode-stdio-1.0
+
+    build-depends:    fgl
+                    , base
+                    , QuickCheck >= 2.8 && < 2.9
+                    , hspec >= 2.1 && < 2.3
+                    , containers
+
+    hs-source-dirs:   test
+                      fgl-arbitrary
+
+    main-is:          TestSuite.hs
+
+    other-modules:    Data.Graph.Inductive.Arbitrary
+                    , Data.Graph.Inductive.Graph.Properties
+                    , Data.Graph.Inductive.Proxy
+                    , Data.Graph.Inductive.Query.Properties
+
+    ghc-options:      -Wall
+
+    ghc-prof-options: -prof -auto
 }

@@ -33,7 +33,7 @@ getBackEdges v ls   = map head (filter (elem (v,0)) (tail ls))
 -- Builds a DFS tree for a given graph. Each element (v,n,b) in the tree
 -- contains: the node number v, the DFS number n, and a list of backedges b.
 ------------------------------------------------------------------------------
-dfsTree :: Graph gr => Int -> Node -> [Node] -> [[(Node,Int)]] ->
+dfsTree :: (Graph gr) => Int -> Node -> [Node] -> [[(Node,Int)]] ->
                        gr a b -> ([DFSTree Int],gr a b,Int)
 dfsTree n _ []      _ g             = ([],g,n)
 dfsTree n _ _       _ g | isEmpty g = ([],g,n)
@@ -77,7 +77,7 @@ lowTree (B (v,n,bcks) trs) = Brc (v,n,lowv) ts
 -- Builds a low tree for a given graph. Each element (v,n,low) in the tree
 -- contains: the node number v, the DFS number n, and the low number low.
 ------------------------------------------------------------------------------
-getLowTree :: Graph gr => gr a b -> Node -> LOWTree Int
+getLowTree :: (Graph gr) => gr a b -> Node -> LOWTree Int
 getLowTree g v = lowTree (head dfsf)
                   where (dfsf, _, _) = dfsTree 0 0 [v] [] g
 
@@ -90,7 +90,7 @@ getLowTree g v = lowTree (head dfsf)
 isap :: LOWTree Int -> Bool
 isap (Brc (_,_,_) []) = False
 isap (Brc (_,1,_) ts) = length ts > 1
-isap (Brc (_,n,_) ts) = length ch >= 1
+isap (Brc (_,n,_) ts) = not (null ch)
                         where ch = filter ( >=n) (map getLow ts)
 
 ------------------------------------------------------------------------------
@@ -105,7 +105,7 @@ arp (Brc (v,n,l) ts) | isap (Brc (v,n,l) ts) = v:concatMap arp ts
 ------------------------------------------------------------------------------
 -- Finds the articulation points of a graph starting at a given node.
 ------------------------------------------------------------------------------
-artpoints :: Graph gr => gr a b -> Node -> [Node]
+artpoints :: (Graph gr) => gr a b -> Node -> [Node]
 artpoints g v = arp (getLowTree g v)
 
 {-|
@@ -117,5 +117,5 @@ artpoints g v = arp (getLowTree g v)
    b) An non-root node v is an articulation point iff there exists at least
       one child w of v such that lowNumber(w) >= dfsNumber(v).
 -}
-ap :: Graph gr => gr a b -> [Node]
+ap :: (Graph gr) => gr a b -> [Node]
 ap g = artpoints g v where ((_,v,_,_),_) = matchAny g

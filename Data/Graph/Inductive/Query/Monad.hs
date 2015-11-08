@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE CPP, MultiParamTypeClasses #-}
 
 -- (c) 2002 by Martin Erwig [see file COPYRIGHT]
 -- | Monadic Graph Algorithms
@@ -28,9 +28,12 @@ module Data.Graph.Inductive.Query.Monad(
 --  ==> we can safely use imperative updates in the graph implementation
 --
 
-import Control.Applicative (Applicative (..))
-import Control.Monad       (ap, liftM)
+import Control.Monad (ap, liftM, liftM2)
 import Data.Tree
+
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative (Applicative (..))
+#endif
 
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Monad
@@ -57,42 +60,42 @@ orP p q (x,y) = p x || q y
 newtype GT m g a = MGT (m g -> m (a,g))
 
 apply :: GT m g a -> m g -> m (a,g)
-apply (MGT f) mg = f mg
+apply (MGT f) = f
 
-apply' :: Monad m => GT m g a -> g -> m (a,g)
+apply' :: (Monad m) => GT m g a -> g -> m (a,g)
 apply' gt = apply gt . return
 
-applyWith :: Monad m => (a -> b) -> GT m g a -> m g -> m (b,g)
+applyWith :: (Monad m) => (a -> b) -> GT m g a -> m g -> m (b,g)
 applyWith h (MGT f) gm = do {(x,g) <- f gm; return (h x,g)}
 
-applyWith' :: Monad m => (a -> b) -> GT m g a -> g -> m (b,g)
+applyWith' :: (Monad m) => (a -> b) -> GT m g a -> g -> m (b,g)
 applyWith' h gt = applyWith h gt . return
 
-runGT :: Monad m => GT m g a -> m g -> m a
+runGT :: (Monad m) => GT m g a -> m g -> m a
 runGT gt mg = do {(x,_) <- apply gt mg; return x}
 
-instance Monad m => Functor (GT m g) where
+instance (Monad m) => Functor (GT m g) where
     fmap  = liftM
 
-instance Monad m => Applicative (GT m g) where
+instance (Monad m) => Applicative (GT m g) where
     pure  = return
     (<*>) = ap
 
-instance Monad m => Monad (GT m g) where
+instance (Monad m) => Monad (GT m g) where
   return x = MGT (\mg->do {g<-mg; return (x,g)})
   f >>= h  = MGT (\mg->do {(x,g)<-apply f mg; apply' (h x) g})
 
-condMGT' :: Monad m => (s -> Bool) -> GT m s a -> GT m s a -> GT m s a
+condMGT' :: (Monad m) => (s -> Bool) -> GT m s a -> GT m s a -> GT m s a
 condMGT' p f g = MGT (\mg->do {h<-mg; if p h then apply f mg else apply g mg})
 
-recMGT' :: Monad m => (s -> Bool) -> GT m s a -> (a -> b -> b) -> b -> GT m s b
+recMGT' :: (Monad m) => (s -> Bool) -> GT m s a -> (a -> b -> b) -> b -> GT m s b
 recMGT' p mg f u = condMGT' p (return u)
                             (do {x<-mg;y<-recMGT' p mg f u;return (f x y)})
 
-condMGT :: Monad m => (m s -> m Bool) -> GT m s a -> GT m s a -> GT m s a
+condMGT :: (Monad m) => (m s -> m Bool) -> GT m s a -> GT m s a -> GT m s a
 condMGT p f g = MGT (\mg->do {b<-p mg; if b then apply f mg else apply g mg})
 
-recMGT :: Monad m => (m s -> m Bool) -> GT m s a -> (a -> b -> b) -> b -> GT m s b
+recMGT :: (Monad m) => (m s -> m Bool) -> GT m s a -> (a -> b -> b) -> b -> GT m s b
 recMGT p mg f u = condMGT p (return u)
                           (do {x<-mg;y<-recMGT p mg f u;return (f x y)})
 
@@ -104,35 +107,32 @@ recMGT p mg f u = condMGT p (return u)
 
 -- some monadic graph accessing functions
 --
-getNode :: GraphM m gr => GT m (gr a b) Node
+getNode :: (GraphM m gr) => GT m (gr a b) Node
 getNode = MGT (\mg->do {((_,v,_,_),g) <- matchAnyM mg; return (v,g)})
 
-getContext :: GraphM m gr => GT m (gr a b) (Context a b)
+getContext :: (GraphM m gr) => GT m (gr a b) (Context a b)
 getContext = MGT matchAnyM
 
 -- some functions defined by using the do-notation explicitly
 -- Note: most of these can be expressed as an instance of graphRec
 --
 getNodes' :: (Graph gr,GraphM m gr) => GT m (gr a b) [Node]
-getNodes' = condMGT' isEmpty (return [])
-                             (do v  <- getNode
-                                 vs <- getNodes
-                                 return (v:vs))
+getNodes' = condMGT' isEmpty (return []) nodeGetter
 
-getNodes :: GraphM m gr => GT m (gr a b) [Node]
-getNodes = condMGT isEmptyM (return [])
-                            (do v  <- getNode
-                                vs <- getNodes
-                                return (v:vs))
+getNodes :: (GraphM m gr) => GT m (gr a b) [Node]
+getNodes = condMGT isEmptyM (return []) nodeGetter
 
-sucGT :: GraphM m gr => Node -> GT m (gr a b) (Maybe [Node])
+nodeGetter :: (GraphM m gr) => GT m (gr a b) [Node]
+nodeGetter = liftM2 (:) getNode getNodes
+
+sucGT :: (GraphM m gr) => Node -> GT m (gr a b) (Maybe [Node])
 sucGT v = MGT (\mg->do (c,g) <- matchM v mg
                        case c of
                          Just (_,_,_,s) -> return (Just (map snd s),g)
                          Nothing        -> return (Nothing,g)
               )
 
-sucM :: GraphM m gr => Node -> m (gr a b) -> m (Maybe [Node])
+sucM :: (GraphM m gr) => Node -> m (gr a b) -> m (Maybe [Node])
 sucM v = runGT (sucGT v)
 
 
@@ -149,7 +149,7 @@ sucM v = runGT (sucGT v)
 --                                   return (g x y))
 
 -- | encapsulates a simple recursion schema on graphs
-graphRec :: GraphM m gr => GT m (gr a b) c ->
+graphRec :: (GraphM m gr) => GT m (gr a b) c ->
                            (c -> d -> d) -> d -> GT m (gr a b) d
 graphRec = recMGT isEmptyM
 
@@ -157,7 +157,7 @@ graphRec' :: (Graph gr,GraphM m gr) => GT m (gr a b) c ->
                            (c -> d -> d) -> d -> GT m (gr a b) d
 graphRec' = recMGT' isEmpty
 
-graphUFold :: GraphM m gr => (Context a b -> c -> c) -> c -> GT m (gr a b) c
+graphUFold :: (GraphM m gr) => (Context a b -> c -> c) -> c -> GT m (gr a b) c
 graphUFold = graphRec getContext
 
 
@@ -168,20 +168,20 @@ graphUFold = graphRec getContext
 
 -- instances of graphRec
 --
-graphNodesM0 :: GraphM m gr => GT m (gr a b) [Node]
+graphNodesM0 :: (GraphM m gr) => GT m (gr a b) [Node]
 graphNodesM0 = graphRec getNode (:) []
 
-graphNodesM :: GraphM m gr => GT m (gr a b) [Node]
+graphNodesM :: (GraphM m gr) => GT m (gr a b) [Node]
 graphNodesM = graphUFold (\(_,v,_,_)->(v:)) []
 
-graphNodes :: GraphM m gr => m (gr a b) -> m [Node]
+graphNodes :: (GraphM m gr) => m (gr a b) -> m [Node]
 graphNodes = runGT graphNodesM
 
-graphFilterM :: GraphM m gr => (Context a b -> Bool) ->
+graphFilterM :: (GraphM m gr) => (Context a b -> Bool) ->
                               GT m (gr a b) [Context a b]
 graphFilterM p = graphUFold (\c cs->if p c then c:cs else cs) []
 
-graphFilter :: GraphM m gr => (Context a b -> Bool) -> m (gr a b) -> m [Context a b]
+graphFilter :: (GraphM m gr) => (Context a b -> Bool) -> m (gr a b) -> m [Context a b]
 graphFilter p = runGT (graphFilterM p)
 
 
@@ -197,7 +197,7 @@ graphFilter p = runGT (graphFilterM p)
 --  (2) run the graph transformer (applied to arguments) (e.g., dfsM)
 --
 
-dfsGT :: GraphM m gr => [Node] -> GT m (gr a b) [Node]
+dfsGT :: (GraphM m gr) => [Node] -> GT m (gr a b) [Node]
 dfsGT []     = return []
 dfsGT (v:vs) = MGT (\mg->
                do (mc,g') <- matchM v mg
@@ -206,15 +206,15 @@ dfsGT (v:vs) = MGT (\mg->
                     Nothing        -> apply' (dfsGT vs) g'  )
 
 -- | depth-first search yielding number of nodes
-dfsM :: GraphM m gr => [Node] -> m (gr a b) -> m [Node]
+dfsM :: (GraphM m gr) => [Node] -> m (gr a b) -> m [Node]
 dfsM vs = runGT (dfsGT vs)
 
-dfsM' :: GraphM m gr => m (gr a b) -> m [Node]
+dfsM' :: (GraphM m gr) => m (gr a b) -> m [Node]
 dfsM' mg = do {vs <- nodesM mg; runGT (dfsGT vs) mg}
 
 
 -- | depth-first search yielding dfs forest
-dffM :: GraphM m gr => [Node] -> GT m (gr a b) [Tree Node]
+dffM :: (GraphM m gr) => [Node] -> GT m (gr a b) [Tree Node]
 dffM vs = MGT (\mg->
           do g<-mg
              b<-isEmptyM mg
@@ -228,8 +228,8 @@ dffM vs = MGT (\mg->
                                    return (Node (node' c) ts:ts',g3)
           )
 
-graphDff :: GraphM m gr => [Node] -> m (gr a b) -> m [Tree Node]
+graphDff :: (GraphM m gr) => [Node] -> m (gr a b) -> m [Tree Node]
 graphDff vs = runGT (dffM vs)
 
-graphDff' :: GraphM m gr => m (gr a b) -> m [Tree Node]
+graphDff' :: (GraphM m gr) => m (gr a b) -> m [Tree Node]
 graphDff' mg = do {vs <- nodesM mg; runGT (dffM vs) mg}

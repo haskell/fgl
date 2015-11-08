@@ -1,108 +1,84 @@
 -- (c) 2000 - 2005 by Martin Erwig [see file COPYRIGHT]
--- | Depth-First Search
 
-module Data.Graph.Inductive.Query.DFS(
+-- | Depth-first search algorithms.
+--
+-- Names consist of:
+--
+--   1. An optional direction parameter, specifying which nodes to visit next.
+--
+--      [@x@] undirectional: ignore edge direction
+--      [@r@] reversed: walk edges in reverse
+--      [@x@] user defined: speciy which paths to follow
+--
+--   2. "df" for depth-first
+--   3. A structure parameter, specifying the type of the result.
+--
+--       [@s@] Flat list of results
+--       [@f@] Structured 'Tree' of results
+--
+--   4. An optional \"With\", which instead of putting the found nodes directly
+--      into the result, adds the result of a computation on them into it.
+--   5. An optional prime character, in which case all nodes of the graph will
+--      be visited, instead of a user-given subset.
+module Data.Graph.Inductive.Query.DFS (
+
     CFun,
-    dfs,dfs',dff,dff',
-    dfsWith, dfsWith',dffWith,dffWith',
-    xdfsWith,xdfWith,xdffWith,
-    -- * Undirected DFS
-    udfs,udfs',udff,udff',
-    udffWith,udffWith',
-    -- * Reverse DFS
-    rdff,rdff',rdfs,rdfs',
-    rdffWith,rdffWith',
-    -- * Applications of DFS\/DFF
-    topsort,topsort',scc,reachable,
-    -- * Applications of UDFS\/UDFF
-    components,noComponents,isConnected
+
+    -- * Standard
+    dfs, dfs', dff, dff',
+    dfsWith,  dfsWith', dffWith, dffWith',
+    xdfsWith, xdfWith, xdffWith,
+
+    -- * Undirected
+    udfs, udfs', udff, udff',
+    udffWith, udffWith',
+
+    -- * Reversed
+    rdff, rdff', rdfs, rdfs',
+    rdffWith, rdffWith',
+
+    -- * Applications of depth first search/forest
+    topsort, topsort', scc, reachable,
+
+    -- * Applications of undirected depth first search/forest
+    components, noComponents, isConnected, condensation
+
 ) where
 
 import Data.Graph.Inductive.Basic
 import Data.Graph.Inductive.Graph
 import Data.Tree
-
-----------------------------------------------------------------------
--- DFS AND FRIENDS
-----------------------------------------------------------------------
-
-{-
-
-  Classification of all 32 dfs functions:
-
-    dfs-function ::= [direction]"df"structure["With"]["'"]
-    direction  -->  "x" | "u" | "r"
-    structure  -->  "s" | "f"
-
-              |   structure
-   direction  |   "s"   "f"
-   ------------------------   + optional With + optional '
-      "x"     | xdfs  xdff
-      " "     |  dfs   dff
-      "u"     | udfs  udff
-      "r"     | rdfs  rdff
-   ------------------------
-
-  Direction Parameter
-  -------------------
-   x : parameterized by a function that specifies which nodes
-       to be visited next
-
-  " ": the "normal case: just follow successors
-
-   u : undirected, ie, follow predecesors and successors
-
-   r : reverse, ie, follow predecesors
+import qualified Data.Map as Map
+import Control.Monad (liftM2)
 
 
-  Structure Parameter
-  -------------------
-   s : result is a list of
-        (a) objects computed from visited contexts  ("With"-version)
-        (b) nodes                                   (normal version)
 
-   f : result is a tree/forest of
-        (a) objects computed from visited contexts  ("With"-version)
-        (b) nodes                                   (normal version)
-
-  Optional Suffixes
-  -----------------
-   With : objects to be put into list/tree are given by a function
-          on contexts, default for non-"With" versions: nodes
-
-   '    : parameter node list is given implicitly by the nodes of the
-          graph to be traversed, default for non-"'" versions: nodes
-          must be provided explicitly
-
-
-  Defined are only the following 22 most frabjuous function versions:
-
-    xdfsWith
-     dfsWith,dfsWith',dfs,dfs'
-     udfs,udfs'
-     rdfs,rdfs'
-    xdffWith
-     dffWith,dffWith',dff,dff'
-     udffWith,udffWith',udff,udff'
-     rdffWith,rdffWith',rdff,rdff'
-
-  Others can be added quite easily if needed.
-
--}
-
--- fixNodes fixes the nodes of the graph as a parameter
---
-fixNodes :: Graph gr => ([Node] -> gr a b -> c) -> gr a b -> c
+-- | Many functions take a list of nodes to visit as an explicit argument.
+--   fixNodes is a convenience function that adds all the nodes present in a
+--   graph as that list.
+fixNodes :: (Graph gr) => ([Node] -> gr a b -> c) -> gr a b -> c
 fixNodes f g = f (nodes g) g
 
 
--- generalized depth-first search
---  (could also be simply defined as applying preorderF to the
---   result of xdffWith)
---
 type CFun a b c = Context a b -> c
 
-xdfsWith :: Graph gr => CFun a b [Node] -> CFun a b c -> [Node] -> gr a b -> [c]
+-- | Most general DFS algorithm to create a list of results. The other
+--   list-returning functions such as 'dfs' are all defined in terms of this
+--   one.
+--
+-- @
+-- 'xdfsWith' d f vs = 'preorderF' . 'xdffWith' d f vs
+-- @
+xdfsWith :: (Graph gr)
+    => CFun a b [Node] -- ^ Mapping from a node to its neighbours to be visited
+                       --   as well. 'suc'' for example makes 'xdfsWith'
+                       --   traverse the graph following the edge directions,
+                       --   while 'pre'' means reversed directions.
+    -> CFun a b c      -- ^ Mapping from the 'Context' of a node to a result
+                       --   value.
+    -> [Node]          -- ^ Nodes to be visited.
+    -> gr a b
+    -> [c]
 xdfsWith _ _ []     _             = []
 xdfsWith _ _ _      g | isEmpty g = []
 xdfsWith d f (v:vs) g = case match v g of
@@ -110,42 +86,46 @@ xdfsWith d f (v:vs) g = case match v g of
                          (Nothing,g') -> xdfsWith d f vs g'
 
 
--- dfs
---
-dfsWith :: Graph gr => CFun a b c -> [Node] -> gr a b -> [c]
-dfsWith = xdfsWith suc'
-
-dfsWith' :: Graph gr => CFun a b c -> gr a b -> [c]
-dfsWith' f = fixNodes (dfsWith f)
-
-dfs :: Graph gr => [Node] -> gr a b -> [Node]
+-- | Depth-first search.
+dfs :: (Graph gr) => [Node] -> gr a b -> [Node]
 dfs = dfsWith node'
 
-dfs' :: Graph gr => gr a b -> [Node]
+dfsWith :: (Graph gr) => CFun a b c -> [Node] -> gr a b -> [c]
+dfsWith = xdfsWith suc'
+
+dfsWith' :: (Graph gr) => CFun a b c -> gr a b -> [c]
+dfsWith' f = fixNodes (dfsWith f)
+
+dfs' :: (Graph gr) => gr a b -> [Node]
 dfs' = dfsWith' node'
 
 
--- undirected dfs, ie, ignore edge directions
---
-udfs :: Graph gr => [Node] -> gr a b -> [Node]
+-- | Undirected depth-first search, obtained by following edges regardless
+--   of their direction.
+udfs :: (Graph gr) => [Node] -> gr a b -> [Node]
 udfs = xdfsWith neighbors' node'
 
-udfs' :: Graph gr => gr a b -> [Node]
+udfs' :: (Graph gr) => gr a b -> [Node]
 udfs' = fixNodes udfs
 
 
--- reverse dfs, ie, follow predecessors
---
-rdfs :: Graph gr => [Node] -> gr a b -> [Node]
+-- | Reverse depth-first search, obtained by following predecessors.
+rdfs :: (Graph gr) => [Node] -> gr a b -> [Node]
 rdfs = xdfsWith pre' node'
 
-rdfs' :: Graph gr => gr a b -> [Node]
+rdfs' :: (Graph gr) => gr a b -> [Node]
 rdfs' = fixNodes rdfs
 
 
--- generalized depth-first forest
---
-xdfWith :: Graph gr => CFun a b [Node] -> CFun a b c -> [Node] -> gr a b -> ([Tree c],gr a b)
+-- | Most general DFS algorithm to create a forest of results, otherwise very
+--   similar to 'xdfsWith'. The other forest-returning functions such as 'dff'
+--   are all defined in terms of this one.
+xdfWith :: (Graph gr)
+    => CFun a b [Node]
+    -> CFun a b c
+    -> [Node]
+    -> gr a b
+    -> ([Tree c],gr a b)
 xdfWith _ _ []     g             = ([],g)
 xdfWith _ _ _      g | isEmpty g = ([],g)
 xdfWith d f (v:vs) g = case match v g of
@@ -154,52 +134,62 @@ xdfWith d f (v:vs) g = case match v g of
                                  where (ts,g2)  = xdfWith d f (d c) g1
                                        (ts',g3) = xdfWith d f vs g2
 
-xdffWith :: Graph gr => CFun a b [Node] -> CFun a b c -> [Node] -> gr a b -> [Tree c]
+-- | Discard the graph part of the result of 'xdfWith'.
+--
+-- @
+-- xdffWith d f vs g = fst (xdfWith d f vs g)
+-- @
+xdffWith :: (Graph gr)
+    => CFun a b [Node]
+    -> CFun a b c
+    -> [Node]
+    -> gr a b
+    -> [Tree c]
 xdffWith d f vs g = fst (xdfWith d f vs g)
 
 
--- dff
---
-dffWith :: Graph gr => CFun a b c -> [Node] -> gr a b -> [Tree c]
-dffWith = xdffWith suc'
 
-dffWith' :: Graph gr => CFun a b c -> gr a b -> [Tree c]
-dffWith' f = fixNodes (dffWith f)
-
-dff :: Graph gr => [Node] -> gr a b -> [Tree Node]
+-- | Directed depth-first forest.
+dff :: (Graph gr) => [Node] -> gr a b -> [Tree Node]
 dff = dffWith node'
 
-dff' :: Graph gr => gr a b -> [Tree Node]
+dffWith :: (Graph gr) => CFun a b c -> [Node] -> gr a b -> [Tree c]
+dffWith = xdffWith suc'
+
+dffWith' :: (Graph gr) => CFun a b c -> gr a b -> [Tree c]
+dffWith' f = fixNodes (dffWith f)
+
+dff' :: (Graph gr) => gr a b -> [Tree Node]
 dff' = dffWith' node'
 
 
--- undirected dff
---
-udffWith :: Graph gr => CFun a b c -> [Node] -> gr a b -> [Tree c]
-udffWith = xdffWith neighbors'
 
-udffWith' :: Graph gr => CFun a b c -> gr a b -> [Tree c]
-udffWith' f = fixNodes (udffWith f)
-
-udff :: Graph gr => [Node] -> gr a b -> [Tree Node]
+-- | Undirected depth-first forest, obtained by following edges regardless
+--   of their direction.
+udff :: (Graph gr) => [Node] -> gr a b -> [Tree Node]
 udff = udffWith node'
 
-udff' :: Graph gr => gr a b -> [Tree Node]
+udffWith :: (Graph gr) => CFun a b c -> [Node] -> gr a b -> [Tree c]
+udffWith = xdffWith neighbors'
+
+udffWith' :: (Graph gr) => CFun a b c -> gr a b -> [Tree c]
+udffWith' f = fixNodes (udffWith f)
+
+udff' :: (Graph gr) => gr a b -> [Tree Node]
 udff' = udffWith' node'
 
 
--- reverse dff, ie, following predecessors
---
-rdffWith :: Graph gr => CFun a b c -> [Node] -> gr a b -> [Tree c]
-rdffWith = xdffWith pre'
-
-rdffWith' :: Graph gr => CFun a b c -> gr a b -> [Tree c]
-rdffWith' f = fixNodes (rdffWith f)
-
-rdff :: Graph gr => [Node] -> gr a b -> [Tree Node]
+-- | Reverse depth-first forest, obtained by following predecessors.
+rdff :: (Graph gr) => [Node] -> gr a b -> [Tree Node]
 rdff = rdffWith node'
 
-rdff' :: Graph gr => gr a b -> [Tree Node]
+rdffWith :: (Graph gr) => CFun a b c -> [Node] -> gr a b -> [Tree c]
+rdffWith = xdffWith pre'
+
+rdffWith' :: (Graph gr) => CFun a b c -> gr a b -> [Tree c]
+rdffWith' f = fixNodes (rdffWith f)
+
+rdff' :: (Graph gr) => gr a b -> [Tree Node]
 rdff' = rdffWith' node'
 
 
@@ -207,30 +197,55 @@ rdff' = rdffWith' node'
 -- ALGORITHMS BASED ON DFS
 ----------------------------------------------------------------------
 
-components :: Graph gr => gr a b -> [[Node]]
-components = (map preorder) . udff'
+-- | Collection of connected components
+components :: (Graph gr) => gr a b -> [[Node]]
+components = map preorder . udff'
 
-noComponents :: Graph gr => gr a b -> Int
+-- | Number of connected components
+noComponents :: (Graph gr) => gr a b -> Int
 noComponents = length . components
 
-isConnected :: Graph gr => gr a b -> Bool
+-- | Is the graph connected?
+isConnected :: (Graph gr) => gr a b -> Bool
 isConnected = (==1) . noComponents
 
+-- | Flatten a 'Tree' in reverse order
 postflatten :: Tree a -> [a]
 postflatten (Node v ts) = postflattenF ts ++ [v]
 
+-- | Flatten a forest in reverse order
 postflattenF :: [Tree a] -> [a]
 postflattenF = concatMap postflatten
 
-topsort :: Graph gr => gr a b -> [Node]
+-- | <http://en.wikipedia.org/wiki/Topological_sorting Topological sorting>,
+--   i.e. a list of 'Node's so that if there's an edge between a source and a
+--   target node, the source appears earlier in the result.
+topsort :: (Graph gr) => gr a b -> [Node]
 topsort = reverse . postflattenF . dff'
 
-topsort' :: Graph gr => gr a b -> [a]
-topsort' = reverse . postorderF . (dffWith' lab')
+-- | 'topsort', returning only the labels of the nodes.
+topsort' :: (Graph gr) => gr a b -> [a]
+topsort' = reverse . postorderF . dffWith' lab'
 
-scc :: Graph gr => gr a b -> [[Node]]
-scc g = map preorder (rdff (topsort g) g)            -- optimized, using rdff
--- sccOrig g = map preorder (dff (topsort g) (grev g))  -- original by Sharir
+-- | Collection of strongly connected components
+scc :: (Graph gr) => gr a b -> [[Node]]
+scc g = map preorder (rdff (topsort g) g)
 
-reachable :: Graph gr => Node -> gr a b -> [Node]
+-- | Collection of nodes reachable from a starting point.
+reachable :: (Graph gr) => Node -> gr a b -> [Node]
 reachable v g = preorderF (dff [v] g)
+
+-- | The condensation of the given graph, i.e., the graph of its
+-- strongly connected components.
+condensation :: Graph gr => gr a b -> gr [Node] ()
+condensation gr = mkGraph vs es
+  where
+    sccs = scc gr
+    vs = zip [1..] sccs
+    vMap = Map.fromList $ map swap vs
+
+    swap = uncurry $ flip (,)
+
+    getN = (vMap Map.!)
+    es = [ (getN c1, getN c2, ()) | c1 <- sccs, c2 <- sccs
+                                  , (c1 /= c2) && any (hasEdge gr) (liftM2 (,) c1 c2) ]

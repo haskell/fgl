@@ -17,13 +17,14 @@ where
 
 
 import Data.Graph.Inductive.Graph
-import Data.Graph.Inductive.Internal.Thread (threadList, threadMaybe)
+import Data.Graph.Inductive.Internal.Thread (Collect, Split, SplitM, threadList,
+                                             threadMaybe)
 
 import Data.List (nub)
 import Data.Tree
 
 -- | Reverse the direction of all edges.
-grev :: DynGraph gr => gr a b -> gr a b
+grev :: (DynGraph gr) => gr a b -> gr a b
 grev = gmap (\(p,v,l,s)->(s,v,l,p))
 
 -- | Make the graph undirected, i.e. for every edge from A to B, there
@@ -36,14 +37,14 @@ undir = gmap (\(p,v,l,s)->let ps = nub (p++s) in (ps,v,l,ps))
 --           let ps = nubBy (\x y->snd x==snd y) (p++s) in (ps,v,l,ps))
 
 -- | Remove all labels.
-unlab :: DynGraph gr => gr a b -> gr () ()
+unlab :: (DynGraph gr) => gr a b -> gr () ()
 unlab = gmap (\(p,v,_,s)->(unlabAdj p,v,(),unlabAdj s))
         where unlabAdj = map (\(_,v)->((),v))
 -- alternative:
 --    unlab = nmap (\_->()) . emap (\_->())
 
 -- | Return all 'Context's for which the given function returns 'True'.
-gsel :: Graph gr => (Context a b -> Bool) -> gr a b -> [Context a b]
+gsel :: (Graph gr) => (Context a b -> Bool) -> gr a b -> [Context a b]
 gsel p = ufold (\c cs->if p c then c:cs else cs) []
 
 
@@ -54,14 +55,14 @@ gsel p = ufold (\c cs->if p c then c:cs else cs) []
 --
 
 -- | Filter based on edge property.
-efilter :: DynGraph gr => (LEdge b -> Bool) -> gr a b -> gr a b
+efilter :: (DynGraph gr) => (LEdge b -> Bool) -> gr a b -> gr a b
 efilter f = ufold cfilter empty
             where cfilter (p,v,l,s) g = (p',v,l,s') & g
                    where p' = filter (\(b,u)->f (u,v,b)) p
                          s' = filter (\(b,w)->f (v,w,b)) s
 
 -- | Filter based on edge label property.
-elfilter :: DynGraph gr => (b -> Bool) -> gr a b -> gr a b
+elfilter :: (DynGraph gr) => (b -> Bool) -> gr a b -> gr a b
 elfilter f = efilter (\(_,_,b)->f b)
 
 
@@ -69,18 +70,24 @@ elfilter f = efilter (\(_,_,b)->f b)
 --
 
 -- | 'True' if the graph has any edges of the form (A, A).
-hasLoop :: Graph gr => gr a b -> Bool
-hasLoop = not . null . (gsel (\c->(node' c `elem` suc' c)))
+hasLoop :: (Graph gr) => gr a b -> Bool
+hasLoop = not . null . gsel (\c->node' c `elem` suc' c)
 
 -- | The inverse of 'hasLoop'.
-isSimple :: Graph gr => gr a b -> Bool
+isSimple :: (Graph gr) => gr a b -> Bool
 isSimple = not . hasLoop
 
-
+threadGraph :: (Graph gr) => (Context a b -> r -> t)
+               -> Split (gr a b) (Context a b) r -> SplitM (gr a b) Node t
 threadGraph f c = threadMaybe f c match
 
 -- gfold1 f d b u = threadGraph (\c->d (labNode' c)) (\c->gfoldn f d b u (f c))
-gfold1 f d b = threadGraph d (\c->gfoldn f d b (f c))
+gfold1 :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> r -> t)
+          -> Collect (Maybe t) r -> SplitM (gr a b) Node t
+gfold1 f d b = threadGraph d (gfoldn f d b . f)
+
+gfoldn :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> r -> t)
+          -> Collect (Maybe t) r -> [Node] -> gr a b -> (r, gr a b)
 gfoldn f d b = threadList b (gfold1 f d b)
 
 -- gfold :: ((Context a b) -> [Node]) -> ((Node,a) -> c -> d) ->
@@ -95,8 +102,8 @@ gfoldn f d b = threadList b (gfold1 f d b)
 -- gfold f d (b,u) l g = fst (gfoldn f d b u l g)
 
 -- | Directed graph fold.
-gfold :: Graph gr =>   ((Context a b) -> [Node])    -- ^ direction of fold
-        -> ((Context a b) -> c -> d)    -- ^ depth aggregation
+gfold :: (Graph gr) =>   (Context a b -> [Node])    -- ^ direction of fold
+        -> (Context a b -> c -> d)    -- ^ depth aggregation
         -> (Maybe d -> c -> c, c)      -- ^ breadth\/level aggregation
         -> [Node]
         -> gr a b
