@@ -6,6 +6,9 @@ module Data.Graph.Inductive.Query.BFS(
     -- * BFS Node List
     bfs, bfsn, bfsWith, bfsnWith,
 
+    -- * Lexicographic BFS Node List
+    lexbfs,
+
     -- * Node List With Depth Info
     level, leveln,
 
@@ -24,6 +27,7 @@ module Data.Graph.Inductive.Query.BFS(
 import Data.Graph.Inductive.Graph
 import Data.Graph.Inductive.Internal.Queue
 import Data.Graph.Inductive.Internal.RootPath
+import Data.List ((\\))
 
 -- bfs (node list ordered by distance)
 --
@@ -47,6 +51,27 @@ bfsWith f v = bfsnInternal f (queuePut v mkQueue)
 bfs :: (Graph gr) => Node -> gr a b -> [Node]
 bfs = bfsWith node'
 
+-- lexbfs (lexicographic ordering of nodes in graph)
+--
+rElem :: Eq a => a -> [[a]] -> Bool
+rElem x xs = elem x (concat xs)
+
+rElems :: Eq a => [a] -> [[a]] -> [a]
+rElems ws xs = filter (\x -> rElem x xs) ws
+
+lexbfs :: (Graph gr) => gr a b -> [Node]
+lexbfs g = concat . tail $ lexbfsInternal [nodes g] g
+
+lexbfsInternal :: (Graph gr) => [[Node]] -> gr a b -> [[Node]]
+lexbfsInternal listOfSets g | null listOfSets || isEmpty g  = [[]]
+        		    | null (head listOfSets)        = lexbfsInternal (tail listOfSets) g
+			    | otherwise                     =
+	let v           = head (head listOfSets)
+	    vs          = tail (head listOfSets)
+	    newListOfSets = vs:(tail listOfSets)
+	    vSuc        = suc g v
+	    vSucInList  = rElems vSuc newListOfSets
+        in (lexbfsInternal (concat (map (\x -> (x \\ (x \\ vSucInList)) : [x \\ vSucInList]) newListOfSets)) g) ++ [[v]]
 
 -- level (extension of bfs giving the depth of each node)
 --
