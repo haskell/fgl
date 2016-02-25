@@ -172,7 +172,9 @@ class Graph gr where
   labEdges = ufold (\(_,v,_,s)->(map (\(l,w)->(v,w,l)) s ++)) []
 
 class (Graph gr) => DynGraph gr where
-  -- | Merge the 'Context' into the 'DynGraph'.
+  -- | Merge the 'Context' into the 'DynGraph'. Contexts should only refer
+  -- to either a Node already in a graph or the node in the Context itself
+  -- (for loops).
   (&) :: Context a b -> gr a b -> gr a b
 
 -- | Fold a function over the graph.
