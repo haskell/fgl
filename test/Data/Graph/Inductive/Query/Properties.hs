@@ -26,7 +26,7 @@ import Test.Hspec      (Spec, describe, it, shouldBe, shouldMatchList,
 import Test.QuickCheck
 
 import           Control.Arrow (second)
-import           Data.List     (delete, sort, unfoldr)
+import           Data.List     (delete, sort, unfoldr, isSubsequenceOf, group)
 import qualified Data.Set      as S
 
 #if __GLASGOW_HASKELL__ < 710
@@ -339,6 +339,25 @@ test_trc _ cg = gReach == trc g
     gReach = (`asTypeOf` g)
              . insEdges [(v,w,()) | (v,_) <- lns, (w,_) <- lns]
              $ mkGraph lns []
+
+test_tc :: (ArbGraph gr, Eq (BaseGraph gr a ())) => Proxy (gr a b)
+                                                 -> Connected (SimpleGraph gr) a ()
+                                                 -> Bool
+test_tc _ cg = all valid $ nodes gTrans
+  where
+    g       = connGraph cg
+    gTrans  = tc g
+    valid n = suc g n `isSubsequenceOf` suc gTrans n &&
+              sort (suc gTrans n) == map head (group (sort [ v | u <- suc g n, v <- reachable u g ]))
+
+test_rc :: (ArbGraph gr, Eq (BaseGraph gr a ())) => Proxy (gr a b)
+                                                 -> Connected (SimpleGraph gr) a ()
+                                                 -> Bool
+test_rc _ cg = and [ n `elem` suc gRefl n | n <- nodes gRefl ]
+  where
+    g     = connGraph cg
+    gRefl = rc g
+
 
 -- -----------------------------------------------------------------------------
 -- Utility functions
