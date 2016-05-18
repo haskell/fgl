@@ -272,7 +272,7 @@ delEdge (v,w) g = case match v g of
 --
 --   NOTE: in the case of multiple edges with the same label, this
 --   will only delete the /first/ such edge.  To delete all such
---   edges, please use 'delAllLedges'.
+--   edges, please use 'delAllLedge'.
 delLEdge :: (DynGraph gr, Eq b) => LEdge b -> gr a b -> gr a b
 delLEdge = delLEdgeBy delete
 
