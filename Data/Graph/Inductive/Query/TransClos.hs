@@ -14,7 +14,7 @@ tc :: (DynGraph gr) => gr a b -> gr a ()
 tc g = newEdges `insEdges` insNodes ln empty
   where
     ln       = labNodes g
-    newEdges = [ toLEdge (u, v) () | (u, _) <- ln, (_, v) <- bfen (outU g u) g ]
+    newEdges = [ (u, v, ()) | (u, _) <- ln, (_, v) <- bfen (outU g u) g ]
     outU gr  = map toEdge . out gr
 
 {-|
@@ -26,7 +26,7 @@ trc :: (DynGraph gr) => gr a b -> gr a ()
 trc g = newEdges `insEdges` insNodes ln empty
   where
     ln       = labNodes g
-    newEdges = [ toLEdge (u, v) () | (u, _) <- ln, (_, v) <- bfen [(u, u)] g ]
+    newEdges = [ (u, v, ()) | (u, _) <- ln, (_, v) <- bfen [(u, u)] g ]
 
 {-|
 Finds the reflexive closure of a directed graph.
@@ -37,4 +37,4 @@ rc :: (DynGraph gr) => gr a b -> gr a ()
 rc g = newEdges `insEdges` insNodes ln empty
   where
     ln       = labNodes g
-    newEdges = [ toLEdge (u, u) () | (u, _) <- ln ]
+    newEdges = [ (u, u, ()) | (u, _) <- ln ]
