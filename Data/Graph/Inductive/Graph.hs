@@ -173,6 +173,9 @@ class Graph gr where
 
 class (Graph gr) => DynGraph gr where
   -- | Merge the 'Context' into the 'DynGraph'.
+  --
+  --   Contexts should only refer to either a Node already in a graph
+  --   or the node in the Context itself (for loops).
   (&) :: Context a b -> gr a b -> gr a b
 
 -- | Fold a function over the graph.
