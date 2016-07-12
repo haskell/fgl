@@ -275,6 +275,7 @@ insEdge (v,w,l) g = (pr,v,la,(l,w):su) & g'
     (pr,_,la,su) = fromMaybe
                      (error ("insEdge: cannot add edge from non-existent vertex " ++ show v))
                      mcxt
+{-# NOINLINE [0] insEdge #-}
 
 -- | Remove a 'Node' from the 'Graph'.
 delNode :: (Graph gr) => Node -> gr a b -> gr a b
@@ -312,13 +313,11 @@ delLEdgeBy f (v,w,b) g = case match v g of
 -- | Insert multiple 'LNode's into the 'Graph'.
 insNodes   :: (DynGraph gr) => [LNode a] -> gr a b -> gr a b
 insNodes vs g = foldl' (flip insNode) g vs
-
 {-# INLINABLE insNodes #-}
 
 -- | Insert multiple 'LEdge's into the 'Graph'.
 insEdges :: (DynGraph gr) => [LEdge b] -> gr a b -> gr a b
 insEdges es g = foldl' (flip insEdge) g es
-
 {-# INLINABLE insEdges #-}
 
 -- | Remove multiple 'Node's from the 'Graph'.
