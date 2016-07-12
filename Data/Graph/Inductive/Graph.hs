@@ -178,7 +178,7 @@ class Graph gr where
 
   -- | A list of all 'LEdge's in the 'Graph'.
   --
-  --   By default, this is @O(|E|)@.
+  --   By default, this is @O(|V| + |E|)@.
   labEdges  :: gr a b -> [LEdge b]
   labEdges = ufold (\(_,v,_,s)->(map (\(l,w)->(v,w,l)) s ++)) []
 
@@ -188,7 +188,6 @@ class (Graph gr) => DynGraph gr where
   --   Contexts should only refer to either a Node already in a graph
   --   or the node in the Context itself (for loops).
   (&) :: Context a b -> gr a b -> gr a b
-
 
 -- | The number of nodes in the graph.  An alias for 'noNodes'.
 order :: (Graph gr) => gr a b -> Int
@@ -205,7 +204,7 @@ order = noNodes
 --   "Data.Graph.Inductive.Basic" then you can safely halve the value
 --   returned by this.
 --
---   This function is @O(|E|)@.
+--   This function is @O(|V| + |E|)@.
 size :: (Graph gr) => gr a b -> Int
 size = length . labEdges
 
@@ -228,11 +227,15 @@ gmap f = ufold (\c->(f c&)) empty
 {-# NOINLINE [0] gmap #-}
 
 -- | Map a function over the 'Node' labels in a graph.
+--
+--   This function is @O(|V|)@.
 nmap :: (DynGraph gr) => (a -> c) -> gr a b -> gr c b
 nmap f = gmap (\(p,v,l,s)->(p,v,f l,s))
 {-# NOINLINE [0] nmap #-}
 
 -- | Map a function over the 'Edge' labels in a graph.
+--
+--   This function is @O(|V| + |E|)@.
 emap :: (DynGraph gr) => (b -> c) -> gr a b -> gr a c
 emap f = gmap (\(p,v,l,s)->(map1 f p,v,l,map1 f s))
   where
@@ -240,6 +243,8 @@ emap f = gmap (\(p,v,l,s)->(map1 f p,v,l,map1 f s))
 {-# NOINLINE [0] emap #-}
 
 -- | Map functions over both the 'Node' and 'Edge' labels in a graph.
+--
+--   This function is @O(|V| + |E|)@.
 nemap :: (DynGraph gr) => (a -> c) -> (b -> d) -> gr a b -> gr c d
 nemap fn fe = gmap (\(p,v,l,s) -> (fe' p,v,fn l,fe' s))
   where
@@ -247,10 +252,14 @@ nemap fn fe = gmap (\(p,v,l,s) -> (fe' p,v,fn l,fe' s))
 {-# NOINLINE [0] nemap #-}
 
 -- | List all 'Node's in the 'Graph'.
+--
+--   This function is @O(|V|)@.
 nodes :: (Graph gr) => gr a b -> [Node]
 nodes = map fst . labNodes
 
 -- | List all 'Edge's in the 'Graph'.
+--
+--   This function is @O(|V| + |E|)@.
 edges :: (Graph gr) => gr a b -> [Edge]
 edges = map toEdge . labEdges
 
@@ -267,6 +276,8 @@ edgeLabel :: LEdge b -> b
 edgeLabel (_,_,l) = l
 
 -- | List N available 'Node's, i.e. 'Node's that are not used in the 'Graph'.
+--
+--   This function's complexity is dependent upon that of 'nodeRange'.
 newNodes :: (Graph gr) => Int -> gr a b -> [Node]
 newNodes i g
   | isEmpty g = [0..i-1]
@@ -275,15 +286,21 @@ newNodes i g
     (_,n) = nodeRange g
 
 -- | 'True' if the 'Node' is present in the 'Graph'.
+--
+--    This function's complexity is dependent upon that of 'match'.
 gelem :: (Graph gr) => Node -> gr a b -> Bool
 gelem v = isJust . fst . match v
 
 -- | Insert a 'LNode' into the 'Graph'.
+--
+--    This function's complexity is dependent upon that of 'match'.
 insNode :: (DynGraph gr) => LNode a -> gr a b -> gr a b
 insNode (v,l) = (([],v,l,[])&)
 {-# NOINLINE [0] insNode #-}
 
 -- | Insert a 'LEdge' into the 'Graph'.
+--
+--    This function's complexity is dependent upon that of 'match'.
 insEdge :: (DynGraph gr) => LEdge b -> gr a b -> gr a b
 insEdge (v,w,l) g = (pr,v,la,(l,w):su) & g'
   where
