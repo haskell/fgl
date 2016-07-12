@@ -105,5 +105,4 @@ test-suite fgl-tests {
 
     ghc-options:      -Wall
 
-    ghc-prof-options: -prof -auto
 }
