@@ -34,6 +34,8 @@ module Data.Graph.Inductive.Graph (
     Graph(..),
     DynGraph(..),
     -- * Operations
+    order,
+    size,
     -- ** Graph Folds and Maps
     ufold,gmap,nmap,emap,nemap,
     -- ** Graph Projection
@@ -177,6 +179,24 @@ class (Graph gr) => DynGraph gr where
   --   Contexts should only refer to either a Node already in a graph
   --   or the node in the Context itself (for loops).
   (&) :: Context a b -> gr a b -> gr a b
+
+
+-- | The number of nodes in the graph.  An alias for 'noNodes'.
+order :: (Graph gr) => gr a b -> Int
+order = noNodes
+
+-- | The number of edges in the graph.
+--
+--   Note that this counts every edge found, so if you are
+--   representing an unordered graph by having each edge mirrored this
+--   will be incorrect.
+--
+--   If you created an unordered graph by either mirroring every edge
+--   (including loops!) or using the @undir@ function in
+--   "Data.Graph.Inductive.Basic" then you can safely halve the value
+--   returned by this.
+size :: (Graph gr) => gr a b -> Int
+size = length . labEdges
 
 -- | Fold a function over the graph.
 ufold :: (Graph gr) => (Context a b -> c -> c) -> c -> gr a b -> c
