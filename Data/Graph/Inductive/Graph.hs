@@ -149,7 +149,10 @@ class Graph gr where
   labNodes  :: gr a b -> [LNode a]
 
   -- | Decompose a graph into the 'Context' for an arbitrarily-chosen 'Node'
-  -- and the remaining 'Graph'.
+  --   and the remaining 'Graph'.
+  --
+  --   By default this is @O(1)@ (assuming the definition of
+  --   'labNodes' is lazy).
   matchAny  :: gr a b -> GDecomp gr a b
   matchAny g = case labNodes g of
                  []      -> error "Match Exception, Empty Graph"
@@ -158,10 +161,14 @@ class Graph gr where
                      (Just c,g') = match v g
 
   -- | The number of 'Node's in a 'Graph'.
+  --
+  --   By default this is @O(|V|)@.
   noNodes   :: gr a b -> Int
   noNodes = length . labNodes
 
   -- | The minimum and maximum 'Node' in a 'Graph'.
+  --
+  --   By default, this is @O(|V|)@.
   nodeRange :: gr a b -> (Node,Node)
   nodeRange g
     | isEmpty g = error "nodeRange of empty graph"
@@ -170,6 +177,8 @@ class Graph gr where
       vs = nodes g
 
   -- | A list of all 'LEdge's in the 'Graph'.
+  --
+  --   By default, this is @O(|E|)@.
   labEdges  :: gr a b -> [LEdge b]
   labEdges = ufold (\(_,v,_,s)->(map (\(l,w)->(v,w,l)) s ++)) []
 
@@ -195,10 +204,15 @@ order = noNodes
 --   (including loops!) or using the @undir@ function in
 --   "Data.Graph.Inductive.Basic" then you can safely halve the value
 --   returned by this.
+--
+--   This function is @O(|E|)@.
 size :: (Graph gr) => gr a b -> Int
 size = length . labEdges
 
 -- | Fold a function over the graph.
+--
+--   This function is @O(|V|)@ (assuming the provided function is
+--   @O(1)@).
 ufold :: (Graph gr) => (Context a b -> c -> c) -> c -> gr a b -> c
 ufold f u g
   | isEmpty g = u
@@ -207,6 +221,8 @@ ufold f u g
     (c,g') = matchAny g
 
 -- | Map a function over the graph.
+--
+--   Assuming the provided function is @O(1)@ then this is @O(|V|)@.
 gmap :: (DynGraph gr) => (Context a b -> Context c d) -> gr a b -> gr c d
 gmap f = ufold (\c->(f c&)) empty
 {-# NOINLINE [0] gmap #-}
