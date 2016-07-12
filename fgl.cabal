@@ -1,5 +1,5 @@
 name:          fgl
-version:       5.5.2.3
+version:       5.5.2.4
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
@@ -59,6 +59,7 @@ library {
         Data.Graph.Inductive.Query.MaxFlow2,
         Data.Graph.Inductive.Query.Monad,
         Data.Graph.Inductive.Query.SP,
+        Data.Graph.Inductive.Query.SP.DAG,
         Data.Graph.Inductive.Query.TransClos,
         Data.Graph.Inductive
 
@@ -68,6 +69,7 @@ library {
     build-depends:    base < 5
                     , transformers
                     , array
+                    , vector
 
     if flag(containers042)
         build-depends:    containers >= 0.4.2
