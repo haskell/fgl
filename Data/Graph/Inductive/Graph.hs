@@ -293,9 +293,13 @@ delLEdgeBy f (v,w,b) g = case match v g of
 insNodes   :: (DynGraph gr) => [LNode a] -> gr a b -> gr a b
 insNodes vs g = foldl' (flip insNode) g vs
 
+{-# INLINABLE insNodes #-}
+
 -- | Insert multiple 'LEdge's into the 'Graph'.
 insEdges :: (DynGraph gr) => [LEdge b] -> gr a b -> gr a b
 insEdges es g = foldl' (flip insEdge) g es
+
+{-# INLINABLE insEdges #-}
 
 -- | Remove multiple 'Node's from the 'Graph'.
 delNodes :: (Graph gr) => [Node] -> gr a b -> gr a b
