@@ -50,11 +50,9 @@ showGraph (_,a,m) = concatMap showAdj (indices a)
 unsafeST :: ST RealWorld a -> a
 unsafeST = unsafePerformIO . stToIO
 
+-- | Please not that this instance is unsafe.
 instance (Show a,Show b) => Show (SGr RealWorld a b) where
   show (SGr g) = showGraph g
-
-instance (Show a,Show b) => Show (ST RealWorld (SGr RealWorld a b)) where
-  show g = unsafeST (do {(SGr g') <- g; return (showGraph g')})
 
 {-
 run :: Show (IO a) => IO a -> IO ()
