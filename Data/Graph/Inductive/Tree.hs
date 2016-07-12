@@ -14,7 +14,6 @@ module Data.Graph.Inductive.Tree (Gr,UGr) where
 import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
-import           Control.Arrow       (first, second)
 import           Data.List           (foldl', sort)
 import           Data.Map            (Map)
 import qualified Data.Map            as M
@@ -26,6 +25,12 @@ import Control.DeepSeq (NFData (..))
 
 #if __GLASGOW_HASKELL__ >= 702
 import GHC.Generics (Generic)
+#endif
+
+#if MIN_VERSION_base (4,8,0)
+import Data.Bifunctor
+#else
+import Control.Arrow (first, second)
 #endif
 
 ----------------------------------------------------------------------
@@ -128,6 +133,15 @@ instance DynGraph Gr where
 #if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
+#endif
+
+#if MIN_VERSION_base (4,8,0)
+instance Bifunctor Gr where
+  bimap = nemap
+
+  first = nmap
+
+  second = emap
 #endif
 
 ----------------------------------------------------------------------

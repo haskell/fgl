@@ -28,7 +28,6 @@ module Data.Graph.Inductive.PatriciaTree
 import Data.Graph.Inductive.Graph
 
 import           Control.Applicative (liftA2)
-import           Control.Arrow       (second)
 import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (sort)
@@ -40,6 +39,12 @@ import Control.DeepSeq (NFData (..))
 
 #if __GLASGOW_HASKELL__ >= 702
 import GHC.Generics (Generic)
+#endif
+
+#if MIN_VERSION_base (4,8,0)
+import Data.Bifunctor
+#else
+import Control.Arrow (second)
 #endif
 
 ----------------------------------------------------------------------
@@ -118,6 +123,15 @@ instance DynGraph Gr where
 #if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
+#endif
+
+#if MIN_VERSION_base (4,8,0)
+instance Bifunctor Gr where
+  bimap = fastNEMap
+
+  first = fastNMap
+
+  second = fastEMap
 #endif
 
 matchGr :: Node -> Gr a b -> Decomp Gr a b
