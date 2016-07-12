@@ -223,16 +223,16 @@ liftM1' f c =
        return r
 
 -- | Monadic node construction.
-mkNodeM :: (Ord a, DynGraph g) => a -> NodeMapM a b g (LNode a)
+mkNodeM :: (Ord a) => a -> NodeMapM a b g (LNode a)
 mkNodeM = liftN2 mkNode
 
-mkNodesM :: (Ord a, DynGraph g) => [a] -> NodeMapM a b g [LNode a]
+mkNodesM :: (Ord a) => [a] -> NodeMapM a b g [LNode a]
 mkNodesM = liftN2 mkNodes
 
-mkEdgeM :: (Ord a, DynGraph g) => (a, a, b) -> NodeMapM a b g (Maybe (LEdge b))
+mkEdgeM :: (Ord a) => (a, a, b) -> NodeMapM a b g (Maybe (LEdge b))
 mkEdgeM = liftN2' mkEdge
 
-mkEdgesM :: (Ord a, DynGraph g) => [(a, a, b)] -> NodeMapM a b g (Maybe [LEdge b])
+mkEdgesM :: (Ord a) => [(a, a, b)] -> NodeMapM a b g (Maybe [LEdge b])
 mkEdgesM = liftN2' mkEdges
 
 insMapNodeM :: (Ord a, DynGraph g) => a -> NodeMapM a b g (LNode a)

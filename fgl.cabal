@@ -18,7 +18,7 @@ extra-source-files:
                ChangeLog
 
 tested-with:   GHC == 7.0.4, GHC == 7.2.2, GHC == 7.4.2, GHC == 7.6.3,
-               GHC == 7.8.4, GHC == 7.10.2, GHC == 7.11.*
+               GHC == 7.8.4, GHC == 7.10.2, GHC == 8.0.1, GHC == 8.1.*
 
 source-repository head
     type:         git
@@ -89,7 +89,7 @@ test-suite fgl-tests {
 
     build-depends:    fgl
                     , base
-                    , QuickCheck >= 2.8 && < 2.9
+                    , QuickCheck >= 2.8 && < 2.10
                     , hspec >= 2.1 && < 2.3
                     , containers
 
@@ -105,5 +105,4 @@ test-suite fgl-tests {
 
     ghc-options:      -Wall
 
-    ghc-prof-options: -prof -auto
 }

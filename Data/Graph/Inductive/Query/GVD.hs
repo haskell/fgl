@@ -50,7 +50,7 @@ maybePath v = listToMaybe . filter ((v==) . fst . head . unLPath)
 
 -- | Try to determine the nearest root node to the one specified in the
 --   shortest path forest.
-nearestNode :: (Real b) => Node -> Voronoi b -> Maybe Node
+nearestNode :: Node -> Voronoi b -> Maybe Node
 nearestNode v = fmap (fst . last . unLPath) . maybePath v
 
 -- | The distance to the 'nearestNode' (if there is one) in the

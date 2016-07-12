@@ -29,13 +29,11 @@ library
   -- other-extensions:
   build-depends:       base < 5
                      , fgl >= 5.5.2.0 && < 6
-                     , QuickCheck >= 2.3 && < 2.9
+                     , QuickCheck >= 2.3 && < 2.10
   -- hs-source-dirs:
   default-language:    Haskell2010
 
   ghc-options:         -Wall
-
-  ghc-prof-options:    -prof -auto
 
 test-suite fgl-arbitrary-tests
     default-language: Haskell2010
@@ -45,7 +43,7 @@ test-suite fgl-arbitrary-tests
     build-depends:    fgl-arbitrary
                     , fgl
                     , base
-                    , QuickCheck >= 2.3 && < 2.9
+                    , QuickCheck >= 2.3 && < 2.10
                     , hspec >= 2.1 && < 2.3
                     , containers
 
@@ -54,5 +52,3 @@ test-suite fgl-arbitrary-tests
     main-is:          TestSuite.hs
 
     ghc-options:      -Wall
-
-    ghc-prof-options: -prof -auto
