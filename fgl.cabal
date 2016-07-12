@@ -46,6 +46,7 @@ library {
         Data.Graph.Inductive.Query,
         Data.Graph.Inductive.Tree,
         Data.Graph.Inductive.Monad.IOArray,
+        Data.Graph.Inductive.Monad.STArray,
         Data.Graph.Inductive.Query.ArtPoint,
         Data.Graph.Inductive.Query.BCC,
         Data.Graph.Inductive.Query.BFS,
