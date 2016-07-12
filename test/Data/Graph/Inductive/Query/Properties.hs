@@ -26,7 +26,7 @@ import Test.Hspec      (Spec, describe, it, shouldBe, shouldMatchList,
 import Test.QuickCheck
 
 import           Control.Arrow (second)
-import           Data.List     (delete, sort, unfoldr)
+import           Data.List     (delete, sort, unfoldr, group, (\\))
 import qualified Data.Set      as S
 
 #if __GLASGOW_HASKELL__ < 710
@@ -327,18 +327,41 @@ test_sp _ cg = all test_p (map unLPath (msTree g))
 -- -----------------------------------------------------------------------------
 -- TransClos
 
-test_trc :: (ArbGraph gr, Eq (BaseGraph gr a ())) => Proxy (gr a b)
-                                                  -> UConnected (SimpleGraph gr) a ()
-                                                  -> Bool
-test_trc _ cg = gReach == trc g
+-- | The transitive, reflexive closure of a graph means that every
+-- node is a successor of itself, and also that if (a, b) is an edge,
+-- and (b, c) is an edge, then (a, c) must also be an edge.
+test_trc :: DynGraph gr => Proxy (gr a b) -> (NoMultipleEdges gr) a b -> Bool
+test_trc _ nme = all valid $ nodes gTrans
   where
-    g = connGraph cg
+    g       = emap (const ()) (nmeGraph nme)
+    gTrans  = trc g
+    valid n =
+      -- For each node n, check that:
+      --   the successors for n in gTrans are a superset of the successors for n in g.
+      null (suc g n \\ suc gTrans n) &&
+      --   the successors for n in gTrans are exactly equal to the reachable nodes for n in g, plus n.
+      sort (suc gTrans n) == map head (group (sort (n:[ v | u <- suc g n, v <- reachable u g ])))
 
-    lns = labNodes g
+-- | The transitive closure of a graph means that if (a, b) is an
+-- edge, and (b, c) is an edge, then (a, c) must also be an edge.
+test_tc :: DynGraph gr => Proxy (gr a b) -> (NoMultipleEdges gr) a b -> Bool
+test_tc _ nme = all valid $ nodes gTrans
+  where
+    g       = nmeGraph nme
+    gTrans  = tc g
+    valid n =
+      -- For each node n, check that:
+      --   the successors for n in gTrans are a superset of the successors for n in g.
+      null (suc g n \\ suc gTrans n) &&
+      --   the successors for n in gTrans are exactly equal to the reachable nodes for n in g.
+      sort (suc gTrans n) == map head (group (sort [ v | u <- suc g n, v <- reachable u g ]))
 
-    gReach = (`asTypeOf` g)
-             . insEdges [(v,w,()) | (v,_) <- lns, (w,_) <- lns]
-             $ mkGraph lns []
+-- | The reflexive closure of a graph means that all nodes are a
+-- successor of themselves.
+test_rc :: DynGraph gr => Proxy (gr a b) -> gr a b -> Bool
+test_rc _ g = and [ n `elem` suc gRefl n | n <- nodes gRefl ]
+  where
+    gRefl = rc g
 
 -- -----------------------------------------------------------------------------
 -- Utility functions
