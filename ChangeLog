@@ -1,3 +1,19 @@
+5.5.3.0
+-------
+
+* Additional closure functions by Matthew Danish.
+
+* `Bifunctor` instances for base >= 4.8.0.0.
+
+* An `ST`-based `GraphM` instance.
+
+* Addition of `order` and `size` functions for finding the number of
+  nodes and edges respectively in a graph (the former is an alias for
+  the existing `noNodes` function).
+
+* The rules for faster implementations of `insNode` and `insEdge` for
+  `PatriciaTree` should fire more often now.
+
 5.5.2.3
 -------
 
