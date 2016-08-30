@@ -47,6 +47,7 @@ library {
         Data.Graph.Inductive.Tree,
         Data.Graph.Inductive.Monad.IOArray,
         Data.Graph.Inductive.Monad.STArray,
+        Data.Graph.Inductive.Monad.Primitive,
         Data.Graph.Inductive.Query.ArtPoint,
         Data.Graph.Inductive.Query.BCC,
         Data.Graph.Inductive.Query.BFS,
@@ -68,6 +69,7 @@ library {
     build-depends:    base < 5
                     , transformers
                     , array
+                    , primitive >= 0.6
 
     if flag(containers042)
         build-depends:    containers >= 0.4.2
@@ -75,7 +77,7 @@ library {
     else
         build-depends:    containers < 0.4.2
 
-    if impl(ghc >= 7.2) && impl(ghc < 7.6)
+    if impl(ghc >= 7.2)
         build-depends:
             ghc-prim
 
