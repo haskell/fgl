@@ -24,11 +24,6 @@ source-repository head
     type:         git
     location:     git://github.com/haskell/fgl.git
 
-flag containers042 {
-    manual:  False
-    default: True
-}
-
 library {
     default-language: Haskell98
 
@@ -69,11 +64,8 @@ library {
                     , transformers
                     , array
 
-    if flag(containers042)
-        build-depends:    containers >= 0.4.2
-                        , deepseq >= 1.1.0.0 && < 1.5
-    else
-        build-depends:    containers < 0.4.2
+    build-depends:    containers >= 0.5.0
+                    , deepseq >= 1.1.0.0 && < 1.5
 
     if impl(ghc >= 7.2) && impl(ghc < 7.6)
         build-depends:

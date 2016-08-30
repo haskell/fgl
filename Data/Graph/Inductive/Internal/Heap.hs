@@ -14,18 +14,14 @@ module Data.Graph.Inductive.Internal.Heap(
 
 import Text.Show (showListWith)
 
-#if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData (..))
-#endif
 
 data Heap a b = Empty | Node a b [Heap a b]
      deriving (Eq, Show, Read)
 
-#if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Heap a b) where
   rnf Empty         = ()
   rnf (Node a b hs) = rnf a `seq` rnf b `seq` rnf hs
-#endif
 
 prettyHeap :: (Show a, Show b) => Heap a b -> String
 prettyHeap = (`showsHeap` "")

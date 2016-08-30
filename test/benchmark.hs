@@ -35,6 +35,7 @@
   * emap on PATRICIA tree: ...................
     4.532ns per iteration / 220663.09 per second.
 -}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ScopedTypeVariables #-}

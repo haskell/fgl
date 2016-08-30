@@ -34,19 +34,15 @@ import qualified Prelude                    as P (map)
 import           Data.Map (Map)
 import qualified Data.Map as M
 
-#if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData (..))
-#endif
 
 data NodeMap a =
     NodeMap { map :: Map a Node,
               key :: Int }
     deriving (Eq, Show, Read)
 
-#if MIN_VERSION_containers (0,4,2)
 instance (NFData a) => NFData (NodeMap a) where
   rnf (NodeMap mp k) = rnf mp `seq` rnf k
-#endif
 
 -- | Create a new, empty mapping.
 new :: NodeMap a
