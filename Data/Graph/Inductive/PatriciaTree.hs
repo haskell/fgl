@@ -117,7 +117,7 @@ instance DynGraph Gr where
     (p, v, l, s) & (Gr g)
         = let !g1 = IM.insert v (preds, l, succs) g
               !g2 = addSucc g1 v np preds
-              !g3 = addPred g2 v succs
+              !g3 = addPred g2 v ns succs
               !(np, preds) = fromAdjCounting p
               !(ns, succs) = fromAdjCounting s
           in Gr g3
@@ -258,32 +258,49 @@ addLists as  [a] = a : as
 addLists xs  ys  = xs ++ ys
 
 -- We use differenceWith to modify a graph more than bulkThreshold times,
--- and repeated insertWith to modify fewer times.
+-- and repeated insertWith otherwise.
 bulkThreshold :: Int
 bulkThreshold = 5
 
 addSucc :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
-addSucc g v numAdd
-  | numAdd < 
-addSucc g v numAdd xs = IM.differenceWith go g xs
+addSucc g0 v numAdd xs
+  | numAdd < bulkThreshold = IM.foldlWithKey' go g0 xs
   where
-    go :: Context' a b -> [b] -> Maybe (Context' a b)
-    go (ps, l', ss) l = Just (ps, l', IM.insertWith (++) v l ss)
+    go :: GraphRep a b -> Node -> [b] -> GraphRep a b
+    go g p l = IMS.adjust f p g
+      where f (ps, l', ss) = let !ss' = IM.insertWith (++) v l ss
+                             in (ps, l', ss')
 
-addPred :: forall a b . GraphRep a b -> Node -> IM.IntMap [b] -> GraphRep a b
-addPred g v = IM.differenceWith go g
+addSucc g v _ xs = IMS.differenceWith go g xs
   where
     go :: Context' a b -> [b] -> Maybe (Context' a b)
-    go (ps, l', ss) l = Just (IM.insertWith (++) v l ps, l', ss)
+    go (ps, l', ss) l = let !ss' = IM.insertWith (++) v l ss
+                        in Just (ps, l', ss')
+
+addPred :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
+addPred g0 v numAdd xs
+  | numAdd < bulkThreshold = IM.foldlWithKey' go g0 xs
+  where
+    go :: GraphRep a b -> Node -> [b] -> GraphRep a b
+    go g p l = IMS.adjust f p g
+      where f (ps, l', ss) = let !ps' = IM.insertWith (++) v l ps
+                             in (ps', l', ss)
+addPred g v _ xs = IMS.differenceWith go g xs
+  where
+    go :: Context' a b -> [b] -> Maybe (Context' a b)
+    go (ps, l', ss) l = let !ps' = IM.insertWith (++) v l ps
+                        in Just (ps', l', ss)
 
 clearSucc :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
-clearSucc g v = IM.differenceWith go g
+clearSucc g v = IMS.differenceWith go g
   where
     go :: Context' a b -> x -> Maybe (Context' a b)
-    go (ps, l, ss) _ = Just (ps, l, IM.delete v ss)
+    go (ps, l, ss) _ = let !ss' = IM.delete v ss
+                       in Just (ps, l, ss')
 
 clearPred :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
-clearPred g v = IM.differenceWith go g
+clearPred g v = IMS.differenceWith go g
   where
     go :: Context' a b -> x -> Maybe (Context' a b)
-    go (ps, l, ss) _ = Just (IM.delete v ps, l, ss)
+    go (ps, l, ss) _ = let !ps' = IM.delete v ps
+                       in Just (ps', l, ss)
