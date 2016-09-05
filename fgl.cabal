@@ -1,5 +1,5 @@
 name:          fgl
-version:       5.5.3.0
+version:       6.0.0.0
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
@@ -33,6 +33,7 @@ library {
     default-language: Haskell98
 
     exposed-modules:
+        -- Backwards compatability
         Data.Graph.Inductive.Internal.Heap,
         Data.Graph.Inductive.Internal.Queue,
         Data.Graph.Inductive.Internal.RootPath,
@@ -60,7 +61,10 @@ library {
         Data.Graph.Inductive.Query.Monad,
         Data.Graph.Inductive.Query.SP,
         Data.Graph.Inductive.Query.TransClos,
-        Data.Graph.Inductive
+        Data.Graph.Inductive,
+
+        -- New
+        Data.Graph.Inductive.New.Graph
 
     other-modules:
         Paths_fgl
