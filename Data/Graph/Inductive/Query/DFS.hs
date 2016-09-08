@@ -6,7 +6,7 @@
 --
 --   1. An optional direction parameter, specifying which nodes to visit next.
 --
---      [@x@] undirectional: ignore edge direction
+--      [@u@] undirectional: ignore edge direction
 --      [@r@] reversed: walk edges in reverse
 --      [@x@] user defined: speciy which paths to follow
 --
