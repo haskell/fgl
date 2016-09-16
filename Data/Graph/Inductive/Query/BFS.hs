@@ -4,7 +4,7 @@
 module Data.Graph.Inductive.Query.BFS(
 
     -- * BFS Node List
-    bfs, bfsn, bfsWith, bfsnWith,
+    bfs, bfsn, bfsWith, bfsnWith, xbfsWith, xbfsnWith,
 
     -- * Node List With Depth Info
     level, leveln,
@@ -27,24 +27,85 @@ import Data.Graph.Inductive.Internal.RootPath
 
 -- bfs (node list ordered by distance)
 --
-bfsnInternal :: (Graph gr) => (Context a b -> c) -> Queue Node -> gr a b -> [c]
-bfsnInternal f q g | queueEmpty q || isEmpty g = []
+bfsnInternal :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> c) -> Queue Node -> gr a b -> [c]
+bfsnInternal d f q g | queueEmpty q || isEmpty g = []
                    | otherwise                 =
        case match v g of
-        (Just c, g')  -> f c:bfsnInternal f (queuePutList (suc' c) q') g'
-        (Nothing, g') -> bfsnInternal f q' g'
+        (Just c, g')  -> f c:bfsnInternal d f (queuePutList (d c) q') g'
+        (Nothing, g') -> bfsnInternal d f q' g'
         where (v,q') = queueGet q
 
-bfsnWith :: (Graph gr) => (Context a b -> c) -> [Node] -> gr a b -> [c]
-bfsnWith f vs = bfsnInternal f (queuePutList vs mkQueue)
+{- | traverse the graph 
+     following the edge directions
+     with custom mapping to result -} 
+bfsnWith :: (Graph gr) => 
+    (Context a b -> c)  -- ^ Mapping from the 'Context' of a node to a result
+                        --   value.
+    -> [Node]           -- ^ Nodes to begin with
+    -> gr a b 
+    -> [c]
+bfsnWith = xbfsnWith suc'
 
-bfsn :: (Graph gr) => [Node] -> gr a b -> [Node]
+{- | traverse the graph with 
+       custom mapping from a node to its neighbours to be visited 
+     , custom mapping to result
+     -} 
+xbfsnWith :: (Graph gr) => 
+             (Context a b -> [Node])    {- ^ Mapping from a node to its neighbours to be visited
+                                             as well. 'suc'' for example makes 'xbfsnWith'
+                                             traverse the graph following the edge directions,
+                                             while 'pre'' means reversed directions. -}
+             -> (Context a b -> c)      {- ^ Mapping from the 'Context' of a node to a result
+                                             value. -}
+             -> [Node]                  -- ^ Nodes to begin with
+             -> gr a b  
+             -> [c]
+xbfsnWith d f vs = bfsnInternal d f (queuePutList vs mkQueue)
+
+{- | traverse the graph 
+     following the edge directions
+     result: the visited nodes -} 
+bfsn :: (Graph gr) => 
+    [Node]            -- ^ Nodes to begin with
+    -> gr a b 
+    -> [Node]
 bfsn = bfsnWith node'
 
-bfsWith :: (Graph gr) => (Context a b -> c) -> Node -> gr a b -> [c]
-bfsWith f v = bfsnInternal f (queuePut v mkQueue)
+{- | traverse the graph 
+     following the edge directions
+     with custom mapping to result
+     result: the visited nodes -} 
+bfsWith :: (Graph gr) => 
+    (Context a b -> c)    {- ^ Mapping from the 'Context' of a node 
+                               to a result value. -}
+    -> Node               -- ^ Node to begin with
+    -> gr a b 
+    -> [c]
+bfsWith = xbfsWith suc'
 
-bfs :: (Graph gr) => Node -> gr a b -> [Node]
+{- | traverse the graph with 
+       custom mapping from a node to its neighbours to be visited 
+     , custom mapping to result
+     result: the visited nodes -} 
+xbfsWith :: (Graph gr) => 
+      (Context a b -> [Node])   {- ^ Mapping from a node to its neighbours to be visited
+                                     as well. 'suc'' for example makes 'xbfsnWith'
+                                     traverse the graph following the edge directions,
+                                     while 'pre'' means reversed directions. -}
+      -> (Context a b -> c)     {- ^ Mapping from the 'Context' of a node 
+                                     to a result value. -}
+      -> Node                   -- ^ Node to begin with
+      -> gr a b 
+      -> [c]
+xbfsWith d f v = bfsnInternal d f (queuePut v mkQueue)
+
+{- | traverse the graph 
+     following the edge directions
+     result: the visited nodes -} 
+bfs :: (Graph gr) => 
+      Node            -- ^ Node to begin with
+      -> gr a b 
+      -> [Node]
 bfs = bfsWith node'
 
 
