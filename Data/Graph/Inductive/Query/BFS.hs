@@ -4,7 +4,7 @@
 module Data.Graph.Inductive.Query.BFS(
 
     -- * BFS Node List
-    bfs, bfsn, bfsWith, bfsnWith, xbfsnWith,
+    bfs, bfsn, bfsWith, xbfsWith, bfsnWith, xbfsnWith,
 
     -- * Node List With Depth Info
     level, leveln,
@@ -41,7 +41,7 @@ bfsnWith = xbfsnWith suc'
 
 xbfsnWith :: (Graph gr) => 
              (Context a b -> [Node]) -> -- ^ Mapping from a node to its neighbours to be visited
-                                        --   as well. 'suc'' for example makes 'xdfsWith'
+                                        --   as well. 'suc'' for example makes 'xbfsnWith'
                                         --   traverse the graph following the edge directions,
                                         --   while 'pre'' means reversed directions.
              (Context a b -> c) ->      -- ^ Mapping from the 'Context' of a node to a result
@@ -56,7 +56,10 @@ bfsn :: (Graph gr) => [Node] -> gr a b -> [Node]
 bfsn = bfsnWith node'
 
 bfsWith :: (Graph gr) => (Context a b -> c) -> Node -> gr a b -> [c]
-bfsWith f v = bfsnInternal suc' f (queuePut v mkQueue)
+bfsWith = xbfsWith suc'
+
+xbfsWith :: (Graph gr) => (Context a b -> [Node]) -> (Context a b -> c) -> Node -> gr a b -> [c]
+xbfsWith d f v = bfsnInternal d f (queuePut v mkQueue)
 
 bfs :: (Graph gr) => Node -> gr a b -> [Node]
 bfs = bfsWith node'
