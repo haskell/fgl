@@ -47,7 +47,10 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
 
   inverseEdge :: g -> Edge g -> Maybe (Edge g)
 
-  adjacentTo :: g -> Edge g -> Maybe (Vertex g)
+  incidentTo :: g -> Edge g -> Maybe (Vertex g)
+
+  isIncidentTo :: g -> Edge g -> Vertex g -> Bool
+  isIncidentTo g e v = maybe False (elem e) (adjacent g v)
 
   adjNeighbours :: g -> Vertex g -> Maybe [Adjacency g]
   -- TOOD: write a default using adjacent, inverseEdge and adjacentTo
@@ -118,7 +121,10 @@ instance Graph (Gr a b) where
 
   inverseEdge g e = grEdgInv <$> M.lookup e (grEdges g)
 
-  adjacentTo g e = grEdgVer <$> M.lookup e (grEdges g)
+  incidentTo g e = grEdgVer <$> M.lookup e (grEdges g)
+
+  isIncidentTo g e v = maybe False ((v==) . grEdgVer)
+                             (M.lookup e (grEdges g))
 
   adjNeighbours g v = map (mkAdj g) <$> adjacent g v
 
