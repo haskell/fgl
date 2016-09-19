@@ -21,6 +21,7 @@ import qualified Data.Map as M
 class (Eq (Vertex g), Eq (Edge g)) => Graph g where
   type Vertex g :: *
 
+  -- | Actually a half-edge
   type Edge g :: *
 
   empty :: g
