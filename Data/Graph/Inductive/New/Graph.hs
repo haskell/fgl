@@ -37,6 +37,12 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
 
   edges :: g -> [Edge g]
 
+  hasVertex :: g -> Vertex g -> Bool
+  hasVertex g v = v `elem` vertices g
+
+  hasEdge :: g -> Edge g -> Bool
+  hasEdge g e = e `elem` edges g
+
 --------------------------------------------------------------------------------
 
 -- Sample implementation
@@ -80,3 +86,7 @@ instance Graph (Gr a b) where
   vertices = M.keys . grVertices
 
   edges = M.keys . grEdges
+
+  hasVertex g v = v `M.member` grVertices g
+
+  hasEdge g e = e `M.member` grEdges g
