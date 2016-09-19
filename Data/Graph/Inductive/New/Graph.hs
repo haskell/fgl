@@ -51,16 +51,16 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
   incidentTo :: g -> Edge g -> Maybe (Vertex g)
 
   isIncidentTo :: g -> Edge g -> Vertex g -> Bool
-  isIncidentTo g e v = maybe False (elem e) (adjacent g v)
+  isIncidentTo g e v = maybe False (elem e) (incident g v)
 
-  adjNeighbours :: g -> Vertex g -> Maybe [Adjacency g]
-  -- TOOD: write a default using adjacent, inverseEdge and adjacentTo
+  adjacency :: g -> Vertex g -> Maybe [Adjacency g]
+  -- TOOD: write a default using incident, inverseEdge and incidentTo
 
-  adjacent :: g -> Vertex g -> Maybe [Edge g]
-  adjacent g v = map adjEdge <$> (adjNeighbours g v)
+  incident :: g -> Vertex g -> Maybe [Edge g]
+  incident g v = map adjEdge <$> (adjacency g v)
 
   neighbours :: g -> Vertex g -> Maybe [Vertex g]
-  neighbours g v = map neighbour <$> (adjNeighbours g v)
+  neighbours g v = map neighbour <$> (adjacency g v)
 
 data Adjacency g = Adj { adjEdge   :: Edge g
                        , invEdge   :: Edge g
@@ -127,11 +127,13 @@ instance Graph (Gr a b) where
   isIncidentTo g e v = maybe False ((v==) . grEdgVer)
                              (M.lookup e (grEdges g))
 
-  adjNeighbours g v = map (mkAdj g) <$> adjacent g v
+  adjacency g v = map (mkAdj g) <$> incident g v
 
-  adjacent g v = grAdj <$> (v `M.lookup` grVertices g)
+  incident g v = grAdj <$> (v `M.lookup` grVertices g)
 
-  neighbours g v = map (snd . grAdjNbr g) <$> adjacent g v
+  neighbours g v = map (snd . grAdjNbr g) <$> incident g v
+
+
 
 mkAdj :: Gr a b -> GrEdge -> Adjacency (Gr a b)
 mkAdj g e = let (e', nbr) = grAdjNbr g e
