@@ -11,6 +11,9 @@
  -}
 module Data.Graph.Inductive.New.Graph where
 
+import           Data.Map (Map)
+import qualified Data.Map as M
+
 --------------------------------------------------------------------------------
 
 class (Eq (Vertex g), Eq (Edge g)) => Graph g where
@@ -33,3 +36,47 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
   vertices :: g -> [Vertex g]
 
   edges :: g -> [Edge g]
+
+--------------------------------------------------------------------------------
+
+-- Sample implementation
+
+data Gr a b = Gr { grVertices :: Map GrVertex (GrVertexInfo a)
+                 , grEdges    :: Map GrEdge   (GrEdgeInfo b)
+                 }
+  deriving (Eq, Show, Read)
+
+newtype GrVertex = GVer { unGVer :: Int }
+  deriving (Eq, Ord, Show, Read)
+
+data GrVertexInfo a = GVerI { grVerLab :: a
+                            , grAdj    :: [GrEdge]
+                            }
+  deriving (Eq, Show, Read)
+  -- TODO: Eq instance incorrect due to []
+
+newtype GrEdge = GEdg { unGEdg :: Int }
+  deriving (Eq, Ord, Show, Read)
+
+data GrEdgeInfo b = GEdgI { grEdgLab :: b
+                          , grEdgVer :: GrVertex
+                          , grEdgInv :: GrEdge
+                          }
+  deriving (Eq, Ord, Show, Read)
+
+instance Graph (Gr a b) where
+  type Vertex (Gr a b) = GrVertex
+
+  type Edge (Gr a b) = GrEdge
+
+  empty = Gr M.empty M.empty
+
+  isEmpty = M.null . grVertices
+
+  order = M.size . grVertices
+
+  size = (`quot` 2) . M.size . grEdges
+
+  vertices = M.keys . grVertices
+
+  edges = M.keys . grEdges
