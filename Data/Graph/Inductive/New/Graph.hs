@@ -76,10 +76,10 @@ data Adjacency g = Adj { adjEdge   :: Edge g
                        , neighbour :: Vertex g
                        }
 
-deriving instance (Eq (Vertex g), Eq (Edge g)) => Eq (Adjacency g)
-deriving instance (Ord (Vertex g), Ord (Edge g)) => Ord (Adjacency g)
-deriving instance (Show (Vertex g), Show (Edge g)) => Show (Adjacency g)
-deriving instance (Read (Vertex g), Read (Edge g)) => Read (Adjacency g)
+deriving instance (Graph g, Eq   (Vertex g), Eq   (Edge g)) => Eq   (Adjacency g)
+deriving instance (Graph g, Ord  (Vertex g), Ord  (Edge g)) => Ord  (Adjacency g)
+deriving instance (Graph g, Show (Vertex g), Show (Edge g)) => Show (Adjacency g)
+deriving instance (Graph g, Read (Vertex g), Read (Edge g)) => Read (Adjacency g)
 
 --------------------------------------------------------------------------------
 
