@@ -62,6 +62,15 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
   neighbours :: g -> Vertex g -> Maybe [Vertex g]
   neighbours g v = map neighbour <$> (adjacency g v)
 
+  isNeighbourOf :: g -> Vertex g -> Vertex g -> Bool
+  isNeighbourOf g v w = maybe False (elem v) (neighbours g w)
+
+  -- | >>> sum (mapMaybe (degree g) (vertices g)) == 2 * size g
+  degree :: g -> Vertex g -> Maybe Int
+  degree g v = length <$> incident g v
+
+  -- TODO: minDegree/maxDegree/avDegree (?)
+
 data Adjacency g = Adj { adjEdge   :: Edge g
                        , invEdge   :: Edge g
                        , neighbour :: Vertex g
@@ -133,7 +142,9 @@ instance Graph (Gr a b) where
 
   neighbours g v = map (snd . grAdjNbr g) <$> incident g v
 
+  -- default definition of isNeighbourOf suffices.
 
+  degree g v = length . grAdj <$> M.lookup v (grVertices g)
 
 mkAdj :: Gr a b -> GrEdge -> Adjacency (Gr a b)
 mkAdj g e = let (e', nbr) = grAdjNbr g e
