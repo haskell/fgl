@@ -65,6 +65,7 @@ library {
 
         -- New
         Data.Graph.Inductive.New.Graph
+        Data.Graph.Inductive.New.SmallSet
 
     other-modules:
         Paths_fgl
