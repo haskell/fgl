@@ -13,6 +13,9 @@
  -}
 module Data.Graph.Inductive.New.Graph where
 
+import           Data.Graph.Inductive.New.SmallSet (Set)
+import qualified Data.Graph.Inductive.New.SmallSet as SS
+
 import           Data.Map (Map)
 import qualified Data.Map as M
 
@@ -23,6 +26,9 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
 
   -- | Actually a half-edge
   type Edge g :: *
+
+  type Incidence g :: * -> *
+  type Incidence g = Set
 
   empty :: g
 
@@ -48,7 +54,8 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
 
   inverseEdge :: g -> Edge g -> Maybe (Edge g)
 
-  incidentTo :: g -> Edge g -> Maybe (Vertex g)
+  incidentTo :: g -> Edge g -> Maybe (Incidence g (Vertex g))
+  -- TODO: distinguish immediate incidence to all incidence
 
   isIncidentTo :: g -> Edge g -> Vertex g -> Bool
   isIncidentTo g e v = maybe False (elem e) (incident g v)
@@ -131,7 +138,9 @@ instance Graph (Gr a b) where
 
   inverseEdge g e = grEdgInv <$> M.lookup e (grEdges g)
 
-  incidentTo g e = grEdgVer <$> M.lookup e (grEdges g)
+  incidentTo g e = do ei  <- M.lookup e (grEdges g)
+                      ei' <- M.lookup (grEdgInv ei) (grEdges g)
+                      return $ SS.fromList [grEdgVer ei, grEdgVer ei']
 
   isIncidentTo g e v = maybe False ((v==) . grEdgVer)
                              (M.lookup e (grEdges g))
