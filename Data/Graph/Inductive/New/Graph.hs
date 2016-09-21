@@ -24,8 +24,14 @@ import qualified Data.Map as M
 class (Eq (Vertex g), Eq (Edge g)) => Graph g where
   type Vertex g :: *
 
+  type VertexLabel g :: *
+  type VertexLabel g = ()
+
   -- | Actually a half-edge
   type Edge g :: *
+
+  type EdgeLabel g :: *
+  type EdgeLabel g = ()
 
   type IncidenceColl g :: * -> *
   type IncidenceColl g = Set
@@ -44,7 +50,11 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
 
   vertices :: g -> [Vertex g]
 
+  vertexLabels :: g -> [(Vertex g, VertexLabel g)]
+
   edges :: g -> [Edge g]
+
+  edgeLabels :: g -> [(Edge g, EdgeLabel g)]
 
   hasVertex :: g -> Vertex g -> Bool
   hasVertex g v = v `elem` vertices g
@@ -125,7 +135,11 @@ data GrEdgeInfo b = GEdgI { grEdgLab :: b
 instance Graph (Gr a b) where
   type Vertex (Gr a b) = GrVertex
 
+  type VertexLabel (Gr a b) = a
+
   type Edge (Gr a b) = GrEdge
+
+  type EdgeLabel (Gr a b) = b
 
   empty = Gr M.empty M.empty
 
@@ -137,7 +151,11 @@ instance Graph (Gr a b) where
 
   vertices = M.keys . grVertices
 
+  vertexLabels = M.assocs . M.map grVerLab . grVertices
+
   edges = M.keys . grEdges
+
+  edgeLabels = M.assocs . M.map grEdgLab . grEdges
 
   hasVertex g v = v `M.member` grVertices g
 
