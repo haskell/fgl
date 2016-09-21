@@ -27,8 +27,8 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
   -- | Actually a half-edge
   type Edge g :: *
 
-  type Incidence g :: * -> *
-  type Incidence g = Set
+  type IncidenceColl g :: * -> *
+  type IncidenceColl g = Set
 
   empty :: g
 
@@ -54,8 +54,7 @@ class (Eq (Vertex g), Eq (Edge g)) => Graph g where
 
   inverseEdge :: g -> Edge g -> Maybe (Edge g)
 
-  incidentTo :: g -> Edge g -> Maybe (Incidence g (Vertex g))
-  -- TODO: distinguish immediate incidence to all incidence
+  incidentTo :: g -> Edge g -> Maybe (Incidence g)
 
   isIncidentTo :: g -> Edge g -> Vertex g -> Bool
   isIncidentTo g e v = maybe False (elem e) (incident g v)
@@ -87,6 +86,14 @@ deriving instance (Graph g, Eq   (Vertex g), Eq   (Edge g)) => Eq   (Adjacency g
 deriving instance (Graph g, Ord  (Vertex g), Ord  (Edge g)) => Ord  (Adjacency g)
 deriving instance (Graph g, Show (Vertex g), Show (Edge g)) => Show (Adjacency g)
 deriving instance (Graph g, Read (Vertex g), Read (Edge g)) => Read (Adjacency g)
+
+data Incidence g = Inc { halfIncidence :: Vertex g
+                       , allIncidence  :: IncidenceColl g (Vertex g)
+                       }
+
+deriving instance (Graph g, Eq   (Vertex g), Eq   (IncidenceColl g (Vertex g))) => Eq   (Incidence g)
+deriving instance (Graph g, Show (Vertex g), Show (IncidenceColl g (Vertex g))) => Show (Incidence g)
+deriving instance (Graph g, Read (Vertex g), Read (IncidenceColl g (Vertex g))) => Read (Incidence g)
 
 --------------------------------------------------------------------------------
 
@@ -139,8 +146,10 @@ instance Graph (Gr a b) where
   inverseEdge g e = grEdgInv <$> M.lookup e (grEdges g)
 
   incidentTo g e = do ei  <- M.lookup e (grEdges g)
+                      let v = grEdgVer ei
                       ei' <- M.lookup (grEdgInv ei) (grEdges g)
-                      return $ SS.fromList [grEdgVer ei, grEdgVer ei']
+                      let col = SS.fromList [v, grEdgVer ei']
+                      return (Inc v col)
 
   isIncidentTo g e v = maybe False ((v==) . grEdgVer)
                              (M.lookup e (grEdges g))
