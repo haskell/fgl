@@ -18,6 +18,7 @@ module Data.Graph.Inductive.New.SmallSet
   , map
   , insert
   , member
+  , notMember
   , delete
   , union
   , unions
@@ -72,7 +73,16 @@ insert v = Set . go . toList
                       GT -> v : as
 
 member :: (Ord a) => a -> Set a -> Bool
-member a = elem a . toList
+member v = go . toList
+  where
+    go [] = False
+    go (a:as) = case compare a v of
+                  LT -> go as
+                  EQ -> True
+                  GT -> False
+
+notMember :: (Ord a) => a -> Set a -> Bool
+notMember = (not .) . member
 
 delete :: (Ord a) => a -> Set a -> Set a
 delete v = Set . go . toList
