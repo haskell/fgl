@@ -2,6 +2,10 @@
 language: c
 sudo: false
 
+branches:
+  except:
+    - fgl-next
+
 cache:
   directories:
     - $HOME/.cabsnap
