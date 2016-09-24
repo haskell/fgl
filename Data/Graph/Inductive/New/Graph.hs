@@ -21,7 +21,9 @@ import qualified Data.Map as M
 
 --------------------------------------------------------------------------------
 
-class (Eq (Vertex g), Eq (Edge g)) => Graph g where
+-- | A type-class to obtain information from data structures that have
+--   an underlying graph-like nature.
+class (Eq (Vertex g), Eq (Edge g)) => GraphLike g where
   type Vertex g :: *
 
   type VertexLabel g :: *
@@ -92,18 +94,18 @@ data Adjacency g = Adj { adjEdge   :: Edge g
                        , neighbour :: Vertex g
                        }
 
-deriving instance (Graph g, Eq   (Vertex g), Eq   (Edge g)) => Eq   (Adjacency g)
-deriving instance (Graph g, Ord  (Vertex g), Ord  (Edge g)) => Ord  (Adjacency g)
-deriving instance (Graph g, Show (Vertex g), Show (Edge g)) => Show (Adjacency g)
-deriving instance (Graph g, Read (Vertex g), Read (Edge g)) => Read (Adjacency g)
+deriving instance (GraphLike g, Eq   (Vertex g), Eq   (Edge g)) => Eq   (Adjacency g)
+deriving instance (GraphLike g, Ord  (Vertex g), Ord  (Edge g)) => Ord  (Adjacency g)
+deriving instance (GraphLike g, Show (Vertex g), Show (Edge g)) => Show (Adjacency g)
+deriving instance (GraphLike g, Read (Vertex g), Read (Edge g)) => Read (Adjacency g)
 
 data Incidence g = Inc { halfIncidence :: Vertex g
                        , allIncidence  :: IncidenceColl g (Vertex g)
                        }
 
-deriving instance (Graph g, Eq   (Vertex g), Eq   (IncidenceColl g (Vertex g))) => Eq   (Incidence g)
-deriving instance (Graph g, Show (Vertex g), Show (IncidenceColl g (Vertex g))) => Show (Incidence g)
-deriving instance (Graph g, Read (Vertex g), Read (IncidenceColl g (Vertex g))) => Read (Incidence g)
+deriving instance (GraphLike g, Eq   (Vertex g), Eq   (IncidenceColl g (Vertex g))) => Eq   (Incidence g)
+deriving instance (GraphLike g, Show (Vertex g), Show (IncidenceColl g (Vertex g))) => Show (Incidence g)
+deriving instance (GraphLike g, Read (Vertex g), Read (IncidenceColl g (Vertex g))) => Read (Incidence g)
 
 --------------------------------------------------------------------------------
 
@@ -132,7 +134,7 @@ data GrEdgeInfo b = GEdgI { grEdgLab :: b
                           }
   deriving (Eq, Ord, Show, Read)
 
-instance Graph (Gr a b) where
+instance GraphLike (Gr a b) where
   type Vertex (Gr a b) = GrVertex
 
   type VertexLabel (Gr a b) = a
