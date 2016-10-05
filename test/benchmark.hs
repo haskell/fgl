@@ -56,7 +56,7 @@ main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "buildFull into PATRICIA tree 500" (buildFullPatricia 500)
           microbench "buildFull into PATRICIA tree 1000" (buildFullPatricia 1000)
 
---          microbench "insEdge into AVL tree" insEdgeAVL
+          microbench "insEdge into AVL tree" insEdgeAVL
           microbench "insEdge into PATRICIA tree" insEdgePatricia
 
           microbench "gmap on AVL tree" gmapAVL
@@ -65,7 +65,7 @@ main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "nmap on AVL tree" nmapAVL
           microbench "nmap on PATRICIA tree" nmapPatricia
 
---          microbench "emap on AVL tree" emapAVL
+          microbench "emap on AVL tree" emapAVL
           microbench "emap on PATRICIA tree" emapPatricia
 
 
@@ -107,9 +107,10 @@ insEdgePatricia n = insEdges' (insNodePatricia n) n
 {-# INLINE insEdges' #-}
 insEdges' :: DynGraph gr => gr a () -> Int -> gr a ()
 insEdges' g 0 = g
-insEdges' g n = let g' = insEdge (1, n, ()) g
+insEdges' g n = let n' = n - 1
+                    g' = insEdge (0, n', ()) g
                 in
-                  insEdges' g' (n - 1)
+                  insEdges' g' n'
 
 
 gmapAVL :: Int -> AVL.Gr Int ()
