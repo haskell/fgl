@@ -36,17 +36,16 @@
     4.532ns per iteration / 220663.09 per second.
 -}
 
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE CPP, ScopedTypeVariables #-}
 #if __GLASGOW_HASKELL__ >= 708
 
-import Data.Graph.Inductive.Graph
-import qualified Data.Graph.Inductive.Tree as AVL
+import           Control.DeepSeq
+import           Data.Foldable                     (foldl')
+import           Data.Graph.Inductive.Graph
 import qualified Data.Graph.Inductive.PatriciaTree as Patricia
-import Microbench
-import Data.Foldable (foldl')
-import Control.DeepSeq
-import Data.Proxy
+import qualified Data.Graph.Inductive.Tree         as AVL
+import           Data.Proxy
+import           Microbench
 
 main :: IO ()
 main = do microbench "insNode into AVL tree" insNodeAVL
