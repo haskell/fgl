@@ -93,14 +93,14 @@ valid_mkGraph_order p (GNEs ns es) = all (equal g)
 valid_match :: (Graph gr) => gr a b -> Property
 valid_match g = not (isEmpty g) ==> check_match <$> elements (nodes g)
   where
-    order = noNodes g
+    ordr = noNodes g
 
     check_match n = maybe False check_context mc
       where
         (mc, g') = match n g
 
         check_context c = (node' c `notElem` nodes g')
-                          && (noNodes g' == order - 1)
+                          && (noNodes g' == ordr - 1)
                           -- Edges were previously in the graph
                           && all (elem (node' c) . pre g) (sucC c)
                           && all (elem (node' c) . suc g) (preC c)
