@@ -115,9 +115,11 @@ instance Graph Gr where
 
 instance DynGraph Gr where
     (p, v, l, s) & (Gr g)
-        = let !g1 = IM.insert v (fromAdj p, l, fromAdj s) g
-              !g2 = addSucc g1 v p
-              !g3 = addPred g2 v s
+        = let !g1 = IM.insert v (preds, l, succs) g
+              !g2 = addSucc g1 v preds
+              !g3 = addPred g2 v succs
+              !preds = fromAdj p
+              !succs = fromAdj s
           in Gr g3
 
 #if MIN_VERSION_containers (0,4,2)
@@ -144,8 +146,8 @@ matchGr node (Gr g)
             -> let !g1 = IM.delete node g
                    !p' = IM.delete node p
                    !s' = IM.delete node s
-                   !g2 = clearPred g1 node (IM.keys s')
-                   !g3 = clearSucc g2 node (IM.keys p')
+                   !g2 = clearPred g1 node s'
+                   !g3 = clearSucc g2 node p'
                in (Just (toAdj p', node, label, toAdj s), Gr g3)
 
 ----------------------------------------------------------------------
@@ -238,33 +240,26 @@ addLists [a] as  = a : as
 addLists as  [a] = a : as
 addLists xs  ys  = xs ++ ys
 
-addSucc :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
-addSucc g _ []              = g
-addSucc g v ((l, p) : rest) = addSucc g' v rest
-    where
-      g' = IM.adjust f p g
-      f (ps, l', ss) = (ps, l', IM.insertWith addLists v [l] ss)
-
-
-addPred :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
-addPred g _ []              = g
-addPred g v ((l, s) : rest) = addPred g' v rest
+addSucc :: forall a b . GraphRep a b -> Node -> IM.IntMap [b] -> GraphRep a b
+addSucc g v = IM.differenceWith go g
   where
-    g' = IM.adjust f s g
-    f (ps, l', ss) = (IM.insertWith addLists v [l] ps, l', ss)
+    go :: Context' a b -> [b] -> Maybe (Context' a b)
+    go (ps, l', ss) l = Just (ps, l', IM.insertWith (++) v l ss)
 
-
-clearSucc :: GraphRep a b -> Node -> [Node] -> GraphRep a b
-clearSucc g _ []       = g
-clearSucc g v (p:rest) = clearSucc g' v rest
+addPred :: forall a b . GraphRep a b -> Node -> IM.IntMap [b] -> GraphRep a b
+addPred g v = IM.differenceWith go g
   where
-    g' = IM.adjust f p g
-    f (ps, l, ss) = (ps, l, IM.delete v ss)
+    go :: Context' a b -> [b] -> Maybe (Context' a b)
+    go (ps, l', ss) l = Just (IM.insertWith (++) v l ps, l', ss)
 
-
-clearPred :: GraphRep a b -> Node -> [Node] -> GraphRep a b
-clearPred g _ []       = g
-clearPred g v (s:rest) = clearPred g' v rest
+clearSucc :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
+clearSucc g v = IM.differenceWith go g
   where
-    g' = IM.adjust f s g
-    f (ps, l, ss) = (IM.delete v ps, l, ss)
+    go :: Context' a b -> x -> Maybe (Context' a b)
+    go (ps, l, ss) _ = Just (ps, l, IM.delete v ss)
+
+clearPred :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
+clearPred g v = IM.differenceWith go g
+  where
+    go :: Context' a b -> x -> Maybe (Context' a b)
+    go (ps, l, ss) _ = Just (IM.delete v ps, l, ss)
