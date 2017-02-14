@@ -111,6 +111,9 @@ type UPath   = [UNode]
 -- | Labeled links to or from a 'Node'.
 type Adj b        = [(b,Node)]
 -- | Links to the 'Node', the 'Node' itself, a label, links from the 'Node'.
+--
+--   In other words, this captures all information regarding the
+--   specified 'Node' within a graph.
 type Context a b  = (Adj b,Node,a,Adj b) -- Context a b "=" Context' a b "+" Node
 type MContext a b = Maybe (Context a b)
 -- | 'Graph' decomposition - the context removed from a 'Graph', and the rest
@@ -176,8 +179,11 @@ class Graph gr where
 class (Graph gr) => DynGraph gr where
   -- | Merge the 'Context' into the 'DynGraph'.
   --
-  --   Contexts should only refer to either a Node already in a graph
-  --   or the node in the Context itself (for loops).
+  --   Context adjacencies should only refer to either a Node already
+  --   in a graph or the node in the Context itself (for loops).
+  --
+  --   Behaviour is undefined if the specified 'Node' already exists
+  --   in the graph.
   (&) :: Context a b -> gr a b -> gr a b
 
 
