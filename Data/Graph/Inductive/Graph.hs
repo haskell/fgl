@@ -204,7 +204,7 @@ order = noNodes
 size :: (Graph gr) => gr a b -> Int
 size = length . labEdges
 
--- | Fold a function over the graph.
+-- | Fold a function over the graph by recursively calling 'match'.
 ufold :: (Graph gr) => (Context a b -> c -> c) -> c -> gr a b -> c
 ufold f u g
   | isEmpty g = u
@@ -212,7 +212,7 @@ ufold f u g
   where
     (c,g') = matchAny g
 
--- | Map a function over the graph.
+-- | Map a function over the graph by recursively calling 'match'.
 gmap :: (DynGraph gr) => (Context a b -> Context c d) -> gr a b -> gr c d
 gmap f = ufold (\c->(f c&)) empty
 {-# NOINLINE [0] gmap #-}
@@ -349,7 +349,7 @@ mkUGraph vs es = mkGraph (labUNodes vs) (labUEdges es)
      labUNodes = map (flip (,) ())
 
 -- | Build a graph out of the contexts for which the predicate is
--- true.
+-- satisfied by recursively calling 'match'.
 gfiltermap :: DynGraph gr => (Context a b -> MContext c d) -> gr a b -> gr c d
 gfiltermap f = ufold (maybe id (&) . f) empty
 
