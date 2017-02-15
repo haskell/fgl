@@ -38,6 +38,8 @@
 
 {-# LANGUAGE ScopedTypeVariables #-}
 
+module Main (main) where
+
 import           Control.DeepSeq
 import           Data.Graph.Inductive.Graph
 import qualified Data.Graph.Inductive.PatriciaTree as Patricia
@@ -69,7 +71,7 @@ insNodeAVL :: Int -> AVL.UGr
 insNodeAVL = insNodes' empty
 
 buildFullPatricia :: Int -> Int -> ()
-buildFullPatricia sz i = buildFull (Proxy :: PatriciaTreeP) sz i
+buildFullPatricia = buildFull (Proxy :: PatriciaTreeP)
 
 insNodePatricia :: Int -> Patricia.UGr
 insNodePatricia = insNodes' empty
