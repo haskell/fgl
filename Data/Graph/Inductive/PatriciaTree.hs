@@ -30,12 +30,12 @@ import Data.Graph.Inductive.Graph
 import           Control.Applicative (liftA2)
 import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
+import qualified Data.IntMap.Strict  as IMS
 import           Data.List           (sort)
 import           Data.Maybe          (fromMaybe)
+import           Data.Foldable       (foldl')
 
-#if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData (..))
-#endif
 
 #if __GLASGOW_HASKELL__ >= 702
 import GHC.Generics (Generic)
@@ -115,15 +115,15 @@ instance Graph Gr where
 
 instance DynGraph Gr where
     (p, v, l, s) & (Gr g)
-        = let !g1 = IM.insert v (fromAdj p, l, fromAdj s) g
-              !g2 = addSucc g1 v p
-              !g3 = addPred g2 v s
+        = let !g1 = IM.insert v (preds, l, succs) g
+              !g2 = addSucc g1 v np preds
+              !g3 = addPred g2 v ns succs
+              !(np, preds) = fromAdjCounting p
+              !(ns, succs) = fromAdjCounting s
           in Gr g3
 
-#if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
-#endif
 
 #if MIN_VERSION_base (4,8,0)
 instance Bifunctor Gr where
@@ -144,8 +144,8 @@ matchGr node (Gr g)
             -> let !g1 = IM.delete node g
                    !p' = IM.delete node p
                    !s' = IM.delete node s
-                   !g2 = clearPred g1 node (IM.keys s')
-                   !g3 = clearSucc g2 node (IM.keys p')
+                   !g2 = clearPred g1 node s'
+                   !g3 = clearSucc g2 node p'
                in (Just (toAdj p', node, label, toAdj s), Gr g3)
 
 ----------------------------------------------------------------------
@@ -220,6 +220,25 @@ toAdj = concatMap expand . IM.toList
 fromAdj :: Adj b -> IntMap [b]
 fromAdj = IM.fromListWith addLists . map (second (:[]) . swap)
 
+data FromListCounting a = FromListCounting !Int !(IntMap a)
+
+getFromListCounting :: FromListCounting a -> (Int, IntMap a)
+getFromListCounting (FromListCounting i m) = (i, m)
+{-# INLINE getFromListCounting #-}
+
+fromListWithKeyCounting :: (Int -> a -> a -> a) -> [(Int, a)] -> (Int, IntMap a)
+fromListWithKeyCounting f = getFromListCounting . foldl' ins (FromListCounting 0 IM.empty)
+  where
+    ins (FromListCounting i t) (k,x) = FromListCounting (i + 1) (IM.insertWithKey f k x t)
+{-# INLINE fromListWithKeyCounting #-}
+
+fromListWithCounting :: (a -> a -> a) -> [(Int, a)] -> (Int, IntMap a)
+fromListWithCounting f = fromListWithKeyCounting (\_ x y -> f x y)
+{-# INLINE fromListWithCounting #-}
+
+fromAdjCounting :: Adj b -> (Int, IntMap [b])
+fromAdjCounting = fromListWithCounting addLists . map (second (:[]) . swap)
+
 toContext :: Node -> Context' a b -> Context a b
 toContext v (ps, a, ss) = (toAdj ps, v, a, toAdj ss)
 
@@ -238,33 +257,50 @@ addLists [a] as  = a : as
 addLists as  [a] = a : as
 addLists xs  ys  = xs ++ ys
 
-addSucc :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
-addSucc g _ []              = g
-addSucc g v ((l, p) : rest) = addSucc g' v rest
-    where
-      g' = IM.adjust f p g
-      f (ps, l', ss) = (ps, l', IM.insertWith addLists v [l] ss)
+-- We use differenceWith to modify a graph more than bulkThreshold times,
+-- and repeated insertWith otherwise.
+bulkThreshold :: Int
+bulkThreshold = 5
 
-
-addPred :: GraphRep a b -> Node -> [(b, Node)] -> GraphRep a b
-addPred g _ []              = g
-addPred g v ((l, s) : rest) = addPred g' v rest
+addSucc :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
+addSucc g0 v numAdd xs
+  | numAdd < bulkThreshold = IM.foldlWithKey' go g0 xs
   where
-    g' = IM.adjust f s g
-    f (ps, l', ss) = (IM.insertWith addLists v [l] ps, l', ss)
+    go :: GraphRep a b -> Node -> [b] -> GraphRep a b
+    go g p l = IMS.adjust f p g
+      where f (ps, l', ss) = let !ss' = IM.insertWith (++) v l ss
+                             in (ps, l', ss')
 
-
-clearSucc :: GraphRep a b -> Node -> [Node] -> GraphRep a b
-clearSucc g _ []       = g
-clearSucc g v (p:rest) = clearSucc g' v rest
+addSucc g v _ xs = IMS.differenceWith go g xs
   where
-    g' = IM.adjust f p g
-    f (ps, l, ss) = (ps, l, IM.delete v ss)
+    go :: Context' a b -> [b] -> Maybe (Context' a b)
+    go (ps, l', ss) l = let !ss' = IM.insertWith (++) v l ss
+                        in Just (ps, l', ss')
 
-
-clearPred :: GraphRep a b -> Node -> [Node] -> GraphRep a b
-clearPred g _ []       = g
-clearPred g v (s:rest) = clearPred g' v rest
+addPred :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
+addPred g0 v numAdd xs
+  | numAdd < bulkThreshold = IM.foldlWithKey' go g0 xs
   where
-    g' = IM.adjust f s g
-    f (ps, l, ss) = (IM.delete v ps, l, ss)
+    go :: GraphRep a b -> Node -> [b] -> GraphRep a b
+    go g p l = IMS.adjust f p g
+      where f (ps, l', ss) = let !ps' = IM.insertWith (++) v l ps
+                             in (ps', l', ss)
+addPred g v _ xs = IMS.differenceWith go g xs
+  where
+    go :: Context' a b -> [b] -> Maybe (Context' a b)
+    go (ps, l', ss) l = let !ps' = IM.insertWith (++) v l ps
+                        in Just (ps', l', ss)
+
+clearSucc :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
+clearSucc g v = IMS.differenceWith go g
+  where
+    go :: Context' a b -> x -> Maybe (Context' a b)
+    go (ps, l, ss) _ = let !ss' = IM.delete v ss
+                       in Just (ps, l, ss')
+
+clearPred :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
+clearPred g v = IMS.differenceWith go g
+  where
+    go :: Context' a b -> x -> Maybe (Context' a b)
+    go (ps, l, ss) _ = let !ps' = IM.delete v ps
+                       in Just (ps', l, ss)

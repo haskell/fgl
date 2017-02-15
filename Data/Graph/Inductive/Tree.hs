@@ -19,9 +19,7 @@ import           Data.Map            (Map)
 import qualified Data.Map            as M
 import           Data.Maybe          (fromMaybe)
 
-#if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData (..))
-#endif
 
 #if __GLASGOW_HASKELL__ >= 702
 import GHC.Generics (Generic)
@@ -130,10 +128,8 @@ instance DynGraph Gr where
                        (const (error ("Node Exception, Node: "++show v)))
       cntxt' = (p,l,s)
 
-#if MIN_VERSION_containers (0,4,2)
 instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
-#endif
 
 #if MIN_VERSION_base (4,8,0)
 instance Bifunctor Gr where
