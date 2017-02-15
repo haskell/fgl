@@ -1,6 +1,14 @@
 {-
-  Install microbench to build this program:
+  This program should generally be run using `cabal bench` or
+  `stack bench`. To use `stack bench`, edit stack.yaml to include
+
+  extra-deps:
+  - microbench-0.1
+
+  To run benchmarks manually, install microbench from
   http://hackage.haskell.org/cgi-bin/hackage-scripts/package/microbench
+
+  then run
 
   % ghc -O --make benchmark
   % ./benchmark
@@ -28,17 +36,27 @@
     4.532ns per iteration / 220663.09 per second.
 -}
 
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+#if __GLASGOW_HASKELL__ >= 708
+
 import Data.Graph.Inductive.Graph
 import qualified Data.Graph.Inductive.Tree as AVL
 import qualified Data.Graph.Inductive.PatriciaTree as Patricia
 import Microbench
-
+import Data.Foldable (foldl')
+import Control.DeepSeq
+import Data.Proxy
 
 main :: IO ()
 main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "insNode into PATRICIA tree" insNodePatricia
 
-          microbench "insEdge into AVL tree" insEdgeAVL
+          microbench "buildFull into PATRICIA tree 100" (buildFullPatricia 100)
+          microbench "buildFull into PATRICIA tree 500" (buildFullPatricia 500)
+          microbench "buildFull into PATRICIA tree 1000" (buildFullPatricia 1000)
+
+--          microbench "insEdge into AVL tree" insEdgeAVL
           microbench "insEdge into PATRICIA tree" insEdgePatricia
 
           microbench "gmap on AVL tree" gmapAVL
@@ -47,16 +65,26 @@ main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "nmap on AVL tree" nmapAVL
           microbench "nmap on PATRICIA tree" nmapPatricia
 
-          microbench "emap on AVL tree" emapAVL
+--          microbench "emap on AVL tree" emapAVL
           microbench "emap on PATRICIA tree" emapPatricia
 
 
 insNodeAVL :: Int -> AVL.UGr
 insNodeAVL = insNodes' empty
 
+buildFullPatricia :: Int -> Int -> ()
+buildFullPatricia sz i = buildFull (Proxy :: Proxy Patricia.Gr) sz i
 
 insNodePatricia :: Int -> Patricia.UGr
 insNodePatricia = insNodes' empty
+
+buildFull :: forall gr proxy . (DynGraph gr, NFData (gr Int ())) => proxy gr -> Int -> Int -> ()
+buildFull _ sz ntimes = rnf [buildFull' i (empty :: gr Int ()) 0 sz | i <- [0..ntimes-1]]
+
+buildFull' :: DynGraph gr => a -> gr a () -> Int -> Int -> gr a ()
+buildFull' a g n limit
+  | n == limit = empty
+  | otherwise = ([((), k) | k <- [0..n-1]],n,a,[((),k) | k <- [0..n-1]]) & buildFull' a g (n + 1) limit
 
 
 {-# INLINE insNodes' #-}
@@ -136,3 +164,8 @@ emapPatricia n
           f _ = n
       in
         g'
+
+#else
+main :: IO ()
+main = putStrLn "Benchmarks are only supported for GHC 7.8 and above."
+#endif
