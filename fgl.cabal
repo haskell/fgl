@@ -117,6 +117,7 @@ benchmark fgl-benchmark {
 
     main-is:          benchmark.hs
 
+    other-modules:    Data.Graph.Inductive.Proxy
 
     build-depends:    fgl
                     , base

@@ -36,15 +36,13 @@
     4.532ns per iteration / 220663.09 per second.
 -}
 
-{-# LANGUAGE CPP, ScopedTypeVariables #-}
-#if __GLASGOW_HASKELL__ >= 708
+{-# LANGUAGE ScopedTypeVariables #-}
 
 import           Control.DeepSeq
-import           Data.Foldable                     (foldl')
 import           Data.Graph.Inductive.Graph
 import qualified Data.Graph.Inductive.PatriciaTree as Patricia
+import           Data.Graph.Inductive.Proxy
 import qualified Data.Graph.Inductive.Tree         as AVL
-import           Data.Proxy
 import           Microbench
 
 main :: IO ()
@@ -67,17 +65,17 @@ main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "emap on AVL tree" emapAVL
           microbench "emap on PATRICIA tree" emapPatricia
 
-
 insNodeAVL :: Int -> AVL.UGr
 insNodeAVL = insNodes' empty
 
 buildFullPatricia :: Int -> Int -> ()
-buildFullPatricia sz i = buildFull (Proxy :: Proxy Patricia.Gr) sz i
+buildFullPatricia sz i = buildFull (Proxy :: PatriciaTreeP) sz i
 
 insNodePatricia :: Int -> Patricia.UGr
 insNodePatricia = insNodes' empty
 
-buildFull :: forall gr proxy . (DynGraph gr, NFData (gr Int ())) => proxy gr -> Int -> Int -> ()
+buildFull :: forall gr . (DynGraph gr, NFData (gr Int ()))
+             => GraphProxy gr -> Int -> Int -> ()
 buildFull _ sz ntimes = rnf [buildFull' i (empty :: gr Int ()) 0 sz | i <- [0..ntimes-1]]
 
 buildFull' :: DynGraph gr => a -> gr a () -> Int -> Int -> gr a ()
@@ -164,8 +162,3 @@ emapPatricia n
           f _ = n
       in
         g'
-
-#else
-main :: IO ()
-main = putStrLn "Benchmarks are only supported for GHC 7.8 and above."
-#endif
