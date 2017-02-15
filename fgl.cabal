@@ -111,17 +111,18 @@ test-suite fgl-tests {
 benchmark fgl-benchmark {
     default-language: Haskell98
 
-    type: exitcode-stdio-1.0
+    type:             exitcode-stdio-1.0
 
-    hs-source-dirs: test
+    hs-source-dirs:   test
 
-    main-is: benchmark.hs
+    main-is:          benchmark.hs
 
-    build-depends:   fgl
-                   , base
-                   , microbench
-                   , deepseq
 
-    ghc-options: -Wall
+    build-depends:    fgl
+                    , base
+                    , microbench
+                    , deepseq
+
+    ghc-options:      -Wall
 
 }
