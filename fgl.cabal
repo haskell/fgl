@@ -107,3 +107,23 @@ test-suite fgl-tests {
     ghc-options:      -Wall
 
 }
+
+benchmark fgl-benchmark {
+    default-language: Haskell98
+
+    type:             exitcode-stdio-1.0
+
+    hs-source-dirs:   test
+
+    main-is:          benchmark.hs
+
+    other-modules:    Data.Graph.Inductive.Proxy
+
+    build-depends:    fgl
+                    , base
+                    , microbench
+                    , deepseq
+
+    ghc-options:      -Wall
+
+}

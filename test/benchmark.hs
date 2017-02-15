@@ -1,6 +1,14 @@
 {-
-  Install microbench to build this program:
+  This program should generally be run using `cabal bench` or
+  `stack bench`. To use `stack bench`, edit stack.yaml to include
+
+  extra-deps:
+  - microbench-0.1
+
+  To run benchmarks manually, install microbench from
   http://hackage.haskell.org/cgi-bin/hackage-scripts/package/microbench
+
+  then run
 
   % ghc -O --make benchmark
   % ./benchmark
@@ -28,15 +36,28 @@
     4.532ns per iteration / 220663.09 per second.
 -}
 
-import Data.Graph.Inductive.Graph
-import qualified Data.Graph.Inductive.Tree as AVL
-import qualified Data.Graph.Inductive.PatriciaTree as Patricia
-import Microbench
+{-# LANGUAGE ScopedTypeVariables #-}
 
+module Main (main) where
+
+import           Control.DeepSeq
+import           Data.Graph.Inductive.Graph
+import qualified Data.Graph.Inductive.PatriciaTree as Patricia
+import           Data.Graph.Inductive.Proxy
+import qualified Data.Graph.Inductive.Tree         as AVL
+import           Microbench
 
 main :: IO ()
 main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "insNode into PATRICIA tree" insNodePatricia
+
+          microbench "buildFull into AVL tree 100" (buildFullAVL 100)
+          microbench "buildFull into AVL tree 500" (buildFullAVL 500)
+          microbench "buildFull into AVL tree 1000" (buildFullAVL 1000)
+
+          microbench "buildFull into PATRICIA tree 100" (buildFullPatricia 100)
+          microbench "buildFull into PATRICIA tree 500" (buildFullPatricia 500)
+          microbench "buildFull into PATRICIA tree 1000" (buildFullPatricia 1000)
 
           microbench "insEdge into AVL tree" insEdgeAVL
           microbench "insEdge into PATRICIA tree" insEdgePatricia
@@ -50,13 +71,26 @@ main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "emap on AVL tree" emapAVL
           microbench "emap on PATRICIA tree" emapPatricia
 
+buildFullAVL :: Int -> Int -> ()
+buildFullAVL = buildFull (Proxy :: TreeP)
 
 insNodeAVL :: Int -> AVL.UGr
 insNodeAVL = insNodes' empty
 
+buildFullPatricia :: Int -> Int -> ()
+buildFullPatricia = buildFull (Proxy :: PatriciaTreeP)
 
 insNodePatricia :: Int -> Patricia.UGr
 insNodePatricia = insNodes' empty
+
+buildFull :: forall gr . (DynGraph gr, NFData (gr Int ()))
+             => GraphProxy gr -> Int -> Int -> ()
+buildFull _ sz ntimes = rnf [buildFull' i (empty :: gr Int ()) 0 sz | i <- [0..ntimes-1]]
+
+buildFull' :: DynGraph gr => a -> gr a () -> Int -> Int -> gr a ()
+buildFull' a g n limit
+  | n == limit = empty
+  | otherwise = ([((), k) | k <- [0..n-1]],n,a,[((),k) | k <- [0..n-1]]) & buildFull' a g (n + 1) limit
 
 
 {-# INLINE insNodes' #-}
@@ -79,9 +113,10 @@ insEdgePatricia n = insEdges' (insNodePatricia n) n
 {-# INLINE insEdges' #-}
 insEdges' :: DynGraph gr => gr a () -> Int -> gr a ()
 insEdges' g 0 = g
-insEdges' g n = let g' = insEdge (1, n, ()) g
+insEdges' g n = let n' = n - 1
+                    g' = insEdge (0, n', ()) g
                 in
-                  insEdges' g' (n - 1)
+                  insEdges' g' n'
 
 
 gmapAVL :: Int -> AVL.Gr Int ()
