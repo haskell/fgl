@@ -79,7 +79,7 @@ library {
         build-depends:
             ghc-prim
 
-    ghc-options:      -Wall -O2
+    ghc-options:      -Wall
 
 }
 
@@ -104,7 +104,7 @@ test-suite fgl-tests {
                     , Data.Graph.Inductive.Proxy
                     , Data.Graph.Inductive.Query.Properties
 
-    ghc-options:      -Wall -O2
+    ghc-options:      -Wall
 
 }
 
@@ -122,6 +122,6 @@ benchmark fgl-benchmark {
                    , microbench
                    , deepseq
 
-    ghc-options: -Wall -O2
+    ghc-options: -Wall
 
 }
