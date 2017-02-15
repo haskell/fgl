@@ -51,6 +51,10 @@ main :: IO ()
 main = do microbench "insNode into AVL tree" insNodeAVL
           microbench "insNode into PATRICIA tree" insNodePatricia
 
+          microbench "buildFull into AVL tree 100" (buildFullAVL 100)
+          microbench "buildFull into AVL tree 500" (buildFullAVL 500)
+          microbench "buildFull into AVL tree 1000" (buildFullAVL 1000)
+
           microbench "buildFull into PATRICIA tree 100" (buildFullPatricia 100)
           microbench "buildFull into PATRICIA tree 500" (buildFullPatricia 500)
           microbench "buildFull into PATRICIA tree 1000" (buildFullPatricia 1000)
@@ -66,6 +70,9 @@ main = do microbench "insNode into AVL tree" insNodeAVL
 
           microbench "emap on AVL tree" emapAVL
           microbench "emap on PATRICIA tree" emapPatricia
+
+buildFullAVL :: Int -> Int -> ()
+buildFullAVL = buildFull (Proxy :: TreeP)
 
 insNodeAVL :: Int -> AVL.UGr
 insNodeAVL = insNodes' empty
