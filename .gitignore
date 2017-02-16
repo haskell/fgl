@@ -8,5 +8,6 @@ cabal-dev
 .hsenv
 .cabal-sandbox/
 cabal.sandbox.config
+.stack-work
 cabal.config
 TAGS
