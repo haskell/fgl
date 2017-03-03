@@ -1,5 +1,5 @@
 name:                fgl-arbitrary
-version:             0.2.0.2
+version:             0.2.0.3
 synopsis:            QuickCheck support for fgl
 description:
   Provides Arbitrary instances for fgl graphs (to avoid adding a
