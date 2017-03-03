@@ -1,3 +1,15 @@
+5.5.3.1
+-------
+
+* Hopefully clearer documentation for `&`, `Context` and the
+  `ufold`-based functions.
+
+* Thanks to David Feuer, the existing benchmark suite is now runnable
+  with `cabal bench`.
+
+* Some performance improvements for `PatriciaTree`, thanks to David
+  Feuer.
+
 5.5.3.0
 -------
 
