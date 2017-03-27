@@ -277,12 +277,12 @@ addSucc g0 v numAdd xs
   where
     go :: GraphRep a b -> Node -> [b] -> GraphRep a b
     go g p l = IMS.adjust f p g
-      where f (ps, l', ss) = let !ss' = IM.insertWith (++) v l ss
+      where f (ps, l', ss) = let !ss' = IM.insertWith addLists v l ss
                              in (ps, l', ss')
 addSucc g v _ xs = IMS.differenceWith go g xs
   where
     go :: Context' a b -> [b] -> Maybe (Context' a b)
-    go (ps, l', ss) l = let !ss' = IM.insertWith (++) v l ss
+    go (ps, l', ss) l = let !ss' = IM.insertWith addLists v l ss
                         in Just (ps, l', ss')
 
 addPred :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
@@ -291,12 +291,12 @@ addPred g0 v numAdd xs
   where
     go :: GraphRep a b -> Node -> [b] -> GraphRep a b
     go g p l = IMS.adjust f p g
-      where f (ps, l', ss) = let !ps' = IM.insertWith (++) v l ps
+      where f (ps, l', ss) = let !ps' = IM.insertWith addLists v l ps
                              in (ps', l', ss)
 addPred g v _ xs = IMS.differenceWith go g xs
   where
     go :: Context' a b -> [b] -> Maybe (Context' a b)
-    go (ps, l', ss) l = let !ps' = IM.insertWith (++) v l ps
+    go (ps, l', ss) l = let !ps' = IM.insertWith addLists v l ps
                         in Just (ps', l', ss)
 
 clearSucc :: forall a b x . GraphRep a b -> Node -> IM.IntMap x -> GraphRep a b
