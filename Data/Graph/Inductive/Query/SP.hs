@@ -19,6 +19,9 @@ expand :: (Real b) => b -> LPath b -> Context a b -> [H.Heap b (LPath b)]
 expand d (LP p) (_,_,_,s) = map (\(l,v)->H.unit (l+d) (LP ((v,l+d):p))) s
 
 -- | Dijkstra's shortest path algorithm.
+--
+--   The edge labels of type @b@ are the edge weights; negative edge
+--   weights are not supported.
 dijkstra :: (Graph gr, Real b)
     => H.Heap b (LPath b) -- ^ Initial heap of known paths and their lengths.
     -> gr a b
@@ -35,24 +38,41 @@ dijkstra h g =
 --
 --   Corresponds to 'dijkstra' applied to a heap in which the only known node is
 --   the starting node, with a path of length 0 leading to it.
+--
+--   The edge labels of type @b@ are the edge weights; negative edge
+--   weights are not supported.
 spTree :: (Graph gr, Real b)
     => Node
     -> gr a b
     -> LRTree b
 spTree v = dijkstra (H.unit 0 (LP [(v,0)]))
 
--- | Length of the shortest path between two nodes.
+-- | Length of the shortest path between two nodes, if any.
+--
+--   Returns 'Nothing' if there is no path, and @'Just' <path length>@
+--   otherwise.
+--
+--   The edge labels of type @b@ are the edge weights; negative edge
+--   weights are not supported.
 spLength :: (Graph gr, Real b)
     => Node -- ^ Start
     -> Node -- ^ Destination
     -> gr a b
-    -> b
+    -> Maybe b
 spLength s t = getDistance t . spTree s
 
--- | Shortest path between two nodes.
+-- | Shortest path between two nodes, if any.
+--
+--   Returns 'Nothing' if the destination is not reachable from teh
+--   start node, and @'Just' <path>@ otherwise.
+--
+--   The edge labels of type @b@ are the edge weights; negative edge
+--   weights are not supported.
 sp :: (Graph gr, Real b)
     => Node -- ^ Start
     -> Node -- ^ Destination
     -> gr a b
-    -> Path
-sp s t = getLPathNodes t . spTree s
+    -> Maybe Path
+sp s t g = case getLPathNodes t (spTree s g) of
+  [] -> Nothing
+  p  -> Just p

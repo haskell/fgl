@@ -116,7 +116,10 @@ queryTests = describe "Queries" $ do
   test_maxFlow2
   test_maxFlow
   propP "msTree"       test_msTree
-  propP "sp"           test_sp
+  describe "SP" $ do
+    propP "sp"         test_sp
+    propP "sp_Just"    test_sp_Just
+    propP "sp_Nothing" test_sp_Nothing
   keepSmall $ do
     -- Just producing the sample graph to compare against is O(|V|^2)
     propP "trc"        test_trc
