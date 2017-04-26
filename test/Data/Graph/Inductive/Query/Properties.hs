@@ -27,6 +27,7 @@ import Test.QuickCheck
 
 import           Control.Arrow (second)
 import           Data.List     (delete, sort, unfoldr, group, (\\))
+import           Data.Maybe    (fromJust, isJust, isNothing)
 import qualified Data.Set      as S
 
 #if __GLASGOW_HASKELL__ < 710
@@ -310,19 +311,48 @@ test_sp :: (ArbGraph gr) => Proxy (gr a b) -> UConnected gr () (Positive Int) ->
 test_sp _ cg = all test_p (map unLPath (msTree g))
   where
     -- Use Positive to avoid problems with distances containing
-    -- negative lengths.
+    -- negative lengths. The shortest path algorithm is Dijkstra's,
+    -- which doesn't support negative weights.
     g = emap getPositive (connGraph cg)
 
     gCon = emap (const 1) g `asTypeOf` g
 
-    test_p p = length p >= len_gCon                 -- Length-based test
+               -- Length-based test
+    test_p p = length p >= len_gCon
                && length (esp v w gCon) == len_gCon
-               && sum (map snd p) >= spLength v w g -- Weighting-based test
+               -- Weighting-based test
+               && sum (map snd p) >= fromJust (spLength v w g)
       where
         v = fst (head p)
         w = fst (last p)
 
-        len_gCon = length (sp v w gCon)
+        len_gCon = length (fromJust $ sp v w gCon)
+
+-- | Test that 'spLength' and 'sp' return a length and an connecting
+--   path when destination is reachable from source.
+test_sp_Just :: (ArbGraph gr, Graph gr, Real b) =>
+  Proxy (gr a b) -> gr a b -> Property
+test_sp_Just _ g =
+  (noNodes g >= 2 && v `elem` bfs u g) ==>
+  isJust (spLength u v g) &&
+  isJust maybePath &&
+  not (null path) &&
+  head path == u &&
+  last path == v
+  where
+    [u,v] = take 2 (nodes g)
+    maybePath@(Just path) = sp u v g
+
+-- | Test that 'spLength' and 'sp' return 'Nothing' when destination
+--   is not reachable from source.
+test_sp_Nothing :: (ArbGraph gr, Graph gr, Real b) =>
+  Proxy (gr a b) -> gr a b -> Property
+test_sp_Nothing _ g =
+  (noNodes g >= 2 && not (v `elem` bfs u g)) ==>
+  isNothing (spLength u v g) &&
+  isNothing (sp u v g)
+  where
+    [u,v] = take 2 (nodes g)
 
 -- -----------------------------------------------------------------------------
 -- TransClos
