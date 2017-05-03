@@ -22,7 +22,7 @@ tested-with:   GHC == 7.0.4, GHC == 7.2.2, GHC == 7.4.2, GHC == 7.6.3,
 
 source-repository head
     type:         git
-    location:     git://github.com/haskell/fgl.git
+    location:     https://github.com/haskell/fgl.git
 
 flag containers042 {
     manual:  False
