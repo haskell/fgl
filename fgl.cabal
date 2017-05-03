@@ -50,6 +50,7 @@ library {
         Data.Graph.Inductive.Query.ArtPoint,
         Data.Graph.Inductive.Query.BCC,
         Data.Graph.Inductive.Query.BFS,
+        Data.Graph.Inductive.Query.Cycles,
         Data.Graph.Inductive.Query.DFS,
         Data.Graph.Inductive.Query.Dominators,
         Data.Graph.Inductive.Query.GVD,
