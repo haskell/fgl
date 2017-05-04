@@ -24,8 +24,10 @@ import qualified Data.Map as M
 
 
 
--- | Obtain the labels for a list of 'Node's.
---   It is assumed that each 'Node' is indeed present in the given graph.
+-- The following functions were copied from the Graphalyze package.
+
+-- | Obtain the labels for a list of 'Node's. It is assumed that each 'Node' is
+-- indeed present in the given graph.
 addLabels :: (Graph g) => g a b -> [Node] -> [LNode a]
 addLabels gr = map (ap (,) (fromJust . lab gr))
 
@@ -40,6 +42,10 @@ isRegular g ns = all allTwoCycle split
       split = zip ns tns'
       tns' = tail $ tails ns
       allTwoCycle (n,rs) = null $ rs \\ twoCycle g n
+
+-- End of copied functions.
+
+
 
 -- | Contains the necessary data structures used by 'strongComponentsOf'.
 data SCCState g a b
