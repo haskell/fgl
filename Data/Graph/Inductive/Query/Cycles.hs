@@ -1,12 +1,5 @@
-{- |
-   Module      : Data.Graph.Inductive.Query.Cycles
-   Description : Algorithms for finding all cycles.
-   Copyright   : (c) Gabriel Hjort Blindell 2017
-   License     : 2-Clause BSD
-   Maintainer  : gabriel.hjort.blindell@gmail.com
+-- Implemented by Gabriel Hjort Blindell <gabriel.hjort.blindell@gmail.com>
 
-   Defines algorithms that find all cycles in a given graph.
- -}
 module Data.Graph.Inductive.Query.Cycles
   ( cyclesIn
   , cyclesIn'
