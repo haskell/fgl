@@ -96,9 +96,7 @@ findSCCFor n st0 =
       n_ni = sccNodeInfo st2 M.! n
       n_index = sccNodeIndex n_ni
       n_lowlink = sccNodeLowLink n_ni
-      st3 = if n_index == n_lowlink
-            then produceSCC st2
-            else st2
+      st3 = if n_index == n_lowlink then produceSCC st2 else st2
   in st3
   where
     computeLowLinks m st
@@ -271,9 +269,7 @@ cUnblock n st0 =
                 , cisBlockMap = M.insert n [] (cisBlockMap st0)
                 }
       st2 = foldr ( \m st ->
-                    if cisBlocked st M.! m
-                    then cUnblock m st
-                    else st
+                    if cisBlocked st M.! m then cUnblock m st else st
                   )
                   st1
                   n_blocked
