@@ -11,15 +11,9 @@ where
 
 import Data.Graph.Inductive.Graph
 
-import Data.List
-  ( (\\)
-  , delete
-  , tails
-  )
-import Data.Maybe
-  ( fromJust )
-import Control.Monad
-  ( ap )
+import Data.List ((\\), delete, tails)
+import Data.Maybe (fromJust)
+import Control.Monad (ap)
 import qualified Data.Map as M
 
 
