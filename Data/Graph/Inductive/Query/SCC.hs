@@ -106,7 +106,7 @@ findSCCFor n st0 =
                           )
                           (sccNodeInfo st)
                           ns
-          lab_es = filter (\(n', m', _) -> n' `elem` ns || m' `elem` ns) $
+          lab_es = filter (\(n', m', _) -> n' `elem` ns && m' `elem` ns) $
                    labEdges $
                    sccGraph st
           comp = mkGraph lab_ns lab_es
