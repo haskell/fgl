@@ -41,6 +41,15 @@ isRegular g ns = all allTwoCycle split
 
 
 
+-- | Node information (whether the node is on the stack, its index, and its low
+-- link), which is used as part of 'SCCState'.
+data SCCNodeInfo
+  = SCCNodeInfo
+      { sccIsNodeOnStack :: Bool
+      , sccNodeIndex :: Int
+      , sccNodeLowLink :: Int
+      }
+
 -- | Contains the necessary data structures used by 'strongComponentsOf'.
 data SCCState g a b
   = SCCState
@@ -62,7 +71,7 @@ strongComponentsOf :: (DynGraph g) => g a b -> [g a b]
 strongComponentsOf g =
   sccComponents $
   foldr ( \n st ->
-          let (_, i, _) = sccNodeInfo st M.! n
+          let i = sccNodeIndex $ sccNodeInfo st M.! n
           in if i < 0 then findSCCFor n st else st
         )
         (mkInitSCCState g)
@@ -73,51 +82,61 @@ findSCCFor n st0 =
   let i = sccCurrentIndex st0
       st1 = st0 { sccCurrentIndex = i + 1
                 , sccStack = (n:sccStack st0)
-                , sccNodeInfo = M.insert n (True, i, i) (sccNodeInfo st0)
+                , sccNodeInfo = M.insert n
+                                         (SCCNodeInfo True i i)
+                                         (sccNodeInfo st0)
                 }
       g = sccGraph st1
       st2 = foldr ( \m st ->
                     let st_ni = sccNodeInfo st
-                        (m_on_stack, m_index, _) = st_ni M.! m
+                        m_ni = st_ni M.! m
+                        m_on_stack = sccIsNodeOnStack m_ni
+                        m_index = sccNodeIndex m_ni
                     in if m_index < 0
                        then let st' = findSCCFor m st
                                 st_ni' = sccNodeInfo st'
-                                (n_on_stack', n_index', n_lowlink') =
-                                  st_ni' M.! n
-                                (_, _, m_lowlink) = st_ni' M.! m
-                                new_n_ni = ( n_on_stack'
-                                           , n_index'
-                                           , min n_lowlink' m_lowlink
-                                           )
-                            in st' { sccNodeInfo =
-                                       M.insert n new_n_ni st_ni'
-                                   }
+                                n_ni' = st_ni' M.! n
+                                n_on_stack' = sccIsNodeOnStack n_ni'
+                                n_index' = sccNodeIndex n_ni'
+                                n_lowlink' = sccNodeLowLink n_ni'
+                                m_lowlink = sccNodeLowLink $ st_ni' M.! m
+                                new_n_ni = SCCNodeInfo n_on_stack'
+                                                       n_index'
+                                                       ( min n_lowlink'
+                                                             m_lowlink
+                                                       )
+                            in st' { sccNodeInfo = M.insert n new_n_ni st_ni' }
                        else if m_on_stack
-                            then let (n_on_stack', n_index', n_lowlink') =
-                                       st_ni M.! n
-                                     new_n_ni = ( n_on_stack'
-                                                , n_index'
-                                                , min n_lowlink' m_index
-                                                )
-                                 in st { sccNodeInfo =
-                                           M.insert n new_n_ni st_ni
+                            then let n_ni' = st_ni M.! n
+                                     n_on_stack' = sccIsNodeOnStack n_ni'
+                                     n_index' = sccNodeIndex n_ni'
+                                     n_lowlink' = sccNodeLowLink n_ni'
+                                     new_n_ni = SCCNodeInfo n_on_stack'
+                                                            n_index'
+                                                            ( min n_lowlink'
+                                                                  m_index
+                                                            )
+                                 in st { sccNodeInfo = M.insert n new_n_ni st_ni
                                        }
                             else st
                   )
                   st1
                   (suc g n)
-      (_, n_index, n_lowlink) = sccNodeInfo st2 M.! n
+      n_ni = sccNodeInfo st2 M.! n
+      n_index = sccNodeIndex n_ni
+      n_lowlink = sccNodeLowLink n_ni
       st3 = if n_index == n_lowlink
             then let stack = sccStack st2
                      (p0, p1) = span (/= n) stack
                      comp_ns = (head p1:p0)
                      new_stack = tail p1
                      new_ni = foldr ( \n' ni ->
-                                      let (_, n_index', n_lowlink') = ni M.! n'
-                                          new_n_ni = ( False
-                                                     , n_index'
-                                                     , n_lowlink'
-                                                     )
+                                      let n_ni' = ni M.! n'
+                                          n_index' = sccNodeIndex n_ni'
+                                          n_lowlink' = sccNodeLowLink n_ni'
+                                          new_n_ni = SCCNodeInfo False
+                                                                 n_index'
+                                                                 n_lowlink'
                                       in M.insert n' new_n_ni ni
                                     )
                                     (sccNodeInfo st2)
@@ -134,10 +153,11 @@ findSCCFor n st0 =
 mkInitSCCState :: (DynGraph g) => g a b -> SCCState g a b
 mkInitSCCState g =
   let ns = nodes g
+      init_ni = SCCNodeInfo False (-1) (-1)
   in SCCState { sccComponents = []
               , sccCurrentIndex = 0
               , sccStack = []
-              , sccNodeInfo = M.fromList $ zip ns (repeat (False, -1, -1))
+              , sccNodeInfo = M.fromList $ zip ns (repeat init_ni)
               , sccGraph = g
               }
 
