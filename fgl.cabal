@@ -59,6 +59,7 @@ library {
         Data.Graph.Inductive.Query.MaxFlow,
         Data.Graph.Inductive.Query.MaxFlow2,
         Data.Graph.Inductive.Query.Monad,
+        Data.Graph.Inductive.Query.SCC,
         Data.Graph.Inductive.Query.SP,
         Data.Graph.Inductive.Query.TransClos,
         Data.Graph.Inductive
