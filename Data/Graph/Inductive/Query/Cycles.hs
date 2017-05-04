@@ -1,4 +1,10 @@
--- Implemented by Gabriel Hjort Blindell <gabriel.hjort.blindell@gmail.com>
+{- |
+   Module      : Data.Graph.Inductive.Query.Cycles
+   Description : Finds all cycles.
+   Copyright   : (c) Gabriel Hjort Blindell <gabriel.hjort.blindell@gmail.com>
+                     Ivan Lazar Miljenovic <Ivan.Miljenovic@gmail.com>
+   License     : BSD3
+-}
 
 module Data.Graph.Inductive.Query.Cycles
   ( cycles
