@@ -14,7 +14,7 @@ import Data.Graph.Inductive.Graph
 import Data.List ((\\), delete, tails)
 import Data.Maybe (fromJust)
 import Control.Monad (ap)
-import qualified Data.Map as M
+import qualified Data.IntMap as M
 
 
 
@@ -50,9 +50,8 @@ data SCCState g a b
         -- ^ The current index.
       , sccStack :: [Node]
         -- ^ The node stack.
-      , sccNodeInfo :: M.Map Node (Bool, Int, Int)
-        -- ^ Node information as a tuple (whether the node is on the stack, its
-        -- index, and its low link).
+      , sccNodeInfo :: M.IntMap SCCNodeInfo
+        -- ^ Node information.
       , sccGraph :: g a b
         -- ^ The input graph.
       }
@@ -147,9 +146,9 @@ data CyclesInState g a b
   = CyclesInState
       { cisCycles :: [[Node]]
         -- ^ The cycles found so far, in topological order.
-      , cisBlocked :: M.Map Node Bool
+      , cisBlocked :: M.IntMap Bool
         -- ^ The nodes which are currently blocked.
-      , cisBlockMap :: M.Map Node [Node]
+      , cisBlockMap :: M.IntMap [Node]
         -- ^ The B set.
       , cisStack :: [Node]
         -- ^ The node stack.
