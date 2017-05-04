@@ -26,7 +26,7 @@ import Test.Hspec      (Spec, describe, it, shouldBe, shouldMatchList,
 import Test.QuickCheck
 
 import           Control.Arrow (second)
-import           Data.List     (delete, sort, unfoldr, group, (\\))
+import           Data.List     (delete, sort, sortBy, unfoldr, group, (\\))
 import           Data.Maybe    (fromJust, isJust, isNothing)
 import qualified Data.Set      as S
 
@@ -84,6 +84,41 @@ test_level _ cg = sort expect == sort (level cn g)
     expect = (cn,0) : map (flip (,) 1) vs
 
 -- esp tested as part of test_sp
+
+-- -----------------------------------------------------------------------------
+-- Cycles
+
+test_cycles :: Spec
+test_cycles =
+  it "cycles" $
+  sortCycles (cycles cyclesGraph) `shouldMatchList` [ [4, 5]
+                                                    , [1, 2, 3]
+                                                    , [0, 1, 2, 3, 4]
+                                                    ]
+
+test_uniqueCycles :: Spec
+test_uniqueCycles =
+  it "uniqueCycles" $
+  sortCycles (uniqueCycles cyclesGraph) `shouldMatchList` [ [1, 2, 3]
+                                                          , [0, 1, 2, 3, 4]
+                                                          ]
+
+sortCycles :: [[LNode ()]] -> [[Node]]
+sortCycles cs = map (map fst . sort) $
+                sortBy (\c1 c2 -> compare (length c1) (length c2)) $
+                cs
+
+cyclesGraph :: Gr () ()
+cyclesGraph = mkUGraph [0..6]
+                       [ (0,1)
+                       , (1,2)
+                       , (2,3)
+                       , (3,1)
+                       , (3,4)
+                       , (3,6)
+                       , (4,0)
+                       , (4,5)
+                       ]
 
 -- -----------------------------------------------------------------------------
 -- DFS

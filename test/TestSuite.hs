@@ -96,6 +96,9 @@ queryTests = describe "Queries" $ do
   describe "BFS" $ do
     propP "bfs"        test_bfs
     propP "level"      test_level
+  describe "Cycles" $ do
+    test_cycles
+    test_uniqueCycles
   describe "DFS" $ do
     propP "components"   test_components
     propP "scc"          test_scc
