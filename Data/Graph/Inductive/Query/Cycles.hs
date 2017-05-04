@@ -67,8 +67,11 @@ data SCCState g a b
       }
   deriving (Show, Read, Eq)
 
--- | Find all strongly connected components of a graph. Implements Tarjan's
--- algorithm. Returned list is sorted in topological order.
+-- | Find all strongly connected components of a graph. Returned list is sorted
+-- in topological order.
+--
+-- Implements Tarjan's algorithm:
+-- https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
 strongComponentsOf :: (DynGraph g) => g a b -> [g a b]
 strongComponentsOf g =
   sccComponents $
