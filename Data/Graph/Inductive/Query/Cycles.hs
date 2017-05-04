@@ -69,28 +69,29 @@ data CyclesInState g a b
       }
   deriving (Show, Read, Eq)
 
--- | Finds all cycles in a given graph using Johnson's algorithm.
+-- | Finds all cycles in a given graph. The returned lists contains the nodes
+-- appearing in the cycles, in successor order (although it is undefined which
+-- node appears first).
 --
--- See Donald B. Johnson: Finding All the Elementary Circuits of a Directed
--- Graph. SIAM Journal on Computing. Volumne 4, Nr. 1 (1975), pp. 77-84.
+-- Implemented using Johnson's algorithm. See Donald B. Johnson: Finding All the
+-- Elementary Circuits of a Directed Graph. SIAM Journal on Computing. Volumne
+-- 4, Nr. 1 (1975), pp. 77-84.
 cycles :: (Graph g) => g a b -> [[LNode a]]
 cycles g = map (addLabels g) (cycles' g)
 
--- | Finds all cycles in a given graph using Johnson's algorithm.
---
--- See Donald B. Johnson: Finding All the Elementary Circuits of a Directed
--- Graph. SIAM Journal on Computing. Volumne 4, Nr. 1 (1975), pp. 77-84.
+-- | Same as 'cycles' but for unlabeled graphs.
 cycles' :: (Graph g) => g a b -> [[Node]]
 cycles' g =
   cisCycles $
   foldr cyclesFor (mkInitCyclesInState g) (nodes g)
 
--- | Find all cycles in the given graph, excluding those that are also cliques.
-uniqueCycles   :: (Graph g) => g a b -> [[LNode a]]
+-- | Find all cycles in the given graph (using 'cycles'), excluding those that
+-- are also cliques.
+uniqueCycles :: (Graph g) => g a b -> [[LNode a]]
 uniqueCycles g = map (addLabels g) (uniqueCycles' g)
 
--- | Find all cycles in the given graph, excluding those that are also cliques.
-uniqueCycles'   :: (Graph g) => g a b -> [[Node]]
+-- | Same as 'uniqueCycles' but for unlabeled graphs.
+uniqueCycles' :: (Graph g) => g a b -> [[Node]]
 uniqueCycles' g = filter (not . isRegular g) (cycles' g)
 
 cyclesFor :: (Graph g) => Node -> CyclesInState g a b -> CyclesInState g a b
@@ -123,7 +124,7 @@ cCircuits n st0 =
       (st2, f) =
         foldr ( \m (st, f') ->
                 if m == fromJust (cisS st)
-                then let new_cycle = reverse (m:cisStack st)
+                then let new_cycle = reverse $ cisStack st
                          st' = st { cisCycles = (new_cycle:cisCycles st) }
                      in (st', True)
                 else if not (cisBlocked st M.! m)
