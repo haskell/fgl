@@ -92,68 +92,63 @@ findSCCFor n st0 =
                                          (sccNodeInfo st0)
                 }
       g = sccGraph st1
-      st2 = foldr ( \m st ->
-                    let st_ni = sccNodeInfo st
-                        m_ni = st_ni M.! m
-                        m_on_stack = sccIsNodeOnStack m_ni
-                        m_index = sccNodeIndex m_ni
-                    in if m_index < 0
-                       then let st' = findSCCFor m st
-                                st_ni' = sccNodeInfo st'
-                                n_ni' = st_ni' M.! n
-                                n_on_stack' = sccIsNodeOnStack n_ni'
-                                n_index' = sccNodeIndex n_ni'
-                                n_lowlink' = sccNodeLowLink n_ni'
-                                m_lowlink = sccNodeLowLink $ st_ni' M.! m
-                                new_n_ni = SCCNodeInfo n_on_stack'
-                                                       n_index'
-                                                       ( min n_lowlink'
-                                                             m_lowlink
-                                                       )
-                            in st' { sccNodeInfo = M.insert n new_n_ni st_ni' }
-                       else if m_on_stack
-                            then let n_ni' = st_ni M.! n
-                                     n_on_stack' = sccIsNodeOnStack n_ni'
-                                     n_index' = sccNodeIndex n_ni'
-                                     n_lowlink' = sccNodeLowLink n_ni'
-                                     new_n_ni = SCCNodeInfo n_on_stack'
-                                                            n_index'
-                                                            ( min n_lowlink'
-                                                                  m_index
-                                                            )
-                                 in st { sccNodeInfo = M.insert n new_n_ni st_ni
-                                       }
-                            else st
-                  )
-                  st1
-                  (suc g n)
+      st2 = foldr computeLowLinks st1 (suc g n)
       n_ni = sccNodeInfo st2 M.! n
       n_index = sccNodeIndex n_ni
       n_lowlink = sccNodeLowLink n_ni
       st3 = if n_index == n_lowlink
-            then let stack = sccStack st2
-                     (p0, p1) = span (/= n) stack
-                     comp_ns = (head p1:p0)
-                     new_stack = tail p1
-                     new_ni = foldr ( \n' ni ->
-                                      let n_ni' = ni M.! n'
-                                          n_index' = sccNodeIndex n_ni'
-                                          n_lowlink' = sccNodeLowLink n_ni'
-                                          new_n_ni = SCCNodeInfo False
-                                                                 n_index'
-                                                                 n_lowlink'
-                                      in M.insert n' new_n_ni ni
-                                    )
-                                    (sccNodeInfo st2)
-                                    comp_ns
-                     comp = nfilter (`elem` comp_ns) (sccGraph st2)
-                     new_cs = (comp:sccComponents st2)
-                 in st2 { sccComponents = new_cs
-                        , sccStack = new_stack
-                        , sccNodeInfo = new_ni
-                        }
+            then produceSCC st2
             else st2
   in st3
+  where
+    computeLowLinks m st
+      | isIndexUndefined =
+          let st' = findSCCFor m st
+              st_ni' = sccNodeInfo st'
+              n_ni' = st_ni' M.! n
+              n_on_stack' = sccIsNodeOnStack n_ni'
+              n_index' = sccNodeIndex n_ni'
+              n_lowlink' = sccNodeLowLink n_ni'
+              m_lowlink = sccNodeLowLink $ st_ni' M.! m
+              new_n_ni = SCCNodeInfo n_on_stack'
+                                     n_index'
+                                     (min n_lowlink' m_lowlink)
+          in st' { sccNodeInfo = M.insert n new_n_ni st_ni' }
+      | isOnStack =
+          let st_ni = sccNodeInfo st
+              m_index = sccNodeIndex $ st_ni M.! m
+              n_ni' = st_ni M.! n
+              n_on_stack' = sccIsNodeOnStack n_ni'
+              n_index' = sccNodeIndex n_ni'
+              n_lowlink' = sccNodeLowLink n_ni'
+              new_n_ni = SCCNodeInfo n_on_stack'
+                                     n_index'
+                                     (min n_lowlink' m_index)
+          in st { sccNodeInfo = M.insert n new_n_ni st_ni }
+      | otherwise = st
+      where isIndexUndefined = let i = sccNodeIndex $ (sccNodeInfo st) M.! m
+                               in i < 0
+            isOnStack = sccIsNodeOnStack $ (sccNodeInfo st) M.! m
+    produceSCC st =
+      let stack = sccStack st
+          (p0, p1) = span (/= n) stack
+          comp_ns = (head p1:p0)
+          new_stack = tail p1
+          new_ni = foldr ( \n' ni ->
+                           let n_ni' = ni M.! n'
+                               n_index' = sccNodeIndex n_ni'
+                               n_lowlink' = sccNodeLowLink n_ni'
+                               new_n_ni = SCCNodeInfo False n_index' n_lowlink'
+                           in M.insert n' new_n_ni ni
+                         )
+                         (sccNodeInfo st)
+                         comp_ns
+          comp = nfilter (`elem` comp_ns) (sccGraph st)
+          new_cs = (comp:sccComponents st)
+      in st { sccComponents = new_cs
+            , sccStack = new_stack
+            , sccNodeInfo = new_ni
+            }
 
 mkInitSCCState :: (DynGraph g) => g a b -> SCCState g a b
 mkInitSCCState g =
