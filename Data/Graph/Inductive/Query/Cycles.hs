@@ -73,27 +73,27 @@ data CyclesInState g a b
 --
 -- See Donald B. Johnson: Finding All the Elementary Circuits of a Directed
 -- Graph. SIAM Journal on Computing. Volumne 4, Nr. 1 (1975), pp. 77-84.
-cycles :: (DynGraph g) => g a b -> [[LNode a]]
+cycles :: (Graph g) => g a b -> [[LNode a]]
 cycles g = map (addLabels g) (cycles' g)
 
 -- | Finds all cycles in a given graph using Johnson's algorithm.
 --
 -- See Donald B. Johnson: Finding All the Elementary Circuits of a Directed
 -- Graph. SIAM Journal on Computing. Volumne 4, Nr. 1 (1975), pp. 77-84.
-cycles' :: (DynGraph g) => g a b -> [[Node]]
+cycles' :: (Graph g) => g a b -> [[Node]]
 cycles' g =
   cisCycles $
   foldr cyclesFor (mkInitCyclesInState g) (nodes g)
 
 -- | Find all cycles in the given graph, excluding those that are also cliques.
-uniqueCycles   :: (DynGraph g) => g a b -> [[LNode a]]
+uniqueCycles   :: (Graph g) => g a b -> [[LNode a]]
 uniqueCycles g = map (addLabels g) (uniqueCycles' g)
 
 -- | Find all cycles in the given graph, excluding those that are also cliques.
-uniqueCycles'   :: (DynGraph g) => g a b -> [[Node]]
+uniqueCycles'   :: (Graph g) => g a b -> [[Node]]
 uniqueCycles' g = filter (not . isRegular g) (cycles' g)
 
-cyclesFor :: (DynGraph g) => Node -> CyclesInState g a b -> CyclesInState g a b
+cyclesFor :: (Graph g) => Node -> CyclesInState g a b -> CyclesInState g a b
 cyclesFor n st0 =
   let n_comp = head $
                filter (\c -> n `gelem` c) $
@@ -112,7 +112,7 @@ cyclesFor n st0 =
           in st3
      else st0 -- Skip to next node
 
-cCircuits :: (DynGraph g) => Node -> CyclesInState g a b ->
+cCircuits :: (Graph g) => Node -> CyclesInState g a b ->
              (CyclesInState g a b, Bool)
 cCircuits n st0 =
   let st1 = st0 { cisBlocked = M.insert n True (cisBlocked st0)
@@ -150,7 +150,7 @@ cCircuits n st0 =
       st4 = st3 { cisStack = tail $ cisStack st3 }
   in (st4, f)
 
-cUnblock :: (DynGraph g) => Node -> CyclesInState g a b -> CyclesInState g a b
+cUnblock :: (Graph g) => Node -> CyclesInState g a b -> CyclesInState g a b
 cUnblock n st0 =
   let n_blocked = cisBlockMap st0 M.! n
       st1 = st0 { cisBlocked = M.insert n False (cisBlocked st0)
@@ -163,7 +163,7 @@ cUnblock n st0 =
                   n_blocked
   in st2
 
-mkInitCyclesInState :: (DynGraph g) => g a b -> CyclesInState g a b
+mkInitCyclesInState :: (Graph g) => g a b -> CyclesInState g a b
 mkInitCyclesInState g =
   let ns = nodes g
   in CyclesInState { cisCycles = []

@@ -46,7 +46,7 @@ data SCCState g a b
 --
 -- Implements Tarjan's algorithm:
 -- https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
-strongComponentsOf :: (DynGraph g) => g a b -> [g a b]
+strongComponentsOf :: (Graph g) => g a b -> [g a b]
 strongComponentsOf g =
   sccComponents $
   foldr ( \n st ->
@@ -56,7 +56,7 @@ strongComponentsOf g =
         (mkInitSCCState g)
         (nodes g)
 
-findSCCFor :: (DynGraph g) => Node -> SCCState g a b -> SCCState g a b
+findSCCFor :: (Graph g) => Node -> SCCState g a b -> SCCState g a b
 findSCCFor n st0 =
   let i = sccCurrentIndex st0
       st1 = st0 { sccCurrentIndex = i + 1
@@ -94,7 +94,10 @@ findSCCFor n st0 =
     produceSCC st =
       let stack = sccStack st
           (p0, p1) = span (/= n) stack
-          comp_ns = (head p1:p0)
+          ns = (head p1:p0)
+          lab_ns = filter (\(n', _) -> n' `elem` ns) $
+                   labNodes $
+                   sccGraph st
           new_stack = tail p1
           new_map = foldr ( \n' ni_map ->
                             let ni = ni_map M.! n'
@@ -102,15 +105,18 @@ findSCCFor n st0 =
                             in M.insert n' new_ni ni_map
                           )
                           (sccNodeInfo st)
-                          comp_ns
-          comp = nfilter (`elem` comp_ns) (sccGraph st)
+                          ns
+          lab_es = filter (\(n', m', _) -> n' `elem` ns || m' `elem` ns) $
+                   labEdges $
+                   sccGraph st
+          comp = mkGraph lab_ns lab_es
           new_cs = (comp:sccComponents st)
       in st { sccComponents = new_cs
             , sccStack = new_stack
             , sccNodeInfo = new_map
             }
 
-mkInitSCCState :: (DynGraph g) => g a b -> SCCState g a b
+mkInitSCCState :: (Graph g) => g a b -> SCCState g a b
 mkInitSCCState g =
   let ns = nodes g
       init_ni = SCCNodeInfo False (-1) (-1)
