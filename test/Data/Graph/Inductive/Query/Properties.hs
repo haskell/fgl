@@ -305,6 +305,15 @@ test_msTree _ cg = ns == mstNs && S.isSubsetOf mstEs es
     toE (w,l) (v,_) = (v,w,l)
 
 -- -----------------------------------------------------------------------------
+-- SCC
+
+-- | The strongly connected components should be a partitioning of the nodes of
+--   a graph.
+test_strongComponentsOf :: (Graph gr) => Proxy (gr a b) -> gr a b -> Bool
+test_strongComponentsOf _ g =
+  sort (concatMap nodes (strongComponentsOf g)) == sort (nodes g)
+
+-- -----------------------------------------------------------------------------
 -- SP
 
 test_sp :: (ArbGraph gr) => Proxy (gr a b) -> UConnected gr () (Positive Int) -> Bool

@@ -116,6 +116,8 @@ queryTests = describe "Queries" $ do
   test_maxFlow2
   test_maxFlow
   propP "msTree"       test_msTree
+  describe "SCC" $ do
+    propP "strongComponentsOf" test_strongComponentsOf
   describe "SP" $ do
     propP "sp"         test_sp
     propP "sp_Just"    test_sp_Just
