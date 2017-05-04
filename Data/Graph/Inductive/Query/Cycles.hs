@@ -49,6 +49,7 @@ data SCCNodeInfo
       , sccNodeIndex :: Int
       , sccNodeLowLink :: Int
       }
+  deriving (Show, Read, Eq)
 
 -- | Contains the necessary data structures used by 'strongComponentsOf'.
 data SCCState g a b
@@ -64,6 +65,7 @@ data SCCState g a b
       , sccGraph :: g a b
         -- ^ The input graph.
       }
+  deriving (Show, Read, Eq)
 
 -- | Find all strongly connected components of a graph. Implements Tarjan's
 -- algorithm. Returned list is sorted in topological order.
@@ -181,6 +183,7 @@ data CyclesInState g a b
       , cisGraph :: g a b
         -- ^ The input graph.
       }
+  deriving (Show, Read, Eq)
 
 -- | Finds all cycles in a given graph using Johnson's algorithm.
 --
