@@ -46,11 +46,11 @@ showGraph (_,a,m) = concatMap showAdj (indices a)
                         Just (_,l,s) -> '\n':show v++":"++show l++"->"++show s'
                           where s' = unsafePerformIO (removeDel m s)
 
--- | Please not that this instance is unsafe.
+-- | Please note that this instance is unsafe.
 instance (Show a,Show b) => Show (SGr a b) where
   show (SGr g) = showGraph g
 
--- | Please not that this instance is unsafe.
+-- | Please note that this instance is unsafe.
 instance (Show a,Show b) => Show (IO (SGr a b)) where
   show g = unsafePerformIO (do {(SGr g') <- g; return (showGraph g')})
 
