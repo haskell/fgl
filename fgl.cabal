@@ -109,6 +109,11 @@ test-suite fgl-tests {
 }
 
 benchmark fgl-benchmark {
+    if flag(containers042)
+        buildable:    True
+    else
+        buildable:    False
+
     default-language: Haskell98
 
     type:             exitcode-stdio-1.0

@@ -273,7 +273,7 @@ addLists xs  ys  = xs ++ ys
 
 addSucc :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
 addSucc g0 v numAdd xs
-  | numAdd < bulkThreshold = IM.foldlWithKey' go g0 xs
+  | numAdd < bulkThreshold = foldlWithKey' go g0 xs
   where
     go :: GraphRep a b -> Node -> [b] -> GraphRep a b
     go g p l = IMS.adjust f p g
@@ -285,9 +285,19 @@ addSucc g v _ xs = IMS.differenceWith go g xs
     go (ps, l', ss) l = let !ss' = IM.insertWith addLists v l ss
                         in Just (ps, l', ss')
 
+foldlWithKey' :: (a -> IM.Key -> b -> a) -> a -> IntMap b -> a
+foldlWithKey' =
+#if MIN_VERSION_containers (0,4,2)
+  IM.foldlWithKey'
+#else
+  IM.foldWithKey . adjustFunc
+  where
+    adjustFunc f k b a = f a k b
+#endif
+
 addPred :: forall a b . GraphRep a b -> Node -> Int -> IM.IntMap [b] -> GraphRep a b
 addPred g0 v numAdd xs
-  | numAdd < bulkThreshold = IM.foldlWithKey' go g0 xs
+  | numAdd < bulkThreshold = foldlWithKey' go g0 xs
   where
     go :: GraphRep a b -> Node -> [b] -> GraphRep a b
     go g p l = IMS.adjust f p g
