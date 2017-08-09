@@ -1,3 +1,15 @@
+5.5.4.0
+-------
+
+* Improved type safety of shortest-path functions (in
+  `Data.Graph.Inductive.Query.SP`) thanks to Nathan Collins.
+
+    - `getDistance`, `spLength` and `sp` now return `Maybe` values.
+
+* Fixed building on GHC < 7.4; previously uncaught due to
+  cabal-install doing the wrong thing on Travis-CI.
+
+
 5.5.3.1
 -------
 
