@@ -63,7 +63,7 @@ spLength s t = getDistance t . spTree s
 
 -- | Shortest path between two nodes, if any.
 --
---   Returns 'Nothing' if the destination is not reachable from teh
+--   Returns 'Nothing' if the destination is not reachable from the
 --   start node, and @'Just' <path>@ otherwise.
 --
 --   The edge labels of type @b@ are the edge weights; negative edge
