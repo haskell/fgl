@@ -79,7 +79,7 @@ data CyclesInState g a b
 cycles :: (Graph g) => g a b -> [[LNode a]]
 cycles g = map (addLabels g) (cycles' g)
 
--- | Same as 'cycles' but for unlabeled graphs.
+-- | Same as 'cycles' but does not return the node labels.
 cycles' :: (Graph g) => g a b -> [[Node]]
 cycles' g =
   cisCycles $
@@ -90,7 +90,7 @@ cycles' g =
 uniqueCycles :: (Graph g) => g a b -> [[LNode a]]
 uniqueCycles g = map (addLabels g) (uniqueCycles' g)
 
--- | Same as 'uniqueCycles' but for unlabeled graphs.
+-- | Same as 'uniqueCycles' but does not return the node labels.
 uniqueCycles' :: (Graph g) => g a b -> [[Node]]
 uniqueCycles' g = filter (not . isRegular g) (cycles' g)
 
