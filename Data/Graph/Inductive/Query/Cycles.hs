@@ -58,8 +58,6 @@ data CyclesInState g a b
         -- ^ The B set.
       , cisStack :: ![Node]
         -- ^ The node stack.
-      , cisCurrentComp :: !(Maybe (g a b))
-        -- ^ The component currently being processed.
       , cisComponents :: ![g a b]
         -- ^ The components of the input graph.
       , cisGraph :: !(g a b)
@@ -98,42 +96,39 @@ cyclesFor n st0 =
                filter (\c -> n `gelem` c) $
                cisComponents st0
   in if noNodes n_comp > 1
-     then let st1 = st0 { cisCurrentComp = Just n_comp
-                        }
-              st2 = fst $ cCircuits n n st1
-              g = cisGraph st2
+     then let st1 = fst $ cCircuits n_comp n n st0
+              g = cisGraph st1
               new_g = delNode n g
               new_comps = strongComponentsOf new_g
-              st3 = st2 { cisGraph = new_g
+              st2 = st1 { cisGraph = new_g
                         , cisComponents = new_comps
                         }
-          in st3
+          in st2
      else st0 -- Skip to next node
 
-cCircuits :: (Graph g) => Node -> Node -> CyclesInState g a b ->
+cCircuits :: (Graph g) => (g a b) -> Node -> Node -> CyclesInState g a b ->
              (CyclesInState g a b, Bool)
-cCircuits s n st0 =
+cCircuits c s n st0 =
   let st1 = st0 { cisBlocked = M.insert n True (cisBlocked st0)
                 , cisStack = (n:cisStack st0)
                 }
-      c = fromJust $ cisCurrentComp st1
       n_suc = suc c n
-      (st2, f) = foldr (cCircuitsVisit s) (st1, False) n_suc
+      (st2, f) = foldr (cCircuitsVisit c s) (st1, False) n_suc
       st3 = if f
             then cUnblock n st2
             else foldr (cCircuitsBlock n) st2 n_suc
       st4 = st3 { cisStack = tail $ cisStack st3 }
   in (st4, f)
 
-cCircuitsVisit :: (Graph g) => Node -> Node -> (CyclesInState g a b, Bool) ->
-                  (CyclesInState g a b, Bool)
-cCircuitsVisit s n (st0, f0)
+cCircuitsVisit :: (Graph g) => (g a b) -> Node -> Node ->
+                  (CyclesInState g a b, Bool) -> (CyclesInState g a b, Bool)
+cCircuitsVisit c s n (st0, f0)
   | n == s =
       let new_cycle = reverse $ cisStack st0
           st1 = st0 { cisCycles = (new_cycle:cisCycles st0) }
       in (st1, True)
   | not (cisBlocked st0 M.! n) =
-      let (st1, f1) = cCircuits s n st0
+      let (st1, f1) = cCircuits c s n st0
       in (st1, f0 || f1)
   | otherwise = (st0, f0)
 
@@ -167,7 +162,6 @@ mkInitCyclesInState g =
                    , cisBlocked = M.fromList $ zip ns (repeat False)
                    , cisBlockMap = M.fromList $ zip ns (repeat [])
                    , cisStack = []
-                   , cisCurrentComp = Nothing
                    , cisComponents = strongComponentsOf g
                    , cisGraph = g
                    }
