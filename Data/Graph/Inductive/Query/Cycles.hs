@@ -130,15 +130,15 @@ cCircuits n st0 =
 
 cCircuitsVisit :: (Graph g) => Node -> (CyclesInState g a b, Bool) ->
                   (CyclesInState g a b, Bool)
-cCircuitsVisit n (st0, f0) =
-  if n == fromJust (cisS st0)
-  then let new_cycle = reverse $ cisStack st0
-           st1 = st0 { cisCycles = (new_cycle:cisCycles st0) }
-       in (st1, True)
-  else if not (cisBlocked st0 M.! n)
-       then let (st1, f1) = cCircuits n st0
-            in (st1, f0 || f1)
-       else (st0, f0)
+cCircuitsVisit n (st0, f0)
+  | n == fromJust (cisS st0) =
+      let new_cycle = reverse $ cisStack st0
+          st1 = st0 { cisCycles = (new_cycle:cisCycles st0) }
+      in (st1, True)
+  | not (cisBlocked st0 M.! n) =
+      let (st1, f1) = cCircuits n st0
+      in (st1, f0 || f1)
+  | otherwise = (st0, f0)
 
 cCircuitsBlock :: (Graph g) => Node -> Node -> CyclesInState g a b ->
                   CyclesInState g a b
