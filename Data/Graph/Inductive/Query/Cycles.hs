@@ -95,7 +95,8 @@ cyclesFor n st0 =
   let n_comp = head $
                filter (\c -> n `gelem` c) $
                cisComponents st0
-  in if noNodes n_comp > 1
+  in if (not $ null $ drop 1 $ nodes n_comp) -- Same as (noNodes n_comp) > 1 but
+                                             -- only takes O(1) instead of O(n)
      then let st1 = fst $ cCircuits n_comp n n st0
               g = cisGraph st1
               new_g = delNode n g
