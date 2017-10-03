@@ -344,10 +344,29 @@ test_msTree _ cg = ns == mstNs && S.isSubsetOf mstEs es
 -- SCC
 
 -- | The strongly connected components should be a partitioning of the nodes of
---   a graph.
+--   a graph and there should be no cycle between any pair of nodes from two
+--   separate partitions.
 test_strongComponentsOf :: (Graph gr) => Proxy (gr a b) -> gr a b -> Bool
 test_strongComponentsOf _ g =
-  sort (concatMap nodes (strongComponentsOf g)) == sort (nodes g)
+  let cs = strongComponentsOf g
+
+      -- Get set of unordered pairs of components, excluding reflexive
+      -- pairs
+      numbered_cs = zip ([0..] :: [Int]) cs
+      cs_pairs = map (\((_, c), (_, d)) -> (c, d)) $
+                 filter (\((n, _), (m, _)) -> n < m) $
+                 [ (x, y) | x <- numbered_cs, y <- numbered_cs ]
+
+      -- Tests that there exist no cycle between two nodes
+      test_no_cycle (n, m) = let n_to_m = m `elem` reachable n g
+                                 m_to_n = n `elem` reachable m g
+                             in not (n_to_m && m_to_n)
+
+  in sort (concatMap nodes cs) == sort (nodes g)
+     && all ( \(c, d) -> all test_no_cycle
+                             [ (n, m) | n <- nodes c, m <- nodes d ]
+            )
+            cs_pairs
 
 -- -----------------------------------------------------------------------------
 -- SP
