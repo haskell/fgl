@@ -121,35 +121,34 @@ cCircuits n st0 =
                 }
       c = fromJust $ cisCurrentComp st1
       n_suc = suc c n
-      (st2, f) =
-        foldr ( \m (st, f') ->
-                if m == fromJust (cisS st)
-                then let new_cycle = reverse $ cisStack st
-                         st' = st { cisCycles = (new_cycle:cisCycles st) }
-                     in (st', True)
-                else if not (cisBlocked st M.! m)
-                     then let (st', f'') = cCircuits m st
-                          in (st', f' || f'')
-                     else (st, f')
-              )
-              (st1, False)
-              n_suc
+      (st2, f) = foldr cCircuitsVisit (st1, False) n_suc
       st3 = if f
             then cUnblock n st2
-            else foldr ( \m st ->
-                         let bm = cisBlockMap st
-                             m_blocked = bm M.! m
-                             new_m_blocked = (n:m_blocked)
-                         in if n `notElem` m_blocked
-                            then st { cisBlockMap =
-                                        M.insert m new_m_blocked bm
-                                    }
-                            else st
-                       )
-                       st2
-                       n_suc
+            else foldr (cCircuitsBlock n) st2 n_suc
       st4 = st3 { cisStack = tail $ cisStack st3 }
   in (st4, f)
+
+cCircuitsVisit :: (Graph g) => Node -> (CyclesInState g a b, Bool) ->
+                  (CyclesInState g a b, Bool)
+cCircuitsVisit n (st0, f0) =
+  if n == fromJust (cisS st0)
+  then let new_cycle = reverse $ cisStack st0
+           st1 = st0 { cisCycles = (new_cycle:cisCycles st0) }
+       in (st1, True)
+  else if not (cisBlocked st0 M.! n)
+       then let (st1, f1) = cCircuits n st0
+            in (st1, f0 || f1)
+       else (st0, f0)
+
+cCircuitsBlock :: (Graph g) => Node -> Node -> CyclesInState g a b ->
+                  CyclesInState g a b
+cCircuitsBlock n m st0 =
+  let bm = cisBlockMap st0
+      m_blocked = bm M.! m
+      new_m_blocked = (n:m_blocked)
+  in if n `notElem` m_blocked
+     then st0 { cisBlockMap = M.insert m new_m_blocked bm }
+     else st0
 
 cUnblock :: (Graph g) => Node -> CyclesInState g a b -> CyclesInState g a b
 cUnblock n st0 =
