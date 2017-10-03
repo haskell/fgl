@@ -50,21 +50,21 @@ isRegular g ns = all allTwoCycle split
 -- | Contains the necessary data structures used by 'cycles'.
 data CyclesInState g a b
   = CyclesInState
-      { cisCycles :: [[Node]]
+      { cisCycles :: ![[Node]]
         -- ^ The cycles found so far, in topological order.
-      , cisBlocked :: M.IntMap Bool
+      , cisBlocked :: !(M.IntMap Bool)
         -- ^ The nodes which are currently blocked.
-      , cisBlockMap :: M.IntMap [Node]
+      , cisBlockMap :: !(M.IntMap [Node])
         -- ^ The B set.
-      , cisStack :: [Node]
+      , cisStack :: ![Node]
         -- ^ The node stack.
-      , cisS :: Maybe Node
+      , cisS :: !(Maybe Node)
         -- ^ The current S value.
-      , cisCurrentComp :: Maybe (g a b)
+      , cisCurrentComp :: !(Maybe (g a b))
         -- ^ The component currently being processed.
-      , cisComponents :: [g a b]
+      , cisComponents :: ![g a b]
         -- ^ The components of the input graph.
-      , cisGraph :: g a b
+      , cisGraph :: !(g a b)
         -- ^ The input graph.
       }
   deriving (Show, Read, Eq)
