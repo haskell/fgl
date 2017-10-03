@@ -28,15 +28,15 @@ data SCCNodeInfo
 -- | Contains the necessary data structures used by 'strongComponentsOf'.
 data SCCState g a b
   = SCCState
-      { sccComponents :: [g a b]
+      { sccComponents :: !([g a b])
         -- ^ The components found so far.
-      , sccCurrentIndex :: Int
+      , sccCurrentIndex :: !Int
         -- ^ The current index.
-      , sccStack :: [Node]
+      , sccStack :: ![Node]
         -- ^ The node stack.
-      , sccNodeInfo :: M.IntMap SCCNodeInfo
+      , sccNodeInfo :: !(M.IntMap SCCNodeInfo)
         -- ^ Node information.
-      , sccGraph :: g a b
+      , sccGraph :: !(g a b)
         -- ^ The input graph.
       }
   deriving (Show, Read, Eq)
