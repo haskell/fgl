@@ -32,6 +32,7 @@ import           Data.IntMap         (IntMap)
 import qualified Data.IntMap         as IM
 import           Data.List           (foldl', sort)
 import           Data.Maybe          (fromMaybe)
+import           Data.Tuple          (swap)
 
 #if MIN_VERSION_containers (0,4,2)
 import Control.DeepSeq (NFData(..))
@@ -258,9 +259,6 @@ toContext v (ps, a, ss) = (toAdj ps, v, a, toAdj ss)
 
 fromContext :: Context a b -> Context' a b
 fromContext (ps, _, a, ss) = (fromAdj ps, a, fromAdj ss)
-
-swap :: (a, b) -> (b, a)
-swap (a, b) = (b, a)
 
 -- A version of @++@ where order isn't important, so @xs ++ [x]@
 -- becomes @x:xs@.  Used when we have to have a function of type @[a]

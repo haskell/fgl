@@ -50,7 +50,7 @@ import Data.Graph.Inductive.Graph
 import Data.Tree
 import qualified Data.Map as Map
 import Control.Monad (liftM2)
-
+import Data.Tuple (swap)
 
 
 -- | Many functions take a list of nodes to visit as an explicit argument.
@@ -243,8 +243,6 @@ condensation gr = mkGraph vs es
     sccs = scc gr
     vs = zip [1..] sccs
     vMap = Map.fromList $ map swap vs
-
-    swap = uncurry $ flip (,)
 
     getN = (vMap Map.!)
     es = [ (getN c1, getN c2, ()) | c1 <- sccs, c2 <- sccs
