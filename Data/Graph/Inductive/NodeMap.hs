@@ -65,7 +65,7 @@ fromGraph g =
         (m, k) = foldr aux (M.empty, 0) ns
     in NodeMap { map = m, key = k+1 }
 
--- | Is the node already in the map ?
+-- | Is the node in the map ?
 memberNode :: (Ord a) => a -> NodeMap a -> Bool
 memberNode a = M.member a . map
 
@@ -125,6 +125,8 @@ insMapNode m a g =
     let (n, m') = mkNode m a
     in (insNode n g, m', n)
 
+-- | Act as 'insMapNode', but return also a boolean set as @True@ if the node was
+-- already in the map.
 insMapLookupNode :: (Ord a, DynGraph g) => NodeMap a -> a -> g a b -> (Bool, g a b, NodeMap a, LNode a)
 insMapLookupNode m a g =
     let (b, n, m') = mkLookupNode m a
