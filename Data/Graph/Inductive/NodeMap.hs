@@ -26,7 +26,7 @@ module Data.Graph.Inductive.NodeMap(
     insMapEdgesM, delMapNodesM, delMapEdgesM,
 
     -- ** Map inspection
-    lookupNode
+    memberNode, lookupNode
 ) where
 
 import           Control.Monad.Trans.State
@@ -64,6 +64,10 @@ fromGraph g =
         aux (n, a) (m', k') = (M.insert a n m', max n k')
         (m, k) = foldr aux (M.empty, 0) ns
     in NodeMap { map = m, key = k+1 }
+
+memberNode :: (Ord a) => a -> NodeMap a -> Bool
+memberNode a = M.member a . map
+
 
 lookupNode :: (Ord a) => a -> NodeMap a -> Maybe Node
 lookupNode a = M.lookup a . map
