@@ -65,20 +65,23 @@ fromGraph g =
         (m, k) = foldr aux (M.empty, 0) ns
     in NodeMap { map = m, key = k+1 }
 
+-- | Is the node already in the map ?
 memberNode :: (Ord a) => a -> NodeMap a -> Bool
 memberNode a = M.member a . map
 
-
+-- | Lookup for the node in the map.
 lookupNode :: (Ord a) => a -> NodeMap a -> Maybe Node
 lookupNode a = M.lookup a . map
 
 -- | Generate a labelled node from the given label.  Will return the same node
 -- for the same label.
 mkNode :: (Ord a) => NodeMap a -> a -> (LNode a, NodeMap a)
-mkNode m = forgotFst . mkLookupNode m
+mkNode m = forgetFst . mkLookupNode m
   where
-    forgotFst (_,x,y)=(x,y)
+    forgetFst (_,x,y)=(x,y)
 
+-- | Act as 'mkNode', but return also a boolean set as @True@ if the node was
+-- already in the map.
 mkLookupNode :: (Ord a) => NodeMap a -> a -> (Bool, LNode a, NodeMap a)
 mkLookupNode m@(NodeMap mp k) a =
     case M.lookup a mp of
