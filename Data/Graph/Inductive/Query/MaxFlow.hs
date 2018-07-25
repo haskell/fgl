@@ -108,7 +108,7 @@ mfmg g s t
 
 -- | Compute the flow from s to t on a graph whose edges are labeled with
 --   @x@, which is the max capacity and where not all edges need to be
---   of the form a\<---->b. Return the flow as a grap whose edges are
+--   of the form a\<---->b. Return the flow as a graph whose edges are
 --   labeled with (x,y,z)=(max capacity,current flow,residual
 --   capacity) and all edges are of the form a\<---->b
 mf :: (DynGraph gr, Num b, Ord b) => gr a b -> Node -> Node -> gr a (b,b,b)
