@@ -127,7 +127,7 @@ script:
   # test that source-distributions can be generated
   - cabal new-sdist all
   - mv dist-newstyle/sdist/*.tar.gz ${DISTDIR}/
-  - cd ${DISTDIR} || false
+  - pushd ${DISTDIR} || false
   - find . -maxdepth 1 -name '*.tar.gz' -exec tar -xvf '{}' \;
   - "printf 'packages: fgl-*/*.cabal\\n' > cabal.project"
   - touch cabal.project.local
@@ -149,6 +149,8 @@ script:
 
   # Build without installed constraints for packages in global-db
   - if $UNCONSTRAINED; then rm -f cabal.project.local; echo cabal new-build -w ${HC} --disable-tests --disable-benchmarks all; else echo "Not building without installed constraints"; fi
+
+  - popd
 
   # Check the fgl-arbitrary sub-package
   - cd fgl-arbitrary
