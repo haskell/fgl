@@ -1,0 +1,3 @@
+packages:
+         ./fgl.cabal
+         ./fgl-arbitrary/fgl-arbitrary.cabal
