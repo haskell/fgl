@@ -1,5 +1,5 @@
 name:          fgl
-version:       5.7.0.1
+version:       5.7.0.2
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
@@ -19,7 +19,7 @@ extra-source-files:
 
 tested-with:   GHC == 7.0.4, GHC == 7.2.2, GHC == 7.4.2, GHC == 7.6.3,
                GHC == 7.8.4, GHC == 7.10.2, GHC == 8.0.1, GHC == 8.2.2,
-               GHC == 8.4.3, GHC == 8.6.2
+               GHC == 8.4.3, GHC == 8.6.2, GHC == 8.8.2, GHC == 8.10.1
 
 source-repository head
     type:         git
@@ -91,8 +91,8 @@ test-suite fgl-tests {
 
     build-depends:    fgl
                     , base
-                    , QuickCheck >= 2.8 && < 2.13
-                    , hspec >= 2.1 && < 2.7
+                    , QuickCheck >= 2.8 && < 2.14
+                    , hspec >= 2.1 && < 2.8
                     , containers
 
     hs-source-dirs:   test
