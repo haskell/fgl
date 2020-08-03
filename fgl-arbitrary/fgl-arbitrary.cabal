@@ -1,5 +1,5 @@
 name:                fgl-arbitrary
-version:             0.2.0.5
+version:             0.2.0.6
 synopsis:            QuickCheck support for fgl
 description:
   Provides Arbitrary instances for fgl graphs (to avoid adding a
@@ -24,7 +24,7 @@ tested-with:   GHC == 7.2.2,  GHC == 7.4.2, GHC == 7.6.3, GHC == 7.8.4,
 
 source-repository head
     type:         git
-    location:     git://github.com/haskell/fgl.git
+    location:     https://github.com/haskell/fgl.git
     subdir:       fgl-arbitrary
 
 library
@@ -33,7 +33,7 @@ library
   -- other-extensions:
   build-depends:       base < 5
                      , fgl >= 5.5.2.0 && < 6
-                     , QuickCheck >= 2.3 && < 2.14
+                     , QuickCheck >= 2.3 && < 2.15
   -- hs-source-dirs:
   default-language:    Haskell2010
 

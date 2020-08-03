@@ -1,5 +1,5 @@
 name:          fgl
-version:       5.7.0.2
+version:       5.7.0.3
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
@@ -91,7 +91,7 @@ test-suite fgl-tests {
 
     build-depends:    fgl
                     , base
-                    , QuickCheck >= 2.8 && < 2.14
+                    , QuickCheck >= 2.8 && < 2.15
                     , hspec >= 2.1 && < 2.8
                     , containers
 
