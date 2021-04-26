@@ -34,7 +34,8 @@ Given a graph G=(V,E), its transitive closure is the graph:
 G* = (V,Er union E) where Er = {(i,i): i in V}
 -}
 rc :: (DynGraph gr) => gr a b -> gr a ()
-rc g = newEdges `insEdges` insNodes ln empty
+rc g = (newEdges ++ oldEdges) `insEdges` insNodes ln empty
   where
     ln       = labNodes g
     newEdges = [ (u, u, ()) | (u, _) <- ln ]
+    oldEdges = [ (u, v, ()) | (u, v, _) <- labEdges g ]
