@@ -92,7 +92,7 @@ test-suite fgl-tests {
     build-depends:    fgl
                     , base
                     , QuickCheck >= 2.8 && < 2.15
-                    , hspec >= 2.1 && < 2.8
+                    , hspec >= 2.1 && < 2.9
                     , containers
 
     hs-source-dirs:   test
