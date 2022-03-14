@@ -123,7 +123,7 @@ maxFlowgraph g s t = emap (\(u,v,_)->(v,u))
                      . elfilter (\(x,_,_) -> x/=0 )
                      $ mf g s t
 
--- | Compute the value of a maximumflow
+-- | Compute the value of a maximum flow
 maxFlow :: (DynGraph gr, Num b, Ord b) => gr a b -> Node -> Node -> b
 maxFlow g s t = sum (map (fst . edgeLabel) (out (maxFlowgraph g s t) s))
 

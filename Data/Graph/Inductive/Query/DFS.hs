@@ -8,7 +8,7 @@
 --
 --      [@u@] undirectional: ignore edge direction
 --      [@r@] reversed: walk edges in reverse
---      [@x@] user defined: speciy which paths to follow
+--      [@x@] user defined: specify which paths to follow
 --
 --   2. "df" for depth-first
 --   3. A structure parameter, specifying the type of the result.
