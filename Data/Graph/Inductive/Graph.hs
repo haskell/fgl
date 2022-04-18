@@ -3,7 +3,7 @@
 -- (c) 1999-2005 by Martin Erwig [see file COPYRIGHT]
 -- | Static and Dynamic Inductive Graphs
 module Data.Graph.Inductive.Graph (
-    -- * General Type Defintions
+    -- * General Type Definitions
     -- ** Node and Edge Types
     Node,LNode,UNode,
     Edge,LEdge,UEdge,
