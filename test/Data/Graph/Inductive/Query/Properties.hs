@@ -133,14 +133,22 @@ test_condensation _ g = sort sccs == sort (map snd $ labNodes cdg)
 -- Dominators
 
 test_dom :: Spec
-test_dom = it "dom" $
-  sortIt (dom domGraph 1) `shouldMatchList` [ (1, [1])
-                                            , (2, [1,2])
-                                            , (3, [1,2,3])
-                                            , (4, [1,2,4])
-                                            , (5, [1,2,5])
-                                            , (6, [1,2,6])
-                                            ]
+test_dom = describe "dom" $ do
+  it "regular dom" $
+    sortIt (dom domGraph 1) `shouldMatchList` [ (1, [1])
+                                              , (2, [1,2])
+                                              , (3, [1,2,3])
+                                              , (4, [1,2,4])
+                                              , (5, [1,2,5])
+                                              , (6, [1,2,6])
+                                              ]
+  it "multiple components dom" $
+    sortIt (dom domGraph1 1) `shouldMatchList` [ (1, [1])
+                                               , (2, [1, 2])
+                                               ]
+  it "directed reachable components dom" $
+    sortIt (dom domGraph2 1) `shouldMatchList` [ (1, [1]) ]
+
   where
     sortIt = map (second sort)
 
@@ -159,6 +167,20 @@ domGraph = mkUGraph [1..6]
                     , (4,5)
                     , (5,2)
                     ]
+
+-- This graph has two components (independent subgraphs)
+domGraph1 :: Gr () ()
+domGraph1 = mkUGraph [1..3]
+                     [ (1,2)
+                     ]
+
+-- This graph has no reachables from 1 (but 1 is reachable)
+domGraph2 :: Gr () ()
+domGraph2 = mkUGraph [1..3]
+                     [ (2,1)
+                     , (2,2)
+                     ]
+
 
 -- -----------------------------------------------------------------------------
 -- GVD
