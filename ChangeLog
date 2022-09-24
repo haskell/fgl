@@ -1,3 +1,10 @@
+5.8.0.0
+-------
+
+* Breaking change: MonadFail is no longer a superclass of GraphM.
+  This is to support GHC 9.4.  This has no effect on the IO and ST
+  instances of GraphM, but may affect users.
+
 5.7.0.3
 -------
 
