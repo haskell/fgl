@@ -19,10 +19,6 @@ module Data.Graph.Inductive.Monad(
 
 
 import Data.Graph.Inductive.Graph
-#if MIN_VERSION_base(4,12,0)
-import Control.Monad.Fail
-import Prelude hiding (fail)
-#endif
 
 {-# ANN module "HLint: ignore Redundant lambda" #-}
 
@@ -43,13 +39,7 @@ import Prelude hiding (fail)
 
 -- Monadic Graph
 --
-class
-#if MIN_VERSION_base(4,12,0)
- (MonadFail m)
-#else
- (Monad m)
-#endif
-  => GraphM m gr where
+class (Monad m) => GraphM m gr where
   {-# MINIMAL emptyM, isEmptyM, matchM, mkGraphM, labNodesM #-}
 
   emptyM     :: m (gr a b)
@@ -65,8 +55,8 @@ class
   matchAnyM  :: m (gr a b) -> m (GDecomp gr a b)
   matchAnyM g = do vs <- labNodesM g
                    case vs of
-                     []      -> fail "Match Exception, Empty Graph"
-                     (v,_):_ -> do (Just c,g') <- matchM v g
+                     []      -> error "Match Exception, Empty Graph"
+                     (v,_):_ -> do ~(Just c,g') <- matchM v g
                                    return (c,g')
 
   noNodesM   :: m (gr a b) -> m Int
@@ -75,7 +65,7 @@ class
   nodeRangeM :: m (gr a b) -> m (Node,Node)
   nodeRangeM g = do isE <- isEmptyM g
                     if isE
-                       then fail "nodeRangeM of empty graph"
+                       then error "nodeRangeM of empty graph"
                        else do vs <- nodesM g
                                return (minimum vs,maximum vs)
 
