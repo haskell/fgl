@@ -51,6 +51,7 @@ type FromNode = IntMap Node'
 
 idomWork :: (Graph gr) => gr a b -> Node -> (IDom, ToNode, FromNode)
 idomWork g root = let
+    nds = reachable root g
     -- use depth first tree from root do build the first approximation
     trees@(~[tree]) = dff [root] g
     -- relabel the tree so that paths from the root have increasing nodes
@@ -58,7 +59,7 @@ idomWork g root = let
     -- the approximation iDom0 just maps each node to its parent
     iD0 = array (1, s-1) (tail $ treeEdges (-1) ntree)
     -- fromNode translates graph nodes to relabeled (internal) nodes
-    fromNode = I.unionWith const (I.fromList (zip (T.flatten tree) (T.flatten ntree))) (I.fromList (zip (nodes g) (repeat (-1))))
+    fromNode = I.unionWith const (I.fromList (zip (T.flatten tree) (T.flatten ntree))) (I.fromList (zip nds (repeat (-1))))
     -- toNode translates internal nodes to graph nodes
     toNode = array (0, s-1) (zip (T.flatten ntree) (T.flatten tree))
     preds = array (1, s-1) [(i, filter (/= -1) (map (fromNode I.!)
