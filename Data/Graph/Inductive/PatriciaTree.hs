@@ -134,6 +134,9 @@ instance (NFData a, NFData b) => NFData (Gr a b) where
   rnf (Gr g) = rnf g
 #endif
 
+instance Functor (Gr a) where
+  fmap = fastEMap
+
 #if MIN_VERSION_base (4,8,0)
 instance Bifunctor Gr where
   bimap = fastNEMap
