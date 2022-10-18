@@ -1,3 +1,9 @@
+Next
+----
+
+* Data.Graph.Inductive.PatriciaTree.Gr and
+  Data.Graph.Inductive.Tree.Gr now have Functor instances.
+
 5.8.0.0
 -------
 
