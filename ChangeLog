@@ -4,6 +4,8 @@ Next
 * Data.Graph.Inductive.PatriciaTree.Gr and
   Data.Graph.Inductive.Tree.Gr now have Functor instances.
 
+* 'Gr a' is now an instance of Functor.
+
 5.8.0.0
 -------
 
