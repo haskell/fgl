@@ -1,9 +1,9 @@
 name:          fgl
-version:       5.8.0.0
+version:       5.8.1.0
 license:       BSD3
 license-file:  LICENSE
 author:        Martin Erwig, Ivan Lazar Miljenovic
-maintainer:    Ivan.Miljenovic@gmail.com
+maintainer:    athas@sigkill.dk
 category:      Data Structures, Graphs
 synopsis:      Martin Erwig's Functional Graph Library
 
