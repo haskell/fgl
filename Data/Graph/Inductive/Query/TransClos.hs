@@ -18,8 +18,8 @@ tc g = newEdges `insEdges` insNodes ln empty
     outU gr  = map toEdge . out gr
 
 {-|
-Finds the transitive, reflexive closure of a directed graph.
-Given a graph G=(V,E), its transitive closure is the graph:
+Finds the reflexive-transitive closure of a directed graph.
+Given a graph G=(V,E), its reflexive-transitive closure is the graph:
 G* = (V,E*) where E*={(i,j): i,j in V and either i = j or there is a path from i to j in G}
 -}
 trc :: (DynGraph gr) => gr a b -> gr a ()
@@ -30,7 +30,7 @@ trc g = newEdges `insEdges` insNodes ln empty
 
 {-|
 Finds the reflexive closure of a directed graph.
-Given a graph G=(V,E), its transitive closure is the graph:
+Given a graph G=(V,E), its reflexive closure is the graph:
 G* = (V,Er union E) where Er = {(i,i): i in V}
 -}
 rc :: (DynGraph gr) => gr a b -> gr a ()
