@@ -63,7 +63,7 @@ idomWork g root = let
     fromNode = I.unionWith const (I.fromList (zip (T.flatten tree) (T.flatten ntree))) (I.fromList (zip nds (repeat (-1))))
     -- toNode translates internal nodes to graph nodes
     toNode = array (0, s-1) (zip (T.flatten ntree) (T.flatten tree))
-    preds = array (1, s-1) [(i, filter (/= -1) (mapMaybe (fromNode I.!?)
+    preds = array (1, s-1) [(i, filter (/= -1) (mapMaybe (`I.lookup` fromNode)
                             (pre g (toNode ! i)))) | i <- [1..s-1]]
     -- iteratively improve the approximation to find iDom.
     iD = fixEq (refineIDom preds) iD0
