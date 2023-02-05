@@ -149,6 +149,9 @@ test_dom = describe "dom" $ do
   it "directed reachable components dom" $
     sortIt (dom domGraph2 1) `shouldMatchList` [ (1, [1]) ]
 
+  it "unreachable nodes dom" $
+    sortIt (dom domGraph3 1) `shouldMatchList` [(1,[1]), (2,[1,2])]
+
   where
     sortIt = map (second sort)
 
@@ -181,6 +184,9 @@ domGraph2 = mkUGraph [1..3]
                      , (2,2)
                      ]
 
+-- From #109: 1 -> 2 <- 3
+domGraph3 :: Gr () ()
+domGraph3 = mkUGraph [1..3] [(1,2), (3,2)]
 
 -- -----------------------------------------------------------------------------
 -- GVD
