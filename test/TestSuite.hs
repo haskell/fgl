@@ -79,7 +79,7 @@ graphTests nm p = describe nm $ do
     propType  "subgraph"          valid_subgraph
 
   where
-    proxyProp str = prop str . ($p)
+    proxyProp str = prop str . ($ p)
 
     propType :: (Testable pr) => String -> (GraphType gr -> pr) -> Spec
     propType = prop
@@ -126,7 +126,7 @@ queryTests = describe "Queries" $ do
     propP "tc"         test_tc
     propP "rc"         test_rc
   where
-    propP str = prop str . ($p)
+    propP str = prop str . ($ p)
 
     p :: PatriciaTreeP
     p = Proxy
