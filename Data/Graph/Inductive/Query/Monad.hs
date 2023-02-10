@@ -78,11 +78,11 @@ instance (Monad m) => Functor (GT m g) where
     fmap  = liftM
 
 instance (Monad m) => Applicative (GT m g) where
-    pure  = return
+    pure x  = MGT (\mg->do {g<-mg; return (x,g)})
     (<*>) = ap
 
 instance (Monad m) => Monad (GT m g) where
-  return x = MGT (\mg->do {g<-mg; return (x,g)})
+  return = pure
   f >>= h  = MGT (\mg->do {(x,g)<-apply f mg; apply' (h x) g})
 
 condMGT' :: (Monad m) => (s -> Bool) -> GT m s a -> GT m s a -> GT m s a
