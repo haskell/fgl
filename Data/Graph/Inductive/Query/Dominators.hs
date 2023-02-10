@@ -22,12 +22,12 @@ import           Data.Tree                      (Tree (..))
 import qualified Data.Tree                      as T
 
 {-# ANN iDom "HLint: ignore Use ***" #-}
--- | return immediate dominators for each node of a graph, given a root
+-- | return immediate dominators for each reachable node of a graph, given a root
 iDom :: (Graph gr) => gr a b -> Node -> [(Node,Node)]
 iDom g root = let (result, toNode, _) = idomWork g root
               in  map (\(a, b) -> (toNode ! a, toNode ! b)) (assocs result)
 
--- | return the set of dominators of the nodes of a graph, given a root
+-- | return the set of dominators of the reachable nodes of a graph, given a root
 dom :: (Graph gr) => gr a b -> Node -> [(Node,[Node])]
 dom g root = let
     (iD, toNode, fromNode) = idomWork g root
