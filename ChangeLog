@@ -1,3 +1,9 @@
+5.8.1.1
+-------
+
+* Data.Graph.Inductive.Query.Dominators.{dom,iDom} could fail for some
+  graphs (issue #109, regression in 5.8.1.0).
+
 5.8.1.0
 -------
 
