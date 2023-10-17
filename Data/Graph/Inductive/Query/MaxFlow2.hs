@@ -77,7 +77,7 @@ exampleNetwork2=mkGraph [ (1,()), (2,()), (3,()), (4,()), (5,()), (6,()) ]
 -- Compute an augmenting path
 augPathFused :: Network -> Node -> Node -> Maybe DirPath
 augPathFused g s t = listToMaybe $ map reverse $
-    filter (\((u,_):_) -> u==t) tree
+    filter ((==t) . fst . head) tree
     where tree = bftForEK s g
 
 -- Breadth First Search wrapper function
@@ -87,8 +87,12 @@ bftForEK v = bfForEK (queuePut [(v,Forward)] mkQueue)
 -- Breadth First Search, tailored for Edmonds & Karp
 bfForEK :: Queue DirPath -> Network -> DirRTree
 bfForEK q g
-    | queueEmpty q || isEmpty g = []
-    | otherwise                 = case match v g of
+  | queueEmpty q || isEmpty g = []
+  | otherwise                 =
+     case queueGet q of
+      ([], _) -> []
+      (p@((v,_):_), q1) ->
+       case match v g of
         (Nothing, g')                     -> bfForEK q1 g'
         (Just (preAdj, _, _, sucAdj), g') -> p:bfForEK q2 g'
             where
@@ -100,7 +104,6 @@ bfForEK q g
                 -- Traverse edges forwards if flow less than capacity
                 suc2 = [ (sucNode,Forward):p
                     | ((c, f), sucNode) <- sucAdj, c>f]
-    where (p@((v,_):_), q1)=queueGet q
 
 -- Extract augmenting path from network; return path as a sequence of
 -- edges with direction of traversal, and new network with augmenting
@@ -110,13 +113,17 @@ extractPathFused :: Network -> DirPath
 extractPathFused g []  = ([], g)
 extractPathFused g [(_,_)] = ([], g)
 extractPathFused g ((u,_):rest@((v,Forward):_)) =
-    ((u, v, l, Forward):tailedges, newerg)
-        where (tailedges, newerg) = extractPathFused newg rest
-              Just (l, newg)    = extractEdge g u v (uncurry (>))
+  case extractEdge g u v (uncurry (>)) of
+    Just (l, newg) ->
+      let (tailedges, newerg) = extractPathFused newg rest
+      in ((u, v, l, Forward):tailedges, newerg)
+    Nothing -> error "extractPathFused Forward: invalid edge"
 extractPathFused g ((u,_):rest@((v,Backward):_)) =
-    ((v, u, l, Backward):tailedges, newerg)
-        where (tailedges, newerg) = extractPathFused newg rest
-              Just (l, newg)    = extractEdge g v u (\(_,f)->(f>0))
+  case extractEdge g v u (\(_,f)->(f>0)) of
+    Just (l, newg) ->
+      let (tailedges, newerg) = extractPathFused newg rest
+      in ((v, u, l, Backward):tailedges, newerg)
+    Nothing -> error "extractPathFused Backward: invalid edge"
 
 ekFusedStep :: EKStepFunc
 ekFusedStep g s t = case maybePath of
@@ -142,7 +149,7 @@ residualGraph g =
          [(v, u, f) | (u,v,(_,f)) <- labEdges g, f>0])
 
 augPath :: Network -> Node -> Node -> Maybe Path
-augPath g s t = listToMaybe $ map reverse $ filter (\(u:_) -> u==t) tree
+augPath g s t = listToMaybe $ map reverse $ filter ((==t) . head) tree
     where tree = bft s (residualGraph g)
 
 -- Extract augmenting path from network; return path as a sequence of
@@ -168,12 +175,12 @@ extractPath g (u:v:ws) =
 -- Return the label on the edge and the graph without the edge
 extractEdge :: Gr a b -> Node -> Node -> (b->Bool) -> Maybe (b, Gr a b)
 extractEdge g u v p =
-    case adj of
-        Just (el, _) -> Just (el, (p', node, l, rest) & newg)
-        Nothing      -> Nothing
-    where (Just (p', node, l, s), newg) = match u g
-          (adj, rest)=extractAdj s
-              (\(l', dest) -> dest==v && p l')
+    case match u g of
+      ((Just (p', node, l, s), newg)) ->
+        let (adj, rest)=extractAdj s (\(l', dest) -> dest==v && p l')
+        in do (el, _) <- adj
+              Just (el, (p', node, l, rest) & newg)
+      _ -> Nothing
 
 -- Extract an item from an adjacency list that satisfies a given
 -- predicate. Return the item and the rest of the adjacency list
