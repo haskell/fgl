@@ -6,6 +6,8 @@ NEXT
 
 * Documented that some functions are partial (issue #98).
 
+* Add `insert` function as synonym for `&` (issue #90).
+
 5.8.1.1
 -------
 
