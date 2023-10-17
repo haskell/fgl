@@ -1,3 +1,9 @@
+NEXT
+----
+
+* Data.Graph.Inductive.Graph now only requires Graph, not DynGraph
+  (issue #100).
+
 5.8.1.1
 -------
 

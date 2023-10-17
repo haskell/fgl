@@ -578,7 +578,7 @@ context4l' (p,v,_,s) = s++filter ((==v).snd) p
 
 -- | Pretty-print the graph.  Note that this loses a lot of
 --   information, such as edge inverses, etc.
-prettify :: (DynGraph gr, Show a, Show b) => gr a b -> String
+prettify :: (Graph gr, Show a, Show b) => gr a b -> String
 prettify g = foldr (showsContext . context g) id (nodes g) ""
   where
     showsContext (_,n,l,s) sg = shows n . (':':) . shows l
