@@ -64,10 +64,11 @@ augmentGraph g = emap (\i->(i,0,i)) (insEdges (getRevEdges (edges g)) g)
 --   residual capacity of that edge's label. Then return the updated
 --   list.
 updAdjList::(Num b) => Adj (b,b,b) -> Node -> b -> Bool -> Adj (b,b,b)
-updAdjList s v cf fwd = rs ++ ((x,y+cf',z-cf'),w) : rs'
+updAdjList s v cf fwd =
+  case break ((v==) . snd) s of
+    (rs, ((x,y,z),w):rs') -> rs ++ ((x,y+cf',z-cf'),w) : rs'
+    _ -> error "updAdjList: invalid node"
   where
-    (rs, ((x,y,z),w):rs') = break ((v==) . snd) s
-
     cf' = if fwd
              then cf
              else negate cf

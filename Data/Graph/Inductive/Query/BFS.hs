@@ -107,10 +107,12 @@ bft v = bf (queuePut [v] mkQueue)
 bf :: (Graph gr) => Queue Path -> gr a b -> RTree
 bf q g | queueEmpty q || isEmpty g = []
        | otherwise                 =
-       case match v g of
-         (Just c, g')  -> p:bf (queuePutList (map (:p) (suc' c)) q') g'
-         (Nothing, g') -> bf q' g'
-         where (p@(v:_),q') = queueGet q
+       case queueGet q of
+         ([], _) -> []
+         (p@(v:_),q') ->
+           case match v g of
+             (Just c, g')  -> p:bf (queuePutList (map (:p) (suc' c)) q') g'
+             (Nothing, g') -> bf q' g'
 
 esp :: (Graph gr) => Node -> Node -> gr a b -> Path
 esp s t = getPath t . bft s
@@ -128,11 +130,13 @@ lbft v g = case out g v of
 lbf :: (Graph gr) => Queue (LPath b) -> gr a b -> LRTree b
 lbf q g | queueEmpty q || isEmpty g = []
         | otherwise                 =
-       case match v g of
-         (Just c, g') ->
-             LP p:lbf (queuePutList (map (\v' -> LP (v':p)) (lsuc' c)) q') g'
-         (Nothing, g') -> lbf q' g'
-         where (LP (p@((v,_):_)),q') = queueGet q
+       case queueGet q of
+         (LP [], _) -> []
+         (LP (p@((v,_):_)),q') ->
+           case match v g of
+             (Just c, g') ->
+                 LP p:lbf (queuePutList (map (\v' -> LP (v':p)) (lsuc' c)) q') g'
+             (Nothing, g') -> lbf q' g'
 
 lesp :: (Graph gr) => Node -> Node -> gr a b -> LPath b
 lesp s t = getLPath t . lbft s

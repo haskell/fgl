@@ -194,18 +194,17 @@ gmap_id g = equal (gmap id g) g
 --   current behaviour is to throw an error if an existing node is
 --   used.
 valid_insNode :: (DynGraph gr, Ord a, Ord b) => gr a b -> a -> Bool
-valid_insNode g l = gelem v g'
-                    && sort (labNodes g') == sort (vl : labNodes g)
-                    && sort (labEdges g') == sort (labEdges g)
-                    -- Note: not testing whether this changes
-                    -- nodeRange because newNodes /might/ return
-                    -- unused nodes in the middle.
-  where
-    [v] = newNodes 1 g
-
-    vl = (v,l)
-
-    g' = insNode vl g
+valid_insNode g l =
+  case newNodes 1 g of
+    [v] -> let vl = (v,l)
+               g' = insNode vl g
+           in gelem v g'
+              && sort (labNodes g') == sort (vl : labNodes g)
+              && sort (labEdges g') == sort (labEdges g)
+              -- Note: not testing whether this changes
+              -- nodeRange because newNodes /might/ return
+              -- unused nodes in the middle.
+    _ -> False
 
 -- | Insert a node for every label in the list, but don't add any new
 --   edges.
@@ -329,12 +328,13 @@ valid_delLEdge g b = not (isEmpty g) ==>
 --   adding the specified number to the graph and then deleting them.
 valid_delAllLEdge :: (DynGraph gr, Eq a, Eq b) => gr a b -> NonNegative Int
                      -> a -> a -> b -> Bool
-valid_delAllLEdge g (NonNegative c) a1 a2 b = equal g' (delAllLEdge le g'')
-  where
-    [v,w] = newNodes 2 g
-    g' = insNodes [(v,a1),(w,a2)] g
-    le = (v,w,b)
-    g'' = insEdges (replicate c le) g'
+valid_delAllLEdge g (NonNegative c) a1 a2 b =
+  case newNodes 2 g of
+    [v,w] -> let g' = insNodes [(v,a1),(w,a2)] g
+                 le = (v,w,b)
+                 g'' = insEdges (replicate c le) g'
+             in equal g' (delAllLEdge le g'')
+    _ -> False
 
 -- | There is a version of 'mkGraph' in its documentation that uses
 --   'DynGraph' (hence why it isn't used by default).  This ensures

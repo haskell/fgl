@@ -56,8 +56,10 @@ class (Monad m) => GraphM m gr where
   matchAnyM g = do vs <- labNodesM g
                    case vs of
                      []      -> error "Match Exception, Empty Graph"
-                     (v,_):_ -> do ~(Just c,g') <- matchM v g
-                                   return (c,g')
+                     (v,_):_ -> do r <- matchM v g
+                                   case r of
+                                     (Just c,g') -> return (c,g')
+                                     _ -> error "Match Exception, cannot extract node"
 
   noNodesM   :: m (gr a b) -> m Int
   noNodesM = labNodesM >>. length

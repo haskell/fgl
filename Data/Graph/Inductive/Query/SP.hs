@@ -28,10 +28,12 @@ dijkstra :: (Graph gr, Real b)
     -> LRTree b
 dijkstra h g | H.isEmpty h || isEmpty g = []
 dijkstra h g =
-    case match v g of
-         (Just c,g')  -> p:dijkstra (H.mergeAll (h':expand d p c)) g'
-         (Nothing,g') -> dijkstra h' g'
-    where (_,p@(LP ((v,d):_)),h') = H.splitMin h
+  case H.splitMin h of
+    (_,p@(LP ((v,d):_)),h') ->
+      case match v g of
+           (Just c,g')  -> p:dijkstra (H.mergeAll (h':expand d p c)) g'
+           (Nothing,g') -> dijkstra h' g'
+    _ -> []
 
 -- | Tree of shortest paths from a certain node to the rest of the
 --   (reachable) nodes.

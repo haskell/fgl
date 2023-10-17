@@ -20,10 +20,12 @@ newEdges (LP p) (_,_,_,s) = map (\(l,v)->H.unit l (LP ((v,l):p))) s
 prim :: (Graph gr,Real b) => H.Heap b (LPath b) -> gr a b -> LRTree b
 prim h g | H.isEmpty h || isEmpty g = []
 prim h g =
-    case match v g of
-         (Just c,g')  -> p:prim (H.mergeAll (h':newEdges p c)) g'
-         (Nothing,g') -> prim h' g'
-    where (_,p@(LP ((v,_):_)),h') = H.splitMin h
+  case H.splitMin h of
+    (_,p@(LP ((v,_):_)),h') ->
+      case match v g of
+           (Just c,g')  -> p:prim (H.mergeAll (h':newEdges p c)) g'
+           (Nothing,g') -> prim h' g'
+    _ -> []
 
 msTreeAt :: (Graph gr,Real b) => Node -> gr a b -> LRTree b
 msTreeAt v = prim (H.unit 0 (LP [(v,0)]))

@@ -107,6 +107,8 @@ test-suite fgl-tests {
                     , Data.Graph.Inductive.Query.Properties
 
     ghc-options:      -Wall
+    if impl(ghc >= 8.0)
+      ghc-options:    -Wall -Wno-star-is-type
 
 }
 

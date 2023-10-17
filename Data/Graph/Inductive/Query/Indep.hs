@@ -22,12 +22,14 @@ indep = fst . indepSize
 indepSize :: (DynGraph gr) => gr a b -> ([Node], Int)
 indepSize g
   | isEmpty g = ([], 0)
-  | l1 > l2   = il1
-  | otherwise = il2
+  | otherwise =
+      case match v g of
+        (Nothing,_) -> error "indepSize: unexpected invalid node"
+        (Just c,g') ->
+          let il1@(_,l1)  = indepSize g'
+              il2@(_,l2)  = ((v:) *** (+1)) $ indepSize (delNodes (neighbors' c) g')
+          in if l1 > l2 then il1 else il2
   where
     vs          = nodes g
     v           = snd . maximumBy (compare `on` fst)
                   . map ((,) =<< deg g) $ vs
-    (Just c,g') = match v g
-    il1@(_,l1)  = indepSize g'
-    il2@(_,l2)  = ((v:) *** (+1)) $ indepSize (delNodes (neighbors' c) g')

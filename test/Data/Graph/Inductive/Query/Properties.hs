@@ -361,26 +361,29 @@ test_sp _ cg = all test_p (map unLPath (msTree g))
 test_sp_Just :: (ArbGraph gr, Graph gr, Real b) =>
   Proxy (gr a b) -> gr a b -> Property
 test_sp_Just _ g =
-  (noNodes g >= 2 && v `elem` bfs u g) ==>
-  isJust (spLength u v g) &&
-  isJust maybePath &&
-  not (null path) &&
-  head path == u &&
-  last path == v
-  where
-    [u,v] = take 2 (nodes g)
-    maybePath@(Just path) = sp u v g
+  case nodes g of
+    u:v:_ ->
+      v `elem` bfs u g ==>
+      isJust (spLength u v g) &&
+      case sp u v g of
+        Nothing -> False
+        Just path ->
+          not (null path) &&
+          head path == u &&
+          last path == v
+    _ -> property True
 
 -- | Test that 'spLength' and 'sp' return 'Nothing' when destination
 --   is not reachable from source.
 test_sp_Nothing :: (ArbGraph gr, Graph gr, Real b) =>
   Proxy (gr a b) -> gr a b -> Property
 test_sp_Nothing _ g =
-  (noNodes g >= 2 && not (v `elem` bfs u g)) ==>
-  isNothing (spLength u v g) &&
-  isNothing (sp u v g)
-  where
-    [u,v] = take 2 (nodes g)
+  case nodes g of
+    u:v:_ ->
+      not (v `elem` bfs u g) ==>
+        isNothing (spLength u v g) &&
+        isNothing (sp u v g)
+    _ -> property True
 
 -- -----------------------------------------------------------------------------
 -- TransClos
