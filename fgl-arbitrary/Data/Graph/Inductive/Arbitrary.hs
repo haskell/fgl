@@ -321,23 +321,24 @@ instance (ArbGraph ag, Arbitrary a, Arbitrary b) => Arbitrary (Connected ag a b)
 
 toConnGraph :: forall ag a b. (ArbGraph ag, Arbitrary a, Arbitrary b)
                => ag a b -> Gen (Connected ag a b)
-toConnGraph ag = do a <- arbitrary
-                    ces <- concat <$> mapM mkE ws
-                    return $ CG { connNode     = v
-                                , connArbGraph = fromBaseGraph
-                                                 . insEdges ces
-                                                 . insNode (v,a)
-                                                 $ g
-                                }
+toConnGraph ag = case newNodes 1 g of
+                   [] -> error "toConnGraph: cannot make node"
+                   v:_ -> do
+                     a <- arbitrary
+                     ces <- concat <$> mapM (mkE v) ws
+                     return $ CG { connNode     = v
+                                 , connArbGraph = fromBaseGraph
+                                                  . insEdges ces
+                                                  . insNode (v,a)
+                                                  $ g
+                                 }
   where
     g = toBaseGraph ag
 
-    [v] = newNodes 1 g
-
     ws = nodes g
 
-    mkE w = do b <- arbitrary
-               return (edgeF p [(v,w,b)])
+    mkE v w = do b <- arbitrary
+                 return (edgeF p [(v,w,b)])
 
     p :: GrProxy ag
     p = GrProxy
