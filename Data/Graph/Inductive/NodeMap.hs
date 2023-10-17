@@ -112,6 +112,7 @@ insMapNode_ m a g =
     let (g', _, _) = insMapNode m a g
     in g'
 
+-- | Partial function: raises exception if passed nodes that are not in the graph.
 insMapEdge :: (Ord a, DynGraph g) => NodeMap a -> (a, a, b) -> g a b -> g a b
 insMapEdge m e g =
   case mkEdge m e of Just e' -> insEdge e' g
@@ -122,6 +123,7 @@ delMapNode m a g =
     let (n, _) = mkNode_ m a
     in delNode n g
 
+-- | Partial function: raises exception if passed nodes that are not in the graph.
 delMapEdge :: (Ord a, DynGraph g) => NodeMap a -> (a, a) -> g a b -> g a b
 delMapEdge m (n1, n2) g =
     case mkEdge m (n1, n2, ()) of Just (n1', n2', _) -> delEdge (n1', n2') g
@@ -137,6 +139,7 @@ insMapNodes_ m as g =
     let (g', _, _) = insMapNodes m as g
     in g'
 
+-- | Partial function: raises exception if passed nodes that are not in the graph.
 insMapEdges :: (Ord a, DynGraph g) => NodeMap a -> [(a, a, b)] -> g a b -> g a b
 insMapEdges m es g =
     case mkEdges m es of Just es' -> insEdges es' g
@@ -147,6 +150,7 @@ delMapNodes m as g =
     let ns = P.map fst $ mkNodes_ m as
     in delNodes ns g
 
+-- | Partial function: raises exception if passed nodes that are not in the graph.
 delMapEdges :: (Ord a, DynGraph g) => NodeMap a -> [(a, a)] -> g a b -> g a b
 delMapEdges m ns g =
     case mkEdges m $ P.map (\(a, b) -> (a, b, ())) ns of
@@ -155,6 +159,7 @@ delMapEdges m ns g =
         let ns'' = P.map (\(a, b, _) -> (a, b)) ns'
         in delEdges ns'' g
 
+-- | Partial function: raises exception if passed a node that is not in the graph.
 mkMapGraph :: (Ord a, DynGraph g) => [a] -> [(a, a, b)] -> (g a b, NodeMap a)
 mkMapGraph ns es =
     let (ns', m') = mkNodes new ns
