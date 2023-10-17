@@ -114,8 +114,8 @@ insMapNode_ m a g =
 
 insMapEdge :: (Ord a, DynGraph g) => NodeMap a -> (a, a, b) -> g a b -> g a b
 insMapEdge m e g =
-    let (Just e') = mkEdge m e
-    in insEdge e' g
+  case mkEdge m e of Just e' -> insEdge e' g
+                     Nothing -> error "insMapEdge: invalid edge"
 
 delMapNode :: (Ord a, DynGraph g) => NodeMap a -> a -> g a b -> g a b
 delMapNode m a g =
@@ -124,8 +124,8 @@ delMapNode m a g =
 
 delMapEdge :: (Ord a, DynGraph g) => NodeMap a -> (a, a) -> g a b -> g a b
 delMapEdge m (n1, n2) g =
-    let Just (n1', n2', _) = mkEdge m (n1, n2, ())
-    in delEdge (n1', n2') g
+    case mkEdge m (n1, n2, ()) of Just (n1', n2', _) -> delEdge (n1', n2') g
+                                  Nothing -> error "delMapEdge: invalid edge"
 
 insMapNodes :: (Ord a, DynGraph g) => NodeMap a -> [a] -> g a b -> (g a b, NodeMap a, [LNode a])
 insMapNodes m as g =
@@ -139,8 +139,8 @@ insMapNodes_ m as g =
 
 insMapEdges :: (Ord a, DynGraph g) => NodeMap a -> [(a, a, b)] -> g a b -> g a b
 insMapEdges m es g =
-    let Just es' = mkEdges m es
-    in insEdges es' g
+    case mkEdges m es of Just es' -> insEdges es' g
+                         Nothing -> error "insMapEdges: invalid edge"
 
 delMapNodes :: (Ord a, DynGraph g) => NodeMap a -> [a] -> g a b -> g a b
 delMapNodes m as g =
@@ -149,15 +149,18 @@ delMapNodes m as g =
 
 delMapEdges :: (Ord a, DynGraph g) => NodeMap a -> [(a, a)] -> g a b -> g a b
 delMapEdges m ns g =
-    let Just ns' =  mkEdges m $ P.map (\(a, b) -> (a, b, ())) ns
-        ns'' = P.map (\(a, b, _) -> (a, b)) ns'
-    in delEdges ns'' g
+    case mkEdges m $ P.map (\(a, b) -> (a, b, ())) ns of
+      Nothing -> error "delMapEdges: invalid edges"
+      Just ns' ->
+        let ns'' = P.map (\(a, b, _) -> (a, b)) ns'
+        in delEdges ns'' g
 
 mkMapGraph :: (Ord a, DynGraph g) => [a] -> [(a, a, b)] -> (g a b, NodeMap a)
 mkMapGraph ns es =
     let (ns', m') = mkNodes new ns
-        Just es' = mkEdges m' es
-    in (mkGraph ns' es', m')
+    in case mkEdges m' es of
+         Just es' -> (mkGraph ns' es', m')
+         Nothing -> error "mkMapGraph: invalid edges"
 
 -- | Graph construction monad; handles passing both the 'NodeMap' and the
 -- 'Graph'.

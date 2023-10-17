@@ -156,9 +156,10 @@ class Graph gr where
   matchAny  :: gr a b -> GDecomp gr a b
   matchAny g = case labNodes g of
                  []      -> error "Match Exception, Empty Graph"
-                 (v,_):_ -> (c,g')
-                   where
-                     (Just c,g') = match v g
+                 (v,_):_ ->
+                   case match v g of
+                     (Just c,g') -> (c,g')
+                     _ -> error "Match Exception, cannot extract node"
 
   -- | The number of 'Node's in a 'Graph'.
   noNodes   :: gr a b -> Int
