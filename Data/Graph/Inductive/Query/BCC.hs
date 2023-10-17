@@ -43,10 +43,11 @@ findGraph v (g:gs) = case match v g of
 splitGraphs :: (DynGraph gr) => [gr a b] -> [Node] -> [gr a b]
 splitGraphs gs []     = gs
 splitGraphs [] _      = error "splitGraphs: empty graph list"
-splitGraphs gs (v:vs) = splitGraphs (gs''++gs''') vs
-                        where gs'' = embedContexts c gs'
-                              gs' = gComponents g'
-                              ((Just c,g'), gs''') = findGraph v gs
+splitGraphs gs (v:vs) = case findGraph v gs of
+                          ((Nothing, _), _) -> error "splitGraphs: invalid node"
+                          ((Just c,g'), gs''') -> splitGraphs (gs''++gs''') vs
+                            where gs'' = embedContexts c gs'
+                                  gs' = gComponents g'
 
 {-|
 Finds the bi-connected components of an undirected connected graph.
