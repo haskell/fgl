@@ -218,14 +218,15 @@ dffM :: (GraphM m gr) => [Node] -> GT m (gr a b) [Tree Node]
 dffM vs = MGT (\mg->
           do g<-mg
              b<-isEmptyM mg
-             if b||null vs then return ([],g) else
-                let (v:vs') = vs in
-                do (mc,g1) <- matchM v mg
+             case (b, vs) of
+               (False, v:vs') -> do
+                   (mc,g1) <- matchM v mg
                    case mc of
                      Nothing -> apply (dffM vs') (return g1)
                      Just c  -> do (ts, g2) <- apply (dffM (suc' c)) (return g1)
                                    (ts',g3) <- apply (dffM vs') (return g2)
                                    return (Node (node' c) ts:ts',g3)
+               _ -> return ([],g)
           )
 
 graphDff :: (GraphM m gr) => [Node] -> m (gr a b) -> m [Tree Node]
