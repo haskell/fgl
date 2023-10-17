@@ -51,25 +51,26 @@ type ToNode = Array Node' Node
 type FromNode = IntMap Node'
 
 idomWork :: (Graph gr) => gr a b -> Node -> (IDom, ToNode, FromNode)
-idomWork g root = let
-    nds = reachable root g
-    -- use depth first tree from root do build the first approximation
-    trees@(~[tree]) = dff [root] g
-    -- relabel the tree so that paths from the root have increasing nodes
-    (s, ntree) = numberTree 0 tree
-    -- the approximation iDom0 just maps each node to its parent
-    iD0 = array (1, s-1) (tail $ treeEdges (-1) ntree)
-    -- fromNode translates graph nodes to relabeled (internal) nodes
-    fromNode = I.unionWith const (I.fromList (zip (T.flatten tree) (T.flatten ntree))) (I.fromList (zip nds (repeat (-1))))
-    -- toNode translates internal nodes to graph nodes
-    toNode = array (0, s-1) (zip (T.flatten ntree) (T.flatten tree))
-    preds = array (1, s-1) [(i, filter (/= -1) (mapMaybe (`I.lookup` fromNode)
-                            (pre g (toNode ! i)))) | i <- [1..s-1]]
-    -- iteratively improve the approximation to find iDom.
-    iD = fixEq (refineIDom preds) iD0
-  in
-    if null trees then error "Dominators.idomWork: root not in graph"
-                  else (iD, toNode, fromNode)
+idomWork g root =
+  case dff [root] g of
+    [] -> error "Dominators.idomWork: root not in graph"
+    tree : _ ->
+      let
+        nds = reachable root g
+        -- use depth first tree from root do build the first approximation
+        -- relabel the tree so that paths from the root have increasing nodes
+        (s, ntree) = numberTree 0 tree
+        -- the approximation iDom0 just maps each node to its parent
+        iD0 = array (1, s-1) (tail $ treeEdges (-1) ntree)
+        -- fromNode translates graph nodes to relabeled (internal) nodes
+        fromNode = I.unionWith const (I.fromList (zip (T.flatten tree) (T.flatten ntree))) (I.fromList (zip nds (repeat (-1))))
+        -- toNode translates internal nodes to graph nodes
+        toNode = array (0, s-1) (zip (T.flatten ntree) (T.flatten tree))
+        preds = array (1, s-1) [(i, filter (/= -1) (mapMaybe (`I.lookup` fromNode)
+                                (pre g (toNode ! i)))) | i <- [1..s-1]]
+        -- iteratively improve the approximation to find iDom.
+        iD = fixEq (refineIDom preds) iD0
+      in (iD, toNode, fromNode)
 
 -- for each node in iDom, find the intersection of all its predecessor's
 -- dominating sets, and update iDom accordingly.
