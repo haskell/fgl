@@ -34,6 +34,7 @@ module Data.Graph.Inductive.Graph (
     Graph(..),
     DynGraph(..),
     -- * Operations
+    insert,
     order,
     size,
     -- ** Graph Folds and Maps
@@ -187,6 +188,10 @@ class (Graph gr) => DynGraph gr where
   --   in the graph.
   (&) :: Context a b -> gr a b -> gr a b
 
+-- | A synonym for '&', to avoid conflicts with the similarly named
+-- operator in "Data.Function".
+insert :: DynGraph gr => Context a b -> gr a b -> gr a b
+insert = (&)
 
 -- | The number of nodes in the graph.  An alias for 'noNodes'.
 order :: (Graph gr) => gr a b -> Int
