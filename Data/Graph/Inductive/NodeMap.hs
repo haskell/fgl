@@ -6,13 +6,13 @@ module Data.Graph.Inductive.NodeMap(
     -- * Functional Construction
     NodeMap,
     -- ** Map Construction
-    new, fromGraph, mkNode, mkNode_, mkNodes, mkNodes_, mkEdge, mkEdges,
+    new, fromGraph, mkNode, mkNode_, mkNodes, mkLookupNode, mkNodes_, mkEdge, mkEdges,
     -- ** Graph Construction
     -- | These functions mirror the construction and destruction functions in
     -- 'Data.Graph.Inductive.Graph', but use the given 'NodeMap' to look up
     -- the appropriate 'Node's.  Note that the 'insMapNode' family of functions
     -- will create new nodes as needed, but the other functions will not.
-    insMapNode, insMapNode_, insMapEdge, delMapNode, delMapEdge, insMapNodes,
+    insMapNode, insMapLookupNode, insMapNode_, insMapEdge, delMapNode, delMapEdge, insMapNodes,
     insMapNodes_, insMapEdges, delMapNodes, delMapEdges, mkMapGraph,
     -- * Monadic Construction
     NodeMapM,
@@ -23,7 +23,10 @@ module Data.Graph.Inductive.NodeMap(
     run, run_, mkNodeM, mkNodesM, mkEdgeM, mkEdgesM,
     -- ** Graph Construction
     insMapNodeM, insMapEdgeM, delMapNodeM, delMapEdgeM, insMapNodesM,
-    insMapEdgesM, delMapNodesM, delMapEdgesM
+    insMapEdgesM, delMapNodesM, delMapEdgesM,
+
+    -- ** Map inspection
+    memberNode, lookupNode
 ) where
 
 import           Control.Monad.Trans.State
@@ -62,15 +65,30 @@ fromGraph g =
         (m, k) = foldr aux (M.empty, 0) ns
     in NodeMap { map = m, key = k+1 }
 
+-- | Is the node in the map ?
+memberNode :: (Ord a) => a -> NodeMap a -> Bool
+memberNode a = M.member a . map
+
+-- | Lookup for the node in the map.
+lookupNode :: (Ord a) => a -> NodeMap a -> Maybe Node
+lookupNode a = M.lookup a . map
+
 -- | Generate a labelled node from the given label.  Will return the same node
 -- for the same label.
 mkNode :: (Ord a) => NodeMap a -> a -> (LNode a, NodeMap a)
-mkNode m@(NodeMap mp k) a =
+mkNode m = forgetFst . mkLookupNode m
+  where
+    forgetFst (_,x,y)=(x,y)
+
+-- | Act as 'mkNode', but return also a boolean set as @True@ if the node was
+-- already in the map.
+mkLookupNode :: (Ord a) => NodeMap a -> a -> (Bool, LNode a, NodeMap a)
+mkLookupNode m@(NodeMap mp k) a =
     case M.lookup a mp of
-        Just i        -> ((i, a), m)
-        Nothing        ->
+        Just i        -> (True,(i, a), m)
+        Nothing       ->
             let m' = NodeMap { map = M.insert a k mp, key = k+1 }
-            in ((k, a), m')
+            in (False,(k, a), m')
 
 -- | Generate a labelled node and throw away the modified 'NodeMap'.
 mkNode_ :: (Ord a) => NodeMap a -> a -> LNode a
@@ -106,6 +124,13 @@ insMapNode :: (Ord a, DynGraph g) => NodeMap a -> a -> g a b -> (g a b, NodeMap 
 insMapNode m a g =
     let (n, m') = mkNode m a
     in (insNode n g, m', n)
+
+-- | Act as 'insMapNode', but return also a boolean set as @True@ if the node was
+-- already in the map.
+insMapLookupNode :: (Ord a, DynGraph g) => NodeMap a -> a -> g a b -> (Bool, g a b, NodeMap a, LNode a)
+insMapLookupNode m a g =
+    let (b, n, m') = mkLookupNode m a
+    in (b, insNode n g, m', n)
 
 insMapNode_ :: (Ord a, DynGraph g) => NodeMap a -> a -> g a b -> g a b
 insMapNode_ m a g =
