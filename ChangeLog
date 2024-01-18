@@ -1,3 +1,10 @@
+next
+----
+
+* Data.Graph.Inductive.NodeMap now has functions mkLookupNode,
+  insMapLookupNode, memberNode, and lookupNode for detecting whether a
+  graph already contains a node (issue #72, PR #77).
+
 5.8.2.0
 -------
 
