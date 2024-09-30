@@ -1,5 +1,5 @@
-next
-----
+5.8.3.0
+-------
 
 * Data.Graph.Inductive.NodeMap now has functions mkLookupNode,
   insMapLookupNode, memberNode, and lookupNode for detecting whether a
