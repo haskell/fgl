@@ -96,6 +96,9 @@ queryTests = describe "Queries" $ do
   describe "BFS" $ do
     propP "bfs"        test_bfs
     propP "level"      test_level
+  describe "Cycles" $ do
+    test_cycles
+    test_uniqueCycles
   describe "DFS" $ do
     propP "components"   test_components
     propP "scc"          test_scc
@@ -116,6 +119,8 @@ queryTests = describe "Queries" $ do
   test_maxFlow2
   test_maxFlow
   propP "msTree"       test_msTree
+  describe "SCC" $ do
+    propP "strongComponentsOf" test_strongComponentsOf
   describe "SP" $ do
     propP "sp"         test_sp
     propP "sp_Just"    test_sp_Just
