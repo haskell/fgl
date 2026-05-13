@@ -21,7 +21,6 @@ import           Data.Maybe (mapMaybe)
 import           Data.Tree                      (Tree (..))
 import qualified Data.Tree                      as T
 
-{-# ANN iDom "HLint: ignore Use ***" #-}
 -- | return immediate dominators for each reachable node of a graph, given a root
 iDom :: (Graph gr) => gr a b -> Node -> [(Node,Node)]
 iDom g root = let (result, toNode, _) = idomWork g root
