@@ -20,8 +20,6 @@ module Data.Graph.Inductive.Monad(
 
 import Data.Graph.Inductive.Graph
 
-{-# ANN module "HLint: ignore Redundant lambda" #-}
-
 ----------------------------------------------------------------------
 -- MONADIC GRAPH CLASS
 ----------------------------------------------------------------------
