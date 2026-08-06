@@ -26,7 +26,7 @@ import Test.Hspec      (Spec, describe, it, shouldBe, shouldMatchList,
 import Test.QuickCheck
 
 import           Control.Arrow (second)
-import           Data.List     (delete, sort, unfoldr, group, (\\))
+import           Data.List     (delete, sort, sortBy, unfoldr, group, (\\))
 import           Data.Maybe    (fromJust, isJust, isNothing)
 import qualified Data.Set      as S
 
@@ -84,6 +84,42 @@ test_level _ cg = sort expect == sort (level cn g)
     expect = (cn,0) : map (flip (,) 1) vs
 
 -- esp tested as part of test_sp
+
+-- -----------------------------------------------------------------------------
+-- Cycles
+
+test_cycles :: Spec
+test_cycles =
+  it "cycles" $
+  sortCycles (cycles cyclesGraph) `shouldMatchList` [ [4, 5]
+                                                    , [1, 2, 3]
+                                                    , [0, 1, 2, 3, 4]
+                                                    ]
+
+test_uniqueCycles :: Spec
+test_uniqueCycles =
+  it "uniqueCycles" $
+  sortCycles (uniqueCycles cyclesGraph) `shouldMatchList` [ [1, 2, 3]
+                                                          , [0, 1, 2, 3, 4]
+                                                          ]
+
+sortCycles :: [[LNode ()]] -> [[Node]]
+sortCycles cs = map (map fst . sort) $
+                sortBy (\c1 c2 -> compare (length c1) (length c2)) $
+                cs
+
+cyclesGraph :: Gr () ()
+cyclesGraph = mkUGraph [0..6]
+                       [ (0,1)
+                       , (1,2)
+                       , (2,3)
+                       , (3,1)
+                       , (3,4)
+                       , (3,6)
+                       , (4,0)
+                       , (4,5)
+                       , (5,4)
+                       ]
 
 -- -----------------------------------------------------------------------------
 -- DFS
@@ -331,6 +367,34 @@ test_msTree _ cg = ns == mstNs && S.isSubsetOf mstEs es
     mstEs = S.unions (map (S.fromList . (zipWith toE <*> tail)) mst)
 
     toE (w,l) (v,_) = (v,w,l)
+
+-- -----------------------------------------------------------------------------
+-- SCC
+
+-- | The strongly connected components should be a partitioning of the nodes of
+--   a graph and there should be no cycle between any pair of nodes from two
+--   separate partitions.
+test_strongComponentsOf :: (Graph gr) => Proxy (gr a b) -> gr a b -> Bool
+test_strongComponentsOf _ g =
+  let cs = strongComponentsOf g
+
+      -- Get set of unordered pairs of components, excluding reflexive
+      -- pairs
+      numbered_cs = zip ([0..] :: [Int]) cs
+      cs_pairs = map (\((_, c), (_, d)) -> (c, d)) $
+                 filter (\((n, _), (m, _)) -> n < m) $
+                 [ (x, y) | x <- numbered_cs, y <- numbered_cs ]
+
+      -- Tests that there exist no cycle between two nodes
+      test_no_cycle (n, m) = let n_to_m = m `elem` reachable n g
+                                 m_to_n = n `elem` reachable m g
+                             in not (n_to_m && m_to_n)
+
+  in sort (concatMap nodes cs) == sort (nodes g)
+     && all ( \(c, d) -> all test_no_cycle
+                             [ (n, m) | n <- nodes c, m <- nodes d ]
+            )
+            cs_pairs
 
 -- -----------------------------------------------------------------------------
 -- SP
